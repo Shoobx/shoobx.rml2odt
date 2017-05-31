@@ -1,0 +1,4 @@
+[run]
+include = */shoobx/rml2docx/*
+omit = */test*
+

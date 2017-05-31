@@ -1,0 +1,6 @@
+.coverage
+.tox
+coverage.xml
+ve/
+
+src/shoobx.rml2docx.egg-info

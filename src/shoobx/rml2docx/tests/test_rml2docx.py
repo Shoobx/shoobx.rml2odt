@@ -44,7 +44,7 @@ def unoconv_command(path, opath=None):
     # XXX: For now, hardcode Pyhton 3 system directory. This is
     # needed, since unoconv is only installed for that version of python.
     return (
-        '/usr/bin/python3', '/usr/bin/unoconv', '-vvv', '-f', 'pdf', '-o', opath, path)
+        '/Applications/LibreOffice.app/Contents/program/python', '/usr/local/bin/unoconv', '-vvv', '-f', 'pdf', '-o', opath, path)
 
 
 class Rml2DocxConverterTest(unittest.TestCase):
@@ -106,6 +106,7 @@ class CompareDOCXTestCase(unittest.TestCase):
         testPdfPath = self._testPath.rsplit('.', 1)[0] + '.pdf'
         status = subprocess.Popen(
             unoconv_command(self._testPath, testPdfPath)).wait()
+
         if status:
             raise ValueError(
                 'Test DOCX -> PDF conversion failed: %i' % status)

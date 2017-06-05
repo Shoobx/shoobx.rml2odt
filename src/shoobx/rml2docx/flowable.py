@@ -59,7 +59,7 @@ class Paragraph(directive.RMLDirective):
         self._handleText(self.element, paragraph)
         return paragraph
 
-class Title(directive.RMLDirective):
+class title(directive.RMLDirective):
     signature = rml_flowable.IParagraph
     defaultStyle = None
 
@@ -125,7 +125,7 @@ class Flow(directive.RMLDirective):
         # Paragraph-Like Flowables
         'para': Paragraph,
         # Text which should appear in a title
-        'Title': Title,
+        'title': title,
         # Headers
         'h1': Header,
         'h2': Header,

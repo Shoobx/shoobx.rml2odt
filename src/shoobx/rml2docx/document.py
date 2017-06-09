@@ -15,10 +15,12 @@
 """
 import docx
 import zope.interface
-from z3c.rml import directive
+from z3c.rml import directive, canvas
 from z3c.rml import document as rml_document, interfaces as rml_interfaces
 
 from shoobx.rml2docx import template
+from shoobx.rml2docx import stylesheet
+from shoobx.rml2docx import list
 
 
 @zope.interface.implementer(rml_interfaces.IManager)
@@ -27,6 +29,13 @@ class Document(directive.RMLDirective):
 
     factories = {
         'story': template.Story,
+        'pageTemplate': template.PageTemplate,
+        'template': template.Template,
+        'pageTemplate': template.PageTemplate,
+        'pageGraphics': template.PageGraphics,
+        'styleSheet': stylesheet.Stylesheet,
+        'pageInfo': canvas.PageInfo,
+        'pageDrawing': canvas.PageDrawing
         }
 
     def __init__(self, element):
@@ -46,8 +55,20 @@ class Document(directive.RMLDirective):
 
         # Handle Flowable-based documents.
         if self.element.find('template') is not None:
+            # Probably wanna add style & template info here
             #self.processSubDirectives(select=('template', 'story'))
             self.processSubDirectives(select=('story'))
 
         # Save the output.
         self.document.save(outputFile)
+
+
+
+class StartIndex(directive.RMLDirective):
+    signature = rml_document.IStartIndex
+
+    def process(self):
+        kwargs = dict(self.getAttributeValues())
+        name = kwargs['name']
+        manager = attr.getManager(self)
+        manager.indexes[name] = tableofcontents.SimpleIndex(**kwargs)

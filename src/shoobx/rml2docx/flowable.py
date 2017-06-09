@@ -18,9 +18,95 @@ import re
 from docx.enum.text import WD_BREAK
 from z3c.rml import directive
 from z3c.rml import flowable as rml_flowable
-from docx.shared import RGBColor
 
-class Paragraph(directive.RMLDirective):
+
+import copy
+import logging
+import re
+import reportlab.lib.styles
+import reportlab.platypus
+import reportlab.platypus.doctemplate
+import reportlab.platypus.flowables
+import reportlab.platypus.tables
+import zope.schema
+from reportlab.lib import styles, utils
+from xml.sax.saxutils import unescape
+from z3c.rml import attr, directive, interfaces, occurence
+from z3c.rml import form, platypus, special, SampleStyleSheet, stylesheet
+
+
+
+try:
+    import reportlab.graphics.barcode
+except ImportError:
+    # barcode package has not been installed
+    import types
+    import reportlab.graphics
+    reportlab.graphics.barcode = types.ModuleType('barcode')
+    reportlab.graphics.barcode.createBarcodeDrawing = None
+
+def pygments2xpre(s, language="python"):
+    "Return markup suitable for XPreformatted"
+    try:
+        from pygments import highlight
+        from pygments.formatters import HtmlFormatter
+    except ImportError:
+        return s
+
+    from pygments.lexers import get_lexer_by_name
+
+    l = get_lexer_by_name(language)
+
+    h = HtmlFormatter()
+    # XXX: Does not work in Python 2, since pygments creates non-unicode
+    # outpur snippets.
+    #from io import StringIO
+    from six import StringIO
+    out = StringIO()
+    highlight(s,l,h,out)
+    styles = [(cls, style.split(';')[0].split(':')[1].strip())
+                for cls, (style, ttype, level) in h.class2style.items()
+                if cls and style and style.startswith('color:')]
+    from reportlab.lib.pygments2xpre import _2xpre
+    return _2xpre(out.getvalue(),styles)
+
+class Flowable(directive.RMLDirective):
+    klass=None
+    attrMapping = None
+
+    def process(self):
+        args = dict(self.getAttributeValues(attrMapping=self.attrMapping))
+        self.parent.flow.append(self.klass(**args))
+
+class Spacer(Flowable):
+    signature = rml_flowable.ISpacer
+    klass = reportlab.platypus.Spacer
+    attrMapping = {'length': 'height'}
+
+# Adjust Process
+class Illustration(Flowable):
+    signature = rml_flowable.IIllustration
+    klass = platypus.Illustration
+
+    def process(self):
+        args = dict(self.getAttributeValues())
+        self.parent.flow.append(self.klass(self, **args))
+
+# Is klass needed?
+class BarCodeFlowable(Flowable):
+    signature = rml_flowable.IBarCodeFlowable
+    klass = staticmethod(reportlab.graphics.barcode.createBarcodeDrawing)
+    attrMapping = {'code': 'codeName'}
+
+class Preformatted(Flowable):
+    signature = rml_flowable.IPreformatted
+    klass = reportlab.platypus.Preformatted
+
+class XPreformatted(Flowable):
+    signature = rml_flowable.IXPreformatted
+    klass = reportlab.platypus.XPreformatted
+
+class Paragraph(Flowable):
     signature = rml_flowable.IParagraph
     defaultStyle = 'Normal'
 
@@ -61,83 +147,29 @@ class Paragraph(directive.RMLDirective):
         self._handleText(self.element, paragraph)
         return paragraph
 
-class li(directive.RMLDirective):
-    signature = rml_flowable.IParagraph
-    defaultStyle = 'ListBullet'
+class Heading1(Paragraph):
+    signature = rml_flowable.IHeading1
+    defaultStyle = "Heading1"
 
-    def _cleanText(self, text):
-        if not text:
-            text = ''
-        text = re.sub('\n\s+', ' ', text)
-        text = re.sub('\s\s\s+', '', text)
-        text = re.sub('\t', '', text)
-        return text
+class Heading2(Paragraph):
+    signature = rml_flowable.IHeading2
+    defaultStyle = "Heading2"
 
-    def _handleText(self, element, li):
-        # Maybe recursive implementation for nested tags
-        if element.text is not None and element.text.strip() != '':
-            run = li.add_run(self._cleanText(element.text.lstrip()))
+class Heading3(Paragraph):
+    signature = rml_flowable.IHeading3
+    defaultStyle = "Heading3"
 
-    def process(self):
-        style = self.element.attrib.get('style', self.defaultStyle)
-        li = self.parent.container.add_paragraph(style = style)
-        self._handleText(self.element, li)
-        return li
+class Heading4(Paragraph):
+    signature = rml_flowable.IHeading4
+    defaultStyle = "Heading4"
 
-class num(directive.RMLDirective):
-    signature = rml_flowable.IParagraph
-    defaultStyle = 'ListNumber'
+class Heading5(Paragraph):
+    signature = rml_flowable.IHeading5
+    defaultStyle = "Heading5"
 
-    def _cleanText(self, text):
-        if not text:
-            text = ''
-        text = re.sub('\n\s+', ' ', text)
-        text = re.sub('\s\s\s+', '', text)
-        text = re.sub('\t', '', text)
-        return text
-
-    def _handleText(self, element, num):
-        # Maybe recursive implementation for nested tags
-        if element.text is not None and element.text.strip() != '':
-            run = num.add_run(self._cleanText(element.text.lstrip()))
-
-    def process(self):
-        style = self.element.attrib.get('style', self.defaultStyle)
-        num = self.parent.container.add_paragraph(style = style)
-        self._handleText(self.element, num)
-        return num
-
-class Heading(directive.RMLDirective):
-    #signature = None
-    defaultStyle = "Heading"
-
-    def _cleanText(self, text):
-        if not text:
-            text = ''
-        text = re.sub('\n\s+', ' ', text)
-        text = re.sub('\s\s\s+', '', text)
-        text = re.sub('\t', '', text)
-        return text
-
-    def _handleText(self, element, heading):
-        # Maybe recursive implementation for nested tags
-        if element.text is not None and element.text.strip() != '':
-            run = heading.add_run(self._cleanText(element.text.lstrip()))
-
-            ## !! Look at this
-        #print(type(element.tag))
-
-    def process(self):
-        #import pdb; pdb.set_trace()
-        #Takes care of different heading tags
-        tagNo = self.element.tag[-1]
-        style = self.element.attrib.get('style', self.defaultStyle)+"%s"%tagNo
-        self.signature = eval("rml_flowable.IHeading%s"%tagNo)
-        # Set signature based on heading tag
-        # This makes initial signature declaration obsolete
-        heading = self.parent.container.add_paragraph(style=style)
-        self._handleText(self.element, heading)
-        return heading
+class Heading6(Paragraph):
+    signature = rml_flowable.IHeading6
+    defaultStyle = "Heading6"
 
 class br(directive.RMLDirective):
     signature = rml_flowable.IParagraph
@@ -163,10 +195,10 @@ class hr(directive.RMLDirective):
         docx_bar = u'────────────────────────────────────────────────────────────'
         pdf_bar = u'───────────────────────────────────────'
         self._handleText(docx_bar, hr)
-        #br = self.parent.container.add_paragraph(style=style)
+        #hr = self.parent.container.add_paragraph(style=style)
         return hr
 
-class title(directive.RMLDirective):
+class Title(directive.RMLDirective):
     signature = rml_flowable.ITitle
     defaultStyle = "Title"
 
@@ -179,7 +211,6 @@ class title(directive.RMLDirective):
         return text
 
     def _handleText(self, element, title):
-        # Maybe recursive implementation for nested tags
         if element.text is not None and element.text.strip() != '':
             run = title.add_run(self._cleanText(element.text.lstrip()))
 
@@ -192,21 +223,24 @@ class title(directive.RMLDirective):
 
 class Flow(directive.RMLDirective):
     factories = {
+        # Generic Flowables
+        'spacer': Spacer,
+        'illustration': Illustration,
+        'barCodeFlowable': BarCodeFlowable,
+        #'pre': Preformatted,
+        #'xpre': XPreformatted,
         # Paragraph-Like Flowables
         'para': Paragraph,
-        # Text 
-        'li': li,
         # Headers
-        'h1': Heading,
-        'h2': Heading,
-        'h3': Heading,
-        'h4': Heading, 
-        'h5': Heading,
-        'h6': Heading,
+        'h1': Heading1,
+        'h2': Heading2,
+        'h3': Heading3,
+        'h4': Heading4, 
+        'h5': Heading5,
+        'h6': Heading6,
         'br': br,
-        'title': title,
-        'num':num,
-        'hr':hr,
+        'title': Title,
+        'hr':hr
     }
 
     def __init__(self, *args, **kw):

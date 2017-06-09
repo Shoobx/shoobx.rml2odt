@@ -31,7 +31,6 @@ class Document(directive.RMLDirective):
         'story': template.Story,
         'pageTemplate': template.PageTemplate,
         'template': template.Template,
-        'pageTemplate': template.PageTemplate,
         'pageGraphics': template.PageGraphics,
         'styleSheet': stylesheet.Stylesheet,
         'pageInfo': canvas.PageInfo,

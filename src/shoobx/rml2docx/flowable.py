@@ -20,6 +20,7 @@ from z3c.rml import directive
 from z3c.rml import flowable as rml_flowable
 from z3c.rml import template as rml_template
 
+<<<<<<< Updated upstream
 # from z3c.rml flowable.py file
 from z3c.rml import attr, directive, interfaces, platypus
 try:
@@ -60,6 +61,9 @@ def pygments2xpre(s, language="python"):
 class Flowable(directive.RMLDirective):
     klass=None
     attrMapping = None
+=======
+
+>>>>>>> Stashed changes
 
     def process(self):
         args = dict(self.getAttributeValues(attrMapping=self.attrMapping))
@@ -203,6 +207,8 @@ class Title(directive.RMLDirective):
         self._handleText(self.element, title)
         return title
 
+
+
 class Flow(directive.RMLDirective):
     factories = {
         # Generic Flowables
@@ -223,6 +229,8 @@ class Flow(directive.RMLDirective):
         'title': Title,
         'hr':HorizontalRow,
     }
+
+
 
     def __init__(self, *args, **kw):
         super(Flow, self).__init__(*args, **kw)

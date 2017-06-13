@@ -17,6 +17,7 @@ from __future__ import absolute_import
 
 import os
 import subprocess
+import sys
 import unittest
 from PIL import Image
 from zope.interface import verify
@@ -32,6 +33,15 @@ EXPECT_DIR = os.path.join(
 
 LOG_FILE = os.path.join(os.path.dirname(__file__), 'render.log')
 
+UNOCONV_BIN = os.path.join(
+    os.path.dirname(sys.executable), 'unoconv')
+PYTHON_OFFICE_BIN = os.environ.get('PYTHON_OFFICE_BIN')
+
+ENV_PATH = os.path.abspath('env')
+if os.path.exists(ENV_PATH):
+    with open(ENV_PATH) as env_file:
+        PYTHON_OFFICE_BIN=env_file.read().strip()
+
 
 def gs_command(path):
     return ('gs', '-q', '-sNOPAUSE', '-sDEVICE=png256',
@@ -40,11 +50,9 @@ def gs_command(path):
 
 def unoconv_command(path, opath=None):
     if opath is None:
-        opath = path.rsplit('.', 1)[0] + '.pdf'
-    # XXX: For now, hardcode Pyhton 3 system directory. This is
-    # needed, since unoconv is only installed for that version of python.
+        opath = os.path.dirname(path)
     return (
-        '/Applications/LibreOffice.app/Contents/program/python', '/usr/local/bin/unoconv', '-vvv', '-f', 'pdf', '-o', opath, path)
+        PYTHON_OFFICE_BIN, UNOCONV_BIN, '-vvv', '-f', 'pdf', '-o', opath, path)
 
 
 class Rml2DocxConverterTest(unittest.TestCase):
@@ -97,7 +105,7 @@ class CompareDOCXTestCase(unittest.TestCase):
         basePdfPath = self._basePath.rsplit('.', 1)[0] + '.pdf'
         if not os.path.exists(basePdfPath):
             status = subprocess.Popen(
-                unoconv_command(self._basePath, basePdfPath)).wait()
+                unoconv_command(self._basePath)).wait()
             if status:
                 raise ValueError(
                     'Base DOCX -> PDF conversion failed: %i' % status)
@@ -105,7 +113,7 @@ class CompareDOCXTestCase(unittest.TestCase):
         # Convert the test DOCX file to PDF.
         testPdfPath = self._testPath.rsplit('.', 1)[0] + '.pdf'
         status = subprocess.Popen(
-            unoconv_command(self._testPath, testPdfPath)).wait()
+            unoconv_command(self._testPath)).wait()
 
         if status:
             raise ValueError(

@@ -13,60 +13,60 @@
 ##############################################################################
 """``ul``, ``ol``, and ``li`` directives.
 """
-__docformat__ = "reStructuredText"
 import copy
 import reportlab.lib.styles
-import reportlab.platypus
 import zope.schema
-from reportlab.platypus import flowables
+import re
+#from lxml import etree
 
 from z3c.rml import list as rml_list
 from z3c.rml import stylesheet  as rml_stylesheet
-from z3c.rml import flowable as rml_flowable
-from z3c.rml import interfaces as rml_interfaces
-from z3c.rml import occurence as rml_occurence
-from z3c.rml import directive as rml_directive
-from z3c.rml import attr as rml_attr
-
 from shoobx.rml2docx import flowable
+from z3c.rml import flowable as rml_flowable
+from z3c.rml import directive
+from z3c.rml import stylesheet
 
+class ListItem(flowable.Flow):
+    signature = rml_flowable.IParagraph
+    defaultStyle = 'ListNumber'
+    styleAttributes = zope.schema.getFieldNames(stylesheet.IMinimalListStyle)
 
-class ListItem(rml_flowable.Flow):
-    signature = rml_list.IListItem
-    klass = reportlab.platypus.ListItem
-    attrMapping = {}
-
-    styleAttributes = zope.schema.getFieldNames(rml_stylesheet.IMinimalListStyle)
-
-    def processStyle(self, style):
-        attrs = self.getAttributeValues(select=self.styleAttributes)
-        if attrs or not hasattr(style, 'value'):
-            style = copy.deepcopy(style)
-            # Sigh, this is needed since unordered list items expect the value.
-            style.value = style.start
-            for name, value in attrs:
-                setattr(style, name, value)
-        return style
-
+    def process(self):
+        self.processSubDirectives()
+        children = self.element.getchildren()
+        # Takes care of case where li object does not have <para> tag 
+        # if len(children) == 0:
+        #     newPara = lxml.etree.Element('para')
+        #     newPara.text = self.element.text
+        #     self.element.text = None
+        #     for subElement in tuple(self.element): newPara.append(subElement)
+        #     self.element.append(newPara)
+        style = self.element.attrib.get('style', self.defaultStyle)
+        # '.parent' is used twice because of the nested <li>
+        paragraph = self.parent.parent.container.add_paragraph(style=style)
+        # Keeps checking until text is found
+        element = self.element
+        text = element.text
+        while text == None:
+            element = element.getchildren()[0]
+            text = element.text
+        run = paragraph.add_run(text)
 
 class OrderedListItem(ListItem):
     signature = rml_list.IOrderedListItem
 
 class UnorderedListItem(ListItem):
     signature = rml_list.IUnorderedListItem
-
     styleAttributes = ListItem.styleAttributes + ['value']
 
-class ListBase(rml_directive.RMLDirective):
-    klass = reportlab.platypus.ListFlowable
+class ListBase(directive.RMLDirective):
+    klass = rml_flowable.reportlab.platypus.ListFlowable
     factories = {'li': ListItem}
     attrMapping = {}
-
     styleAttributes = zope.schema.getFieldNames(rml_stylesheet.IBaseListStyle)
 
     def __init__(self, *args, **kw):
         super(ListBase, self).__init__(*args, **kw)
-        self.flow = []
 
     def processStyle(self, style):
         attrs = self.getAttributeValues(
@@ -78,21 +78,14 @@ class ListBase(rml_directive.RMLDirective):
         return style
 
     def process(self):
-        args = dict(self.getAttributeValues(
-                ignore=self.styleAttributes, attrMapping=self.attrMapping))
-        if 'style' not in args:
-            args['style'] = reportlab.lib.styles.ListStyle('List')
-        args['style'] = self.baseStyle = self.processStyle(args['style'])
         self.processSubDirectives()
-        li = self.klass(self.flow, **args)
-        self.parent.flow.append(li)
+        args = dict(self.getAttributeValues(attrMapping=self.attrMapping))
 
 class OrderedList(ListBase):
     signature = rml_list.IOrderedList
+    flowable.Flow.factories['li'] = OrderedListItem
     factories = {'li': OrderedListItem}
-
     styleAttributes = ListBase.styleAttributes + ['bulletType']
-
 
 class UnorderedList(ListBase):
     signature = rml_list.IUnorderedList
@@ -104,6 +97,6 @@ class UnorderedList(ListBase):
         res.append(('bulletType', 'bullet'))
         return res
 
-rml_flowable.Flow.factories['ol'] = OrderedList
-rml_flowable.Flow.factories['ul'] = UnorderedList
+flowable.Flow.factories['ol'] = OrderedList
+flowable.Flow.factories['ul'] = UnorderedList
 

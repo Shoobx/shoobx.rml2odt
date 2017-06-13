@@ -6,7 +6,7 @@ set -o errexit
 
 urldir=https://downloadarchive.documentfoundation.org/libreoffice/old/$VERSION/mac/x86_64
 filename=LibreOffice_${VERSION}_MacOS_x86-64.dmg
-python_bin=/Volumes/LibreOffice/LibreOffice.app/Contents/MacOS/python
+python_bin=/Applications/LibreOffice.app/Contents/MacOS/python
 
 if [ ! -f $(filename) ]; then
     wget $urldir/$filename

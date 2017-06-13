@@ -1,0 +1,9 @@
+.coverage
+.tox
+LibreOffice*
+coverage.xml
+env
+ve/
+
+*.pyc
+src/shoobx.rml2docx.egg-info

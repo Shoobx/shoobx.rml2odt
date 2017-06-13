@@ -36,6 +36,7 @@ def alltests():
 
 TESTS_REQUIRE = [
     'coverage',
+    'unoconv',
     'zope.testrunner',
     ]
 

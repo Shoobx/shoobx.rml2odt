@@ -1,12 +1,17 @@
 language: python
-sudo: false
-env:
-    - TOXENV=py27
-    - TOXENV=py35
-    - TOXENV=py36
+sudo: required
+python:
+  - 2.7
+  - 3.5
+  - 3.6
+before_install:
+    - sudo apt-get install ghostscript libreoffice
+    - echo '/usr/bin/python' > env
 install:
-    - travis_retry pip install tox
+    - travis_retry pip install tox tox-travis coveralls
 script:
     - tox
 notifications:
     email: false
+after_success:
+  - coveralls

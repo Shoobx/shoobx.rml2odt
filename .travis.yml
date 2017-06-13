@@ -1,11 +1,11 @@
 language: python
-sudo: false
+sudo: required
 env:
     - TOXENV=py27
     - TOXENV=py35
     - TOXENV=py36
 before_install:
-  - sudo make install-office
+  - make install-office
 install:
     - travis_retry pip install tox
 script:

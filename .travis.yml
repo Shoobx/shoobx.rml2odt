@@ -1,9 +1,9 @@
 language: python
 sudo: required
 python:
-  - 2.7
-  - 3.5
-  - 3.6
+    - 2.7
+    - 3.5
+    - 3.6
 before_install:
     - sudo apt-get install ghostscript libreoffice
     - echo '/usr/bin/python' > env
@@ -14,4 +14,4 @@ script:
 notifications:
     email: false
 after_success:
-  - coveralls
+    - coveralls

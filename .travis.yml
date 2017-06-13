@@ -6,7 +6,7 @@ python:
   - 3.6
 before_install:
     - sudo apt-get install ghostscript libreoffice
-    - echo '/usr/bin/python3' > env
+    - echo '/usr/bin/python' > env
 #    - sudo VERSION=5.3.1.2 bash ci/linux.bash
 #    - make env
 install:

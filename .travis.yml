@@ -5,10 +5,12 @@ env:
     - TOXENV=py35
     - TOXENV=py36
 before_install:
-  - sudo VERSION=5.3.1.2 bash ci/linux.bash
+  - sudo make install-office
 install:
     - travis_retry pip install tox
 script:
     - tox
 notifications:
     email: false
+after_success:
+  - coveralls

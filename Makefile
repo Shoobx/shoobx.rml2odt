@@ -6,13 +6,14 @@ ifeq ($(UNAME), Linux)
   PYTHON_OFFICE_BIN = '/opt/libreoffice$(OFFICE_2DVERSION)/program/python'
 endif
 ifeq ($(UNAME), Darwin)
-  PYTHON_OFFICE_BIN = '/Volumes/LibreOffice/LibreOffice.app/Contents/MacOS/python'
+  PYTHON_OFFICE_BIN = '/Applications/LibreOffice.app/Contents/MacOS/python'
 endif
 
 all: ve/bin/unoconv ve/bin/zope-testrunner env
 
 ve:
 	virtualenv -p $(PYTHON) ve
+	ve/bin/pip install --pre backports.tempfile
 	ve/bin/pip install -e .[test]
 
 ve/bin/zope-testrunner: | ve

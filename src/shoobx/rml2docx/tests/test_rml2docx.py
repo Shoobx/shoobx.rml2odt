@@ -52,7 +52,8 @@ def unoconv_command(path, opath=None):
     if opath is None:
         opath = os.path.dirname(path)
     return (
-        PYTHON_OFFICE_BIN, UNOCONV_BIN, '-vvv', '-f', 'pdf', '-o', opath, path)
+        PYTHON_OFFICE_BIN, UNOCONV_BIN, '-vvv', '-T', '15', '-f',
+        'pdf', '-o', opath, path)
 
 
 class Rml2DocxConverterTest(unittest.TestCase):

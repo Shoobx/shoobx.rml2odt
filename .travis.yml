@@ -1,13 +1,14 @@
 language: python
 sudo: required
-env:
-    - TOXENV=py27
-    - TOXENV=py35
-    - TOXENV=py36
+python:
+  - 2.7
+  - 3.5
+  - 3.6
 before_install:
     - sudo VERSION=5.3.1.2 bash ci/linux.bash
+    - make env
 install:
-    - travis_retry pip install tox
+    - travis_retry pip install tox tox-travis coveralls
 script:
     - tox
 notifications:

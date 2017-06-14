@@ -19,13 +19,8 @@ from z3c.rml import directive, canvas
 from z3c.rml import document as rml_document, interfaces as rml_interfaces
 
 from shoobx.rml2docx import template
-<<<<<<< Updated upstream
 from shoobx.rml2docx import stylesheet
 from shoobx.rml2docx import list
-=======
-# from shoobx.rml2docx import stylesheet
-# from shoobx.rml2docx import list
->>>>>>> Stashed changes
 
 
 @zope.interface.implementer(rml_interfaces.IManager)
@@ -34,17 +29,10 @@ class Document(directive.RMLDirective):
 
     factories = {
         'story': template.Story,
-<<<<<<< Updated upstream
         'pageTemplate': template.PageTemplate,
         'template': template.Template,
         'pageGraphics': template.PageGraphics,
         'styleSheet': stylesheet.Stylesheet,
-=======
-        'template': template.Template,
-        'pageTemplate': template.PageTemplate,
-        'pagGraphics': template.PageGraphics,
-        # 'styleSheet': stylesheet.Stylesheet,
->>>>>>> Stashed changes
         'pageInfo': canvas.PageInfo,
         'pageDrawing': canvas.PageDrawing
         }
@@ -55,8 +43,6 @@ class Document(directive.RMLDirective):
         self.styles = {}
         self.colors = {}
         self.filename = '<unknown>'
-        self.attributesCache = {}
-        self.outputFile = None
 
     def process(self, outputFile=None, maxPasses=2):
         """Process document"""
@@ -68,16 +54,9 @@ class Document(directive.RMLDirective):
 
         # Handle Flowable-based documents.
         if self.element.find('template') is not None:
-<<<<<<< Updated upstream
             # Probably wanna add style & template info here
             #self.processSubDirectives(select=('template', 'story'))
             self.processSubDirectives(select=('story'))
-=======
-
-            self.processSubDirectives(select=('template', 'story'))
-            # self.processSubDirectives(select=('story'))
-
->>>>>>> Stashed changes
 
         # Save the output.
         self.document.save(outputFile)
@@ -91,8 +70,4 @@ class StartIndex(directive.RMLDirective):
         kwargs = dict(self.getAttributeValues())
         name = kwargs['name']
         manager = attr.getManager(self)
-<<<<<<< Updated upstream
         manager.indexes[name] = tableofcontents.SimpleIndex(**kwargs)
-=======
-        manager.indexes[name] = tableofcontents.SimpleIndex(**kwargs)
->>>>>>> Stashed changes

@@ -52,12 +52,8 @@ def unoconv_command(path, opath=None):
     if opath is None:
         opath = os.path.dirname(path)
     return (
-<<<<<<< Updated upstream
         PYTHON_OFFICE_BIN, UNOCONV_BIN, '-vvv', '-T', '15', '-f',
         'pdf', '-o', opath, path)
-=======
-        '/Applications/LibreOffice.app/Contents/program/python', '/usr/local/bin/unoconv', '-vvv', '-f', 'pdf', '-o', opath, path)
->>>>>>> Stashed changes
 
 
 class Rml2DocxConverterTest(unittest.TestCase):

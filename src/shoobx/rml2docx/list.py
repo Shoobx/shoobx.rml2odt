@@ -17,7 +17,7 @@ import copy
 import reportlab.lib.styles
 import zope.schema
 import re
-#from lxml import etree
+import lxml
 
 from z3c.rml import list as rml_list
 from z3c.rml import stylesheet  as rml_stylesheet
@@ -28,36 +28,32 @@ from z3c.rml import stylesheet
 
 class ListItem(flowable.Flow):
     signature = rml_flowable.IParagraph
-    defaultStyle = 'ListNumber'
     styleAttributes = zope.schema.getFieldNames(stylesheet.IMinimalListStyle)
 
     def process(self):
-        self.processSubDirectives()
-        children = self.element.getchildren()
         # Takes care of case where li object does not have <para> tag 
-        # if len(children) == 0:
-        #     newPara = lxml.etree.Element('para')
-        #     newPara.text = self.element.text
-        #     self.element.text = None
-        #     for subElement in tuple(self.element): newPara.append(subElement)
-        #     self.element.append(newPara)
+        children = self.element.getchildren()
+        if children[0].tag != 'para':
+            newPara = lxml.etree.Element('para')
+            newPara.text = self.element.text
+            self.element.text = None
+            for subElement in tuple(self.element): newPara.append(subElement)
+            self.element.append(newPara)
+
+        # Adds the style of the li tag to the nested para element
+        para = self.element.getchildren()[0]
         style = self.element.attrib.get('style', self.defaultStyle)
-        # '.parent' is used twice because of the nested <li>
-        paragraph = self.parent.parent.container.add_paragraph(style=style)
-        # Keeps checking until text is found
-        element = self.element
-        text = element.text
-        while text == None:
-            element = element.getchildren()[0]
-            text = element.text
-        run = paragraph.add_run(text)
+        para.attrib['style'] = style
+        self.processSubDirectives()
 
 class OrderedListItem(ListItem):
     signature = rml_list.IOrderedListItem
+    defaultStyle = "ListNumber"
 
 class UnorderedListItem(ListItem):
     signature = rml_list.IUnorderedListItem
     styleAttributes = ListItem.styleAttributes + ['value']
+    defaultStyle = "ListBullet"
 
 class ListBase(directive.RMLDirective):
     klass = rml_flowable.reportlab.platypus.ListFlowable
@@ -89,6 +85,7 @@ class OrderedList(ListBase):
 
 class UnorderedList(ListBase):
     signature = rml_list.IUnorderedList
+    flowable.Flow.factories['li'] = UnorderedListItem
     attrMapping = {'value': 'start'}
     factories = {'li': UnorderedListItem}
 
@@ -99,4 +96,3 @@ class UnorderedList(ListBase):
 
 flowable.Flow.factories['ol'] = OrderedList
 flowable.Flow.factories['ul'] = UnorderedList
-

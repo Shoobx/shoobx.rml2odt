@@ -16,6 +16,11 @@
 """
 import re
 from docx.enum.text import WD_BREAK, WD_ALIGN_PARAGRAPH
+from docx.enum.dml import MSO_THEME_COLOR_INDEX
+from docx.enum.style import WD_STYLE
+import docx, lxml
+from docx.text.run import Font, Run
+from docx.opc.constants import RELATIONSHIP_TYPE as RT
 from z3c.rml import directive
 from z3c.rml import flowable as rml_flowable
 from z3c.rml import template as rml_template
@@ -30,7 +35,6 @@ except ImportError:
     import reportlab.graphics
     reportlab.graphics.barcode = types.ModuleType('barcode')
     reportlab.graphics.barcode.createBarcodeDrawing = None
-
 
 def pygments2xpre(s, language="python"):
     "Return markup suitable for XPreformatted"
@@ -63,7 +67,6 @@ class Flowable(directive.RMLDirective):
 
     def process(self):
         args = dict(self.getAttributeValues(attrMapping=self.attrMapping))
-        self.parent.flow.append(self.klass(**args))
 
 class Spacer(Flowable):
     signature = rml_flowable.ISpacer
@@ -77,20 +80,11 @@ class Illustration(Flowable):
 
     def process(self):
         args = dict(self.getAttributeValues())
-        self.parent.flow.append(self.klass(self, **args))
 
 class BarCodeFlowable(Flowable):
     signature = rml_flowable.IBarCodeFlowable
     klass = staticmethod(reportlab.graphics.barcode.createBarcodeDrawing)
     attrMapping = {'code': 'codeName'}
-
-class Preformatted(Flowable):
-    signature = rml_flowable.IPreformatted
-    klass = reportlab.platypus.Preformatted
-
-class XPreformatted(Flowable):
-    signature = rml_flowable.IXPreformatted
-    klass = reportlab.platypus.XPreformatted
 
 class Paragraph(Flowable):
     signature = rml_flowable.IParagraph
@@ -105,8 +99,8 @@ class Paragraph(Flowable):
         return text
 
     def _handleText(self, element, paragraph):
-        # Maybe recursive implementation for nested tags
-        if element.text is not None and element.text.strip() != '':
+        # Maybe recursive implementation for nested tags !!
+        if (element.text is not None and element.text.strip() != ''):
             run = paragraph.add_run(self._cleanText(element.text.lstrip()))
 
         if element.tag == 'i':
@@ -118,7 +112,10 @@ class Paragraph(Flowable):
         elif element.tag == 'br':
             run = paragraph.add_run()
             run.add_break(WD_BREAK.LINE)
-            # Do we need to lstrip() the tail in these cases?
+        
+        if element.tag == 'pageNumber':
+            run = paragraph.add_run()
+            run.pageNumber = True
 
         for subElement in element:
             self._handleText(subElement, paragraph)
@@ -128,16 +125,63 @@ class Paragraph(Flowable):
             run = paragraph.add_run(self._cleanText(element.tail))
 
     def process(self):
-        # Takes care of style for para elements that are nested within li tags
-        if str(self.parent.__class__) in ["""<class 'shoobx.rml2docx.list.UnorderedListItem'>""", """<class 'shoobx.rml2docx.list.OrderedListItem'>"""]:
-            style = self.defaultStyle
-            # style = self.parent.parent.attrib.get('style', self.defaultStyle)
-            paragraph = self.parent.parent.parent.container.add_paragraph(style = style)
-        else:
-            style = self.element.attrib.get('style', self.defaultStyle)
-            paragraph = self.parent.container.add_paragraph(style = style)
+        # Takes care of links
+        def add_hyperlink(paragraph, url, text):
+            # This gets access to the document.xml.rels file and gets a new relation id value
+            part = paragraph.part
+            r_id = part.relate_to(url, docx.opc.constants.RELATIONSHIP_TYPE.HYPERLINK, is_external=True)
+
+            # Create the w:hyperlink tag and add needed values
+            hyperlink = docx.oxml.shared.OxmlElement('w:hyperlink')
+            hyperlink.set(docx.oxml.shared.qn('r:id'), r_id, )
+
+            # Create a w:r element
+            run = docx.oxml.shared.OxmlElement('w:r')
+
+            # Create a new w:rPr element
+            rPr = docx.oxml.shared.OxmlElement('w:rPr')
+
+            # Sets the color
+            color = docx.oxml.shared.OxmlElement('w:color')
+            color.set(docx.oxml.shared.qn('w:val'), '0000FF')
+            rPr.append(color)
+
+            # Underlines the text
+            underline = docx.oxml.shared.OxmlElement('w:u')
+            underline.set(docx.oxml.shared.qn('w:val'), 'single')
+            rPr.append(underline)
+
+            # Join all the xml elements together add add the required text to the w:r element
+            run.append(rPr)
+            run.text = text
+            hyperlink.append(run)
+            paragraph._p.append(hyperlink)
+            return hyperlink
+
+        # Styles within li tags are given to paras as attributes
+        # This retrieves and applies the given style
+        style = self.element.attrib.get('style', self.defaultStyle)
+
+        # Goes up the tree to find the Story in order to append new paragraph
+        parent = self.parent
+        while str(parent.__class__) != """<class 'shoobx.rml2docx.template.Story'>""":
+            parent = parent.parent
+        paragraph = parent.container.add_paragraph(style=style)
+
+        # Checks for link tags and passes element to add_hyperlink function
+        if self.parent.element.tag == 'link':
+            add_hyperlink(paragraph, self.parent.element.attrib.get('url', None), self.element.text)
+            return
         self._handleText(self.element, paragraph)
         return paragraph
+
+class Preformatted(Paragraph):
+    signature = rml_flowable.IPreformatted
+    klass = reportlab.platypus.Preformatted
+
+class XPreformatted(Paragraph):
+    signature = rml_flowable.IXPreformatted
+    klass = reportlab.platypus.XPreformatted
 
 class Heading1(Paragraph):
     signature = rml_flowable.IHeading1
@@ -163,6 +207,27 @@ class Heading6(Paragraph):
     signature = rml_flowable.IHeading6
     defaultStyle = "Heading6"
 
+class Link(Flowable):
+    signature = rml_flowable.ILink
+    attrMapping = {'destination': 'destinationname',
+                   'boxStrokeWidth': 'thickness',
+                   'boxStrokeDashArray': 'dashArray',
+                   'boxStrokeColor': 'color'}
+
+    defaultStyle = "Normal"
+
+    def process(self):
+        # Takes care of case where li object does not have <para> tag 
+        children = self.element.getchildren()
+        if len(children) == 0 or children[0].tag != 'para':
+            newPara = lxml.etree.Element('para')
+            newPara.text = self.element.text
+            self.element.text = None
+            for subElement in tuple(self.element): newPara.append(subElement)
+            self.element.append(newPara)
+        flow = Flow(self.element, self.parent)
+        flow.process()
+
 class HorizontalRow(Flowable):
     signature = rml_flowable.IHorizontalRow
     klass = reportlab.platypus.flowables.HRFlowable
@@ -176,7 +241,7 @@ class HorizontalRow(Flowable):
         hr = self.parent.container.add_paragraph()
         hr_format = hr.paragraph_format
         hr_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        docx_bar = u'──────────────────────────────────────────────────────'
+        docx_bar = u'─────────────────────────────────────────────────────────'
         self._handleText(docx_bar, hr)
         return hr
 
@@ -209,7 +274,7 @@ class Flow(directive.RMLDirective):
         'spacer': Spacer,
         'illustration': Illustration,
         'barCodeFlowable': BarCodeFlowable,
-        #'pre': Preformatted,
+        'pre': Preformatted,
         #'xpre': XPreformatted,
         # Paragraph-Like Flowables
         'para': Paragraph,
@@ -222,6 +287,7 @@ class Flow(directive.RMLDirective):
         'h6': Heading6,
         'title': Title,
         'hr':HorizontalRow,
+        'link': Link
     }
 
     def __init__(self, *args, **kw):

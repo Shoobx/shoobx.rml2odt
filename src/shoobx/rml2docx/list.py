@@ -1,6 +1,6 @@
 ##############################################################################
 #
-# Copyright (c) 2012 Zope Foundation and Contributors.
+# Copyright (c) 2017 Shoobx, Inc.
 # All Rights Reserved.
 #
 # This software is subject to the provisions of the Zope Public License,

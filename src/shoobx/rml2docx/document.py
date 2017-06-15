@@ -20,7 +20,9 @@ from z3c.rml import document as rml_document, interfaces as rml_interfaces
 
 from shoobx.rml2docx import template
 from shoobx.rml2docx import stylesheet
-from shoobx.rml2docx import list
+
+# Import modules, so their directives get registered.
+from shoobx.rml2docx import list, table
 
 
 @zope.interface.implementer(rml_interfaces.IManager)
@@ -42,6 +44,7 @@ class Document(directive.RMLDirective):
         self.names = {}
         self.styles = {}
         self.colors = {}
+        self.attributesCache = {}
         self.filename = '<unknown>'
 
     def process(self, outputFile=None, maxPasses=2):

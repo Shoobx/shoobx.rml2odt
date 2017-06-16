@@ -16,12 +16,9 @@
 import six
 import zope.interface
 
-
 from reportlab import platypus
 from z3c.rml import directive, attr, interfaces, occurence
 from z3c.rml import template as rml_template
-
-
 
 from shoobx.rml2docx import flowable
 
@@ -34,13 +31,13 @@ class Story(flowable.Flow):
         return self.parent.document
 
 
-
 class Frame(directive.RMLDirective):
     signature = rml_template.IFrame
 
     @property
     def container(self):
         return self.parent.document
+
 
 @zope.interface.implementer(interfaces.ICanvasManager)
 class PageGraphics(directive.RMLDirective):
@@ -49,8 +46,6 @@ class PageGraphics(directive.RMLDirective):
     @property
     def container(self):
         return self.parent.document
-
-
 
 
 class PageTemplate(directive.RMLDirective):
@@ -80,7 +75,7 @@ class Template(directive.RMLDirective):
     def container(self):
         return self.parent.document
 
- 
+
 class Template(directive.RMLDirective):
     signature = rml_template.ITemplate
     factories = {
@@ -90,8 +85,7 @@ class Template(directive.RMLDirective):
     # @property
     # def container(self):
     #     return self.parent.document
-    
- 
+
     def process(self):
         args = self.getAttributeValues()
         # pdb.set_trace()
@@ -102,5 +96,3 @@ class Template(directive.RMLDirective):
         self.parent.doc = platypus.BaseDocTemplate(
             self.parent.outputFile, **dict(args))
         self.processSubDirectives()
-
-

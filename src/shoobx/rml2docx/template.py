@@ -21,6 +21,7 @@ from z3c.rml import directive, attr, interfaces, occurence
 from z3c.rml import template as rml_template
 
 from shoobx.rml2docx import flowable
+from shoobx.rml2docx.directive import NotImplementedDirective
 
 
 class Story(flowable.Flow):
@@ -52,10 +53,9 @@ class PageTemplate(directive.RMLDirective):
     signature = rml_template.IPageTemplate
     attrMapping = {'autoNextTemplate': 'autoNextPageTemplate'}
     factories = {
-
         'frame': Frame,
-        'pageGraphics': PageGraphics,
-        'mergePage': rml_page.MergePageInPageTemplate,
+        'pageGraphics': NotImplementedDirective,
+        'mergePage': NotImplementedDirective,
         }
 
     @property

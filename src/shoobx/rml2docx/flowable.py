@@ -170,7 +170,7 @@ class Paragraph(Flowable):
 
         # Goes up the tree to find the Story in order to append new paragraph
         parent = self.parent
-        while parent.__class__.__name__ != 'shoobx.rml2docx.template.Story'
+        while parent.__class__.__name__ != 'Story':
             parent = parent.parent
         paragraph = parent.container.add_paragraph(style=style)
 

@@ -23,6 +23,7 @@ from shoobx.rml2docx import stylesheet
 from shoobx.rml2docx import list
 
 
+
 @zope.interface.implementer(rml_interfaces.IManager)
 class Document(directive.RMLDirective):
     signature = rml_document.IDocument
@@ -32,9 +33,7 @@ class Document(directive.RMLDirective):
         'pageTemplate': template.PageTemplate,
         'template': template.Template,
         'pageGraphics': template.PageGraphics,
-        'styleSheet': stylesheet.Stylesheet,
-        'pageInfo': canvas.PageInfo,
-        'pageDrawing': canvas.PageDrawing
+        'stylesheet': stylesheet.Stylesheet
         }
 
     def __init__(self, element):
@@ -43,6 +42,7 @@ class Document(directive.RMLDirective):
         self.styles = {}
         self.colors = {}
         self.filename = '<unknown>'
+        self.attributesCache = {}
 
     def process(self, outputFile=None, maxPasses=2):
         """Process document"""
@@ -55,7 +55,8 @@ class Document(directive.RMLDirective):
         # Handle Flowable-based documents.
         if self.element.find('template') is not None:
             # Probably wanna add style & template info here
-            #self.processSubDirectives(select=('template', 'story'))
+            #self.processSubDirectives(select=('template', 'story', 'pageTemplate', 'styleSheet', 'pageGraphics'))
+            self.processSubDirectives(select=('stylesheet'))
             self.processSubDirectives(select=('story'))
 
         # Save the output.

@@ -34,14 +34,6 @@ class Story(flowable.Flow):
         return self.parent.document
 
 
-class Frame(directive.RMLDirective):
-    signature = rml_template.IFrame
-
-    @property
-    def container(self):
-        return self.parent.document
-
-
 @zope.interface.implementer(interfaces.ICanvasManager)
 class PageGraphics(directive.RMLDirective):
     signature = rml_template.IPageGraphics
@@ -60,18 +52,12 @@ class PageTemplate(directive.RMLDirective):
         'mergePage': NotImplementedDirective,
         }
 
-    @property
-    def container(self):
-        return self.parent.document
-
 
 class Template(directive.RMLDirective):
     signature = rml_template.ITemplate
     factories = {
         'pageTemplate': PageTemplate,
         }
-
-
 
     @property
     def container(self):

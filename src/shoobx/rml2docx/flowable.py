@@ -97,6 +97,7 @@ class BarCodeFlowable(Flowable):
 class Paragraph(Flowable):
     signature = rml_flowable.IParagraph
     defaultStyle = 'Normal'
+    overrideStyle = None
 
     @property
     def container(self):
@@ -185,6 +186,17 @@ class Paragraph(Flowable):
 
         # Append new paragraph.
         paragraph = self.container.add_paragraph(style=style)
+        # Goes up the tree to find the Story in order to append new paragraph
+        parent = self.parent
+        while str(parent.__class__) != """<class 'shoobx.rml2docx.template.Story'>""":
+            parent = parent.parent
+        #import pdb; pdb.set_trace()
+
+        # Re-configures style if a different Style has been given to override it
+        if self.overrideStyle != None: style = self.overrideStyle
+            # parent.container.styles.add_style(self, self.overrideStyle)
+
+        paragraph = parent.container.add_paragraph(style=style)
 
         # Checks for link tags and passes element to add_hyperlink function
         if self.parent.element.tag == 'link':
@@ -215,6 +227,7 @@ class Heading1(Paragraph):
 class Heading2(Paragraph):
     signature = rml_flowable.IHeading2
     defaultStyle = "Heading2"
+    overrideStyle = None
 
 
 class Heading3(Paragraph):
@@ -272,7 +285,7 @@ class HorizontalRow(Flowable):
         hr = self.parent.container.add_paragraph()
         hr_format = hr.paragraph_format
         hr_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        docx_bar = u'─────────────────────────────────────────────────────────'
+        docx_bar = u'───────────────────────────────────────────────────────────'
         self._handleText(docx_bar, hr)
         return hr
 

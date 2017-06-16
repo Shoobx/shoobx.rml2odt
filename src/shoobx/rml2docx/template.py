@@ -22,8 +22,10 @@ from z3c.rml import template as rml_template
 
 from shoobx.rml2docx import flowable
 from shoobx.rml2docx.directive import NotImplementedDirective
+from shoobx.rml2docx.interfaces import IContentContainer
 
 
+@zope.interface.implementer(IContentContainer)
 class Story(flowable.Flow):
     signature = rml_template.IStory
 

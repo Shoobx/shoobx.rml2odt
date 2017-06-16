@@ -30,3 +30,12 @@ class IRML2DOCX(zope.interface.Interface):
         The generated file will be located in the ``outDir`` under the name
         ``outputFileName``.
         """
+
+
+class IContentContainer(zope.interface.Interface):
+    """Content Container
+    """
+
+    container = zope.interface.Attribute(
+        'Container to which content, such as paragraphs and tables can be '
+        'added.')

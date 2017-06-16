@@ -25,6 +25,8 @@ from z3c.rml import directive
 from z3c.rml import flowable as rml_flowable
 from z3c.rml import template as rml_template
 
+from shoobx.rml2docx.interfaces import IContentContainer
+
 # from z3c.rml flowable.py file
 from z3c.rml import attr, directive, interfaces, platypus
 try:
@@ -96,6 +98,15 @@ class Paragraph(Flowable):
     signature = rml_flowable.IParagraph
     defaultStyle = 'Normal'
 
+    @property
+    def container(self):
+        # Goes up the tree to find the content container in order to
+        # append new paragraph
+        parent = self.parent
+        while not IContentContainer.providedBy(parent):
+            parent = parent.parent
+        return parent.container
+
     def _cleanText(self, text):
         if not text:
             text = ''
@@ -133,9 +144,12 @@ class Paragraph(Flowable):
     def process(self):
         # Takes care of links
         def add_hyperlink(paragraph, url, text):
-            # This gets access to the document.xml.rels file and gets a new relation id value
+            # This gets access to the document.xml.rels file and gets
+            # a new relation id value
             part = paragraph.part
-            r_id = part.relate_to(url, docx.opc.constants.RELATIONSHIP_TYPE.HYPERLINK, is_external=True)
+            r_id = part.relate_to(
+                url, docx.opc.constants.RELATIONSHIP_TYPE.HYPERLINK,
+                is_external=True)
 
             # Create the w:hyperlink tag and add needed values
             hyperlink = docx.oxml.shared.OxmlElement('w:hyperlink')
@@ -157,7 +171,8 @@ class Paragraph(Flowable):
             underline.set(docx.oxml.shared.qn('w:val'), 'single')
             rPr.append(underline)
 
-            # Join all the xml elements together add add the required text to the w:r element
+            # Join all the xml elements together add add the required
+            # text to the w:r element
             run.append(rPr)
             run.text = text
             hyperlink.append(run)
@@ -168,15 +183,15 @@ class Paragraph(Flowable):
         # This retrieves and applies the given style
         style = self.element.attrib.get('style', self.defaultStyle)
 
-        # Goes up the tree to find the Story in order to append new paragraph
-        parent = self.parent
-        while parent.__class__.__name__ != 'Story':
-            parent = parent.parent
-        paragraph = parent.container.add_paragraph(style=style)
+        # Append new paragraph.
+        paragraph = self.container.add_paragraph(style=style)
 
         # Checks for link tags and passes element to add_hyperlink function
         if self.parent.element.tag == 'link':
-            add_hyperlink(paragraph, self.parent.element.attrib.get('url', None), self.element.text)
+            add_hyperlink(
+                paragraph,
+                self.parent.element.attrib.get('url', None),
+                self.element.text)
             return
         self._handleText(self.element, paragraph)
         return paragraph

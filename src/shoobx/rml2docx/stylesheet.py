@@ -32,6 +32,7 @@ class Initialize(directive.RMLDirective):
         'alias': special.Alias,
         }
 
+
 class ParagraphStyle(directive.RMLDirective):
     signature = rml_stylesheet.IParagraphStyle
 
@@ -79,37 +80,46 @@ class TableStyleCommand(directive.RMLDirective):
         args += self.getAttributeValues(valuesOnly=True)
         self.parent.style.add(*args)
 
+
 class BlockFont(TableStyleCommand):
     signature = rml_stylesheet.IBlockFont
     name = 'FONT'
+
 
 class BlockLeading(TableStyleCommand):
     signature = rml_stylesheet.IBlockLeading
     name = 'LEADING'
 
+
 class BlockTextColor(TableStyleCommand):
     signature = rml_stylesheet.IBlockTextColor
     name = 'TEXTCOLOR'
+
 
 class BlockAlignment(TableStyleCommand):
     signature = rml_stylesheet.IBlockAlignment
     name = 'ALIGNMENT'
 
+
 class BlockLeftPadding(TableStyleCommand):
     signature = rml_stylesheet.IBlockLeftPadding
     name = 'LEFTPADDING'
+
 
 class BlockRightPadding(TableStyleCommand):
     signature = rml_stylesheet.IBlockRightPadding
     name = 'RIGHTPADDING'
 
+
 class BlockBottomPadding(TableStyleCommand):
     signature = rml_stylesheet.IBlockBottomPadding
     name = 'BOTTOMPADDING'
 
+
 class BlockTopPadding(TableStyleCommand):
     signature = rml_stylesheet.IBlockTopPadding
     name = 'TOPPADDING'
+
 
 class BlockBackground(TableStyleCommand):
     signature = rml_stylesheet.IBlockBackground
@@ -125,21 +135,26 @@ class BlockBackground(TableStyleCommand):
         args += self.getAttributeValues(valuesOnly=True)
         self.parent.style.add(*args)
 
+
 class BlockRowBackground(TableStyleCommand):
     signature = rml_stylesheet.IBlockRowBackground
     name = 'ROWBACKGROUNDS'
+
 
 class BlockColBackground(TableStyleCommand):
     signature = rml_stylesheet.IBlockColBackground
     name = 'COLBACKGROUNDS'
 
+
 class BlockValign(TableStyleCommand):
     signature = rml_stylesheet.IBlockValign
     name = 'VALIGN'
 
+
 class BlockSpan(TableStyleCommand):
     signature = rml_stylesheet.IBlockSpan
     name = 'SPAN'
+
 
 class LineStyle(TableStyleCommand):
     signature = rml_stylesheet.ILineStyle
@@ -150,6 +165,7 @@ class LineStyle(TableStyleCommand):
         args += self.getAttributeValues(ignore=('kind',), valuesOnly=True,
                                         includeMissing=True)
         self.parent.style.add(*args)
+
 
 class BlockTableStyle(directive.RMLDirective):
     signature = rml_stylesheet.IBlockTableStyle
@@ -184,6 +200,7 @@ class BlockTableStyle(directive.RMLDirective):
         manager = attr.getManager(self)
         manager.styles[id] = self.style
 
+
 class ListStyle(directive.RMLDirective):
     signature = rml_stylesheet.IListStyle
 
@@ -200,6 +217,7 @@ class ListStyle(directive.RMLDirective):
 
         manager = attr.getManager(self)
         manager.styles[style.name] = style
+
 
 class Stylesheet(directive.RMLDirective):
     signature = rml_stylesheet.IStylesheet

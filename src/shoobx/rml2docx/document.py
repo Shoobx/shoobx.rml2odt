@@ -63,7 +63,6 @@ class Document(directive.RMLDirective):
         self.document.save(outputFile)
 
 
-
 class StartIndex(directive.RMLDirective):
     signature = rml_document.IStartIndex
 

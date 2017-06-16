@@ -46,14 +46,17 @@ class ListItem(flowable.Flow):
         para.attrib['style'] = style
         self.processSubDirectives()
 
+
 class OrderedListItem(ListItem):
     signature = rml_list.IOrderedListItem
     defaultStyle = "ListNumber"
+
 
 class UnorderedListItem(ListItem):
     signature = rml_list.IUnorderedListItem
     styleAttributes = ListItem.styleAttributes + ['value']
     defaultStyle = "ListBullet"
+
 
 class ListBase(directive.RMLDirective):
     klass = rml_flowable.reportlab.platypus.ListFlowable
@@ -77,11 +80,13 @@ class ListBase(directive.RMLDirective):
         self.processSubDirectives()
         args = dict(self.getAttributeValues(attrMapping=self.attrMapping))
 
+
 class OrderedList(ListBase):
     signature = rml_list.IOrderedList
     flowable.Flow.factories['li'] = OrderedListItem
     factories = {'li': OrderedListItem}
     styleAttributes = ListBase.styleAttributes + ['bulletType']
+
 
 class UnorderedList(ListBase):
     signature = rml_list.IUnorderedList
@@ -93,6 +98,7 @@ class UnorderedList(ListBase):
         res = super(UnorderedList, self).getAttributeValues(*args, **kw)
         res.append(('bulletType', 'bullet'))
         return res
+
 
 flowable.Flow.factories['ol'] = OrderedList
 flowable.Flow.factories['ul'] = UnorderedList

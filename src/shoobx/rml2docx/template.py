@@ -32,6 +32,7 @@ class Story(flowable.Flow):
     def container(self):
         return self.parent.document
 
+
 @zope.interface.implementer(interfaces.ICanvasManager)
 class PageGraphics(directive.RMLDirective):
     signature = rml_template.IPageGraphics
@@ -60,7 +61,6 @@ class Template(directive.RMLDirective):
     @property
     def container(self):
         return self.parent.document
-
 
 
     def process(self):

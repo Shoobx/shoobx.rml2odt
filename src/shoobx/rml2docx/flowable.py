@@ -36,6 +36,7 @@ except ImportError:
     reportlab.graphics.barcode = types.ModuleType('barcode')
     reportlab.graphics.barcode.createBarcodeDrawing = None
 
+
 def pygments2xpre(s, language="python"):
     "Return markup suitable for XPreformatted"
     try:
@@ -61,6 +62,7 @@ def pygments2xpre(s, language="python"):
     from reportlab.lib.pygments2xpre import _2xpre
     return _2xpre(out.getvalue(),styles)
 
+
 class Flowable(directive.RMLDirective):
     klass=None
     attrMapping = None
@@ -68,12 +70,13 @@ class Flowable(directive.RMLDirective):
     def process(self):
         args = dict(self.getAttributeValues(attrMapping=self.attrMapping))
 
+
 class Spacer(Flowable):
     signature = rml_flowable.ISpacer
     klass = reportlab.platypus.Spacer
     attrMapping = {'length': 'height'}
 
-# Adjust Process
+
 class Illustration(Flowable):
     signature = rml_flowable.IIllustration
     klass = platypus.Illustration
@@ -81,10 +84,12 @@ class Illustration(Flowable):
     def process(self):
         args = dict(self.getAttributeValues())
 
+
 class BarCodeFlowable(Flowable):
     signature = rml_flowable.IBarCodeFlowable
     klass = staticmethod(reportlab.graphics.barcode.createBarcodeDrawing)
     attrMapping = {'code': 'codeName'}
+
 
 class Paragraph(Flowable):
     signature = rml_flowable.IParagraph
@@ -182,38 +187,47 @@ class Paragraph(Flowable):
         self._handleText(self.element, paragraph)
         return paragraph
 
+
 class Preformatted(Paragraph):
     signature = rml_flowable.IPreformatted
     klass = reportlab.platypus.Preformatted
+
 
 class XPreformatted(Paragraph):
     signature = rml_flowable.IXPreformatted
     klass = reportlab.platypus.XPreformatted
 
+
 class Heading1(Paragraph):
     signature = rml_flowable.IHeading1
     defaultStyle = "Heading1"
+
 
 class Heading2(Paragraph):
     signature = rml_flowable.IHeading2
     defaultStyle = "Heading2"
     overrideStyle = None
 
+
 class Heading3(Paragraph):
     signature = rml_flowable.IHeading3
     defaultStyle = "Heading3"
+
 
 class Heading4(Paragraph):
     signature = rml_flowable.IHeading4
     defaultStyle = "Heading4"
 
+
 class Heading5(Paragraph):
     signature = rml_flowable.IHeading5
     defaultStyle = "Heading5"
 
+
 class Heading6(Paragraph):
     signature = rml_flowable.IHeading6
     defaultStyle = "Heading6"
+
 
 class Link(Flowable):
     signature = rml_flowable.ILink
@@ -236,6 +250,7 @@ class Link(Flowable):
         flow = Flow(self.element, self.parent)
         flow.process()
 
+
 class HorizontalRow(Flowable):
     signature = rml_flowable.IHorizontalRow
     klass = reportlab.platypus.flowables.HRFlowable
@@ -252,6 +267,7 @@ class HorizontalRow(Flowable):
         docx_bar = u'───────────────────────────────────────────────────────────'
         self._handleText(docx_bar, hr)
         return hr
+
 
 class Title(directive.RMLDirective):
     signature = rml_flowable.ITitle
@@ -275,6 +291,7 @@ class Title(directive.RMLDirective):
         title = self.parent.container.add_heading(level = 0)
         self._handleText(self.element, title)
         return title
+
 
 class Flow(directive.RMLDirective):
     factories = {

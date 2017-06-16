@@ -19,7 +19,6 @@ import zope.interface
 from reportlab import platypus
 from z3c.rml import directive, attr, interfaces, occurence
 from z3c.rml import template as rml_template
-
 from shoobx.rml2docx import flowable
 from shoobx.rml2docx.directive import NotImplementedDirective
 from shoobx.rml2docx.interfaces import IContentContainer
@@ -32,7 +31,6 @@ class Story(flowable.Flow):
     @property
     def container(self):
         return self.parent.document
-
 
 @zope.interface.implementer(interfaces.ICanvasManager)
 class PageGraphics(directive.RMLDirective):
@@ -50,6 +48,7 @@ class PageTemplate(directive.RMLDirective):
         'frame': Frame,
         'pageGraphics': NotImplementedDirective,
         'mergePage': NotImplementedDirective,
+        'mergePage': NotImplementedDirective
         }
 
 
@@ -70,9 +69,6 @@ class Template(directive.RMLDirective):
     'pageTemplate': PageTemplate,
     }
 
-    # @property
-    # def container(self):
-    #     return self.parent.document
 
     def process(self):
         args = self.getAttributeValues()

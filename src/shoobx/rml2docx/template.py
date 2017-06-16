@@ -40,18 +40,6 @@ class PageGraphics(directive.RMLDirective):
     def container(self):
         return self.parent.document
 
-
-class PageTemplate(directive.RMLDirective):
-    signature = rml_template.IPageTemplate
-    attrMapping = {'autoNextTemplate': 'autoNextPageTemplate'}
-    factories = {
-        'frame': Frame,
-        'pageGraphics': NotImplementedDirective,
-        'mergePage': NotImplementedDirective,
-        'mergePage': NotImplementedDirective
-        }
-
-
 class Template(directive.RMLDirective):
     signature = rml_template.ITemplate
     factories = {
@@ -62,12 +50,6 @@ class Template(directive.RMLDirective):
     def container(self):
         return self.parent.document
 
-
-class Template(directive.RMLDirective):
-    signature = rml_template.ITemplate
-    factories = {
-    'pageTemplate': PageTemplate,
-    }
 
 
     def process(self):

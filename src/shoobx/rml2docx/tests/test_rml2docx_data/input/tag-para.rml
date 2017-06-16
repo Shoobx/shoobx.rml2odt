@@ -2,36 +2,115 @@
 <!DOCTYPE document SYSTEM "rml.dtd">
 
 <document filename="tag-para.docx">
+
   <template>
     <pageTemplate id="main">
       <frame id="first" x1="1cm" y1="1cm" width="19cm" height="26cm"/>
-
       <pageGraphics>
           <place x="0.5cm" y="0.5cm" width="10cm" height="1cm">
             <para>Page <pageNumber /></para>
           </place>
       </pageGraphics>
-
     </pageTemplate>
   </template>
+
+
+  <stylesheet>
+    <initialize>
+      <alias id="style.normal" value="style.Normal"/>
+    </initialize>
+
+    <paraStyle name="Normal" parent="style.Normal" fontName="Garamond" fontSize="12pt" leading="14pt" alignment="justify" spaceAfter="12pt"/>
+    <paraStyle name="Small" parent="style.Normal" fontName="Garamond" fontSize="10pt" leading="12pt" alignment="justify" spaceAfter="8pt"/>
+    <paraStyle name="Indent" parent="Normal" leftIndent="0.75in"/>
+    <paraStyle name="Right" parent="Normal" alignment="right"/>
+    <paraStyle name="Left" parent="Normal" alignment="left" fontSize="12pt"/>
+    <paraStyle name="Center" parent="Normal" alignment="center" fontSize="12pt"/>
+    <paraStyle name="HalfSpaceAfter" parent="Normal" spaceAfter="6pt"/>
+    <paraStyle name="QuarterSpaceAfter" parent="Normal" spaceAfter="3pt"/>
+    <paraStyle name="NoSpaceAfter" parent="Normal" spaceAfter="0pt"/>
+    <paraStyle name="BlankMessage" parent="Normal" fontName="Garamond-Italic" alignment="center"/>
+ 
+    <!-- Used by Signature -->
+    <paraStyle name="code" fontName="Courier" fontSize="10pt"/>
+    <paraStyle name="signature-byword"/>
+    <paraStyle name="code uuid" fontName="Courier" fontSize="10pt"/>
+    <paraStyle name="sig-small-text" fontSize="7pt" leading="9pt" fontName="Source-Sans-Regular" textColor="Black"/>
+    <paraStyle name="sig-small-logo" fontSize="28pt" leading="9pt" fontName="Shoobx" textColor="Black"/>
+    <paraStyle name="style.Heading1" parent="style.Heading1" fontName="Garamond-Bold" fontSize="14pt" leading="16pt" alignment="center" spaceAfter="14pt" keepWithNext="true"/>
+    <paraStyle name="style.Heading2" parent="style.Heading2" fontName="Garamond-BoldItalic" fontSize="40pt"/>
+    <paraStyle name="style.Heading3" parent="style.Heading3" fontName="Garamond-BoldItalic" fontSize="10pt"/>
+    <paraStyle name="style.Heading4" parent="style.Heading4" fontName="Garamond-BoldItalic" fontSize="8pt"/>
+    <paraStyle name="style.Heading5" parent="style.Heading5" fontName="Garamond-Bold" fontSize="8pt"/>
+    <paraStyle name="style.Heading6" parent="style.Heading6" fontName="Garamond-Bold" fontSize="7pt"/>
+    <paraStyle name="ExhibitTitle" parent="style.Heading1" fontName="Garamond-Bold" fontSize="12pt" alignment="center"/>
+    <paraStyle name="SectionTitle" parent="Normal" fontName="Garamond-Bold" fontSize="12pt" keepWithNext="true"/>
+    <listStyle name="SectionEnum" bulletFontName="Garamond" bulletFontSize="12pt" bulletFormat="(%s)"/>
+    <listStyle name="SubSectionEnum" bulletFontName="Garamond" bulletFontSize="12pt" bulletFormat="(%s)" bulletType="a"/>
+    <listStyle name="RomanEnum" bulletFontName="Garamond" bulletFontSize="12pt" bulletFormat="(%s)" bulletType="i" rightIndent="60pt" leftIndent="24pt"/>
+    <paraStyle name="MultiHeading" parent="Normal" fontName="Garamond-Bold" fontSize="12pt" keepWithNext="true" alignment="Center"/>
+    <paraStyle name="ArticleTitle" parent="Normal" fontName="Garamond-Bold" fontSize="12pt" keepWithNext="true"/>
+    <paraStyle name="ArticleEnum" parent="Normal" fontName="Garamond-Bold" fontSize="12pt" keepWithNext="true" alignment="Center" spaceBefore="24pt"/>
+    <paraStyle name="ArticleHeading" parent="Normal" fontName="Garamond-Bold" fontSize="12pt" keepWithNext="true" alignment="Center"/>
+    <paraStyle name="Legend" parent="Normal" fontName="Garamond-Bold" fontSize="12pt" alignment="justify"/>
+    <paraStyle name="LegendSmall" parent="Normal" fontName="Garamond-Bold" fontSize="8pt" alignment="justify"/>
+    <listStyle name="Simple" bulletFontName="Helvetica" bulletFontSize="6pt" bulletType="bullet" bulletOffsetY="-5pt" bulletDedent="12" leftIndent="24" start="circle"/>
+    <listStyle name="Whereases" bulletFontName="Garamond-Bold" bulletFontSize="12pt" bulletType="bullet" bulletDedent="80" leftIndent="80" start="WHEREAS:"/>
+    <listStyle name="Resolutions" bulletFontName="Garamond-Bold" bulletFontSize="12pt" bulletType="bullet" bulletDedent="80" leftIndent="80" start="RESOLVED:"/>
+   <paraStyle name="ResolutionIndent" parent="Normal" leftIndent="80pt"/>
+  </stylesheet>
+
+
+
   <story>
-    <title >Title</title>
-    <h1 >Header 1</h1>
-    <h2 >Header 2</h2>
-    <h3 >Header 3</h3>
-    <h4 >Header 4</h4>
-    <h5 >Header 5</h5>
-    <h6 >Header 6</h6>
-    <para >Paragraph</para>
+    <title>Shoobx Template 1</title>
+    <link url="http://www.reportlab.org">
+      <para>Link to ReportLab Web Site.</para>
+    </link>
+
+    <ul bulletColor="red" bulletFontName="Times-Roman" bulletFontSize="5" rightIndent="10">
+      <li bulletColor="blue" bulletFontName="Helvetica">
+        <para> unordered 1 </para>
+      </li>
+      <li>
+        <para> unordered 2 </para>
+      </li>
+    </ul>
+    
+    <hr align="center"/>
+    <h1 >Testing Heading 1</h1>
+    <h2 >Testing Heading 2</h2>
+    <h3 >Testing Heading 3</h3>
+    <h4 >Testing Heading 4</h4>
+    <h5 >Testing Heading 5</h5>
+    <h6 >Testing Heading 6</h6>
+
+    <ol>
+      <li><u>Numbered List 1</u></li>
+      <li><para><i>Numbered List 2</i></para></li>
+      <li><para><b>Numbered List 3</b></para></li>
+    </ol>
+
+    <link url="http://www.google.com">Google (without nested para tag)</link>
+
+    <spacer length="1in" />
+
+    <ol> 
+      <li><para>Another number 1</para></li>
+    </ol>
+
     <pre >Preformatted <b>text</b> only.</pre>
     <xpre >Preformatted with <i>markup</i>.</xpre>
+
     <para borderColor="red" borderWidth="2" borderPadding="5 10 30"
           borderRadius="5" backColor="yellow"
-	  spaceBefore="5" spaceAfter="35" leftIndent="10" rightIndent="10">
-        Paragraph with a border and a padding. <br/><br/>
+    spaceBefore="5" spaceAfter="35" leftIndent="10" rightIndent="10">
+        Paragraph with a border and a padding.
+        <br/>
         <b>Note:</b> The padding only affects the position of the border, not 
         the paragraph text.
     </para>
+
     <para>Page number: <pageNumber/> </para>
   </story>
 </document>

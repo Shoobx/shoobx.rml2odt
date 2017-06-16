@@ -15,9 +15,12 @@
 """
 import six
 import zope.interface
-from z3c.rml import directive, interfaces
+
+
+from reportlab import platypus
+from z3c.rml import directive, attr, interfaces, occurence
 from z3c.rml import template as rml_template
-from z3c.rml import page as rml_page
+
 
 
 from shoobx.rml2docx import flowable
@@ -29,6 +32,8 @@ class Story(flowable.Flow):
     @property
     def container(self):
         return self.parent.document
+
+
 
 class Frame(directive.RMLDirective):
     signature = rml_template.IFrame
@@ -45,10 +50,14 @@ class PageGraphics(directive.RMLDirective):
     def container(self):
         return self.parent.document
 
+
+
+
 class PageTemplate(directive.RMLDirective):
     signature = rml_template.IPageTemplate
     attrMapping = {'autoNextTemplate': 'autoNextPageTemplate'}
     factories = {
+
         'frame': Frame,
         'pageGraphics': PageGraphics,
         'mergePage': rml_page.MergePageInPageTemplate,
@@ -58,6 +67,7 @@ class PageTemplate(directive.RMLDirective):
     def container(self):
         return self.parent.document
 
+
 class Template(directive.RMLDirective):
     signature = rml_template.ITemplate
     factories = {
@@ -65,6 +75,32 @@ class Template(directive.RMLDirective):
         }
 
 
+
     @property
     def container(self):
         return self.parent.document
+
+ 
+class Template(directive.RMLDirective):
+    signature = rml_template.ITemplate
+    factories = {
+    'pageTemplate': PageTemplate,
+    }
+
+    # @property
+    # def container(self):
+    #     return self.parent.document
+    
+ 
+    def process(self):
+        args = self.getAttributeValues()
+        # pdb.set_trace()
+        args += self.parent.getAttributeValues(
+            select=('debug', 'compression', 'invariant'),
+            attrMapping={'debug': '_debug', 'compression': 'pageCompression'})
+        # args += (('cropMarks',  self.parent.cropMarks),)
+        self.parent.doc = platypus.BaseDocTemplate(
+            self.parent.outputFile, **dict(args))
+        self.processSubDirectives()
+
+

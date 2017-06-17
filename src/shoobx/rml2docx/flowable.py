@@ -14,14 +14,18 @@
 ##############################################################################
 """Flowable Element Processing
 """
+import docx
+import lazy
+import lxml
 import re
+import zope.interface
 from docx.enum.text import WD_BREAK, WD_ALIGN_PARAGRAPH
 from docx.enum.dml import MSO_THEME_COLOR_INDEX
 from docx.enum.style import WD_STYLE
-import docx, lxml
-from docx.text.run import Font, Run
 from docx.opc.constants import RELATIONSHIP_TYPE as RT
-from z3c.rml import directive
+from docx.shared import RGBColor
+from docx.text.run import Font, Run
+from z3c.rml import directive, occurence
 from z3c.rml import flowable as rml_flowable
 from z3c.rml import template as rml_template
 
@@ -69,6 +73,15 @@ class Flowable(directive.RMLDirective):
     klass=None
     attrMapping = None
 
+    @property
+    def container(self):
+        # Goes up the tree to find the content container in order to
+        # append new paragraph
+        parent = self.parent
+        while not IContentContainer.providedBy(parent):
+            parent = parent.parent
+        return parent.container
+
     def process(self):
         args = dict(self.getAttributeValues(attrMapping=self.attrMapping))
 
@@ -94,18 +107,317 @@ class BarCodeFlowable(Flowable):
     attrMapping = {'code': 'codeName'}
 
 
+class SubParagraphDirective(directive.RMLDirective):
+
+    @lazy.lazy
+    def paragraph(self):
+        para = self.parent
+        while not IParagraph.providedBy(para):
+            para = para.parent
+        return para
+
+
+class IComplexSubParagraphDirective(interfaces.IRMLDirectiveSignature):
+    """A sub-paragraph directive that can contian further elements."""
+
+class ComplexSubParagraphDirective(SubParagraphDirective):
+    """A sub-paragraph directive that can contian further elements."""
+    signature = IComplexSubParagraphDirective
+    factories = {}
+
+    def __init__(self, element, parent):
+        super(SubParagraphDirective, self).__init__(element, parent)
+        self.originalStyles = {}
+
+    def setStyle(self, name, value):
+        self.originalStyles[name] = getattr(self.paragraph, name)
+        setattr(self.paragraph, name, value)
+
+    def unsetStyles(self):
+        for name, value in self.originalStyles.items():
+            setattr(self.paragraph, name, value)
+
+    def preProcess(self):
+        pass
+
+    def postProcess(self):
+        self.unsetStyles()
+
+    def process(self):
+        self.preProcess()
+        if self.element.text:
+            self.paragraph.addRun(self.element.text)
+        self.processSubDirectives()
+        self.postProcess()
+
+        if self.element.tail:
+            self.paragraph.addRun(self.element.tail)
+
+
+class IItalic(IComplexSubParagraphDirective):
+    """Renders the text inside as italic."""
+
+class Italic(ComplexSubParagraphDirective):
+    signature = IItalic
+
+    def preProcess(self):
+        self.setStyle('italic', True)
+
+
+class IBold(IComplexSubParagraphDirective):
+    """Renders the text inside as bold."""
+
+class Bold(ComplexSubParagraphDirective):
+    signature = IBold
+
+    def preProcess(self):
+        self.setStyle('bold', True)
+
+
+class IUnderline(IComplexSubParagraphDirective):
+    """Renders the text inside as underline."""
+
+class Underline(ComplexSubParagraphDirective):
+    signature = IUnderline
+
+    def preProcess(self):
+        self.setStyle('underline', True)
+
+
+class IStrike(IComplexSubParagraphDirective):
+    """Renders the text inside as strike."""
+
+class Strike(ComplexSubParagraphDirective):
+    signature = IStrike
+
+    def preProcess(self):
+        self.setStyle('strike', True)
+
+
+class IFont(IComplexSubParagraphDirective):
+    """Renders the text inside as strike."""
+
+    face = attr.String(
+        title=u'Font face',
+        description=u'The name of the font for the cell.',
+        required=False)
+
+    size = attr.Measurement(
+        title=u'Font Size',
+        description=u'The font size for the text of the cell.',
+        required=False)
+
+    color = attr.Color(
+        title=u'Font Color',
+        description=u'The color in which the text will appear.',
+        required=False)
+
+class Font(ComplexSubParagraphDirective):
+    signature = IFont
+
+    def preProcess(self):
+        data = self.getAttributeValues(
+            attrMapping={'face': 'fontName',
+                         'size': 'fontSize',
+                         'color': 'fontColor'})
+        for name, value in data:
+            self.setStyle(name, value)
+
+
+class ISuper(IComplexSubParagraphDirective):
+    """Renders the text inside as super.
+
+    Note that a cusotm font size and position is not supported.
+    """
+
+class Super(ComplexSubParagraphDirective):
+    signature = ISuper
+
+    def preProcess(self):
+        self.setStyle('superscript', True)
+
+
+class ISub(IComplexSubParagraphDirective):
+    """Renders the text inside as sub.
+
+    Note that a cusotm font size and position is not supported.
+    """
+
+class Sub(ComplexSubParagraphDirective):
+    signature = ISub
+
+    def preProcess(self):
+        self.setStyle('subscript', True)
+
+
+class IBreak(interfaces.IRMLDirectiveSignature):
+    """Adds a break in the paragraph.
+    """
+
+class Break(SubParagraphDirective):
+    signature = IBreak
+
+    def process(self):
+        run = self.paragraph.addRun()
+        run.add_break(WD_BREAK.LINE)
+
+        if self.element.tail:
+            self.paragraph.addRun(self.element.tail)
+
+
+class IPageNumber(interfaces.IRMLDirectiveSignature):
+    """Adds a break in the paragraph.
+    """
+
+class PageNumber(SubParagraphDirective):
+    signature = IPageNumber
+
+    def process(self):
+        run = self.paragraph.addRun()
+        # XXX: TO BE DONE!!!
+
+        if self.element.tail:
+            self.paragraph.addRun(self.element.tail)
+
+
+class IAnchor(IComplexSubParagraphDirective):
+    """Adds an anchor link into the paragraph."""
+
+    backcolor = attr.Color(
+        title=u'Background Color',
+        description=u'The background color of the link area.',
+        required=False)
+
+    color = attr.Color(
+        title=u'Font Color',
+        description=u'The color in which the text will appear.',
+        required=False)
+
+    url = attr.Text(
+        title=u'URL',
+        description=u'The URL to link to.',
+        required=False)
+
+    fontName = attr.String(
+        title=u'Font face',
+        description=u'The name of the font for the cell.',
+        required=False)
+
+    fontSize = attr.Measurement(
+        title=u'Font Size',
+        description=u'The font size for the text of the cell.',
+        required=False)
+
+    name = attr.Text(
+        title=u'Name',
+        description=u'The name of the link.',
+        required=False)
+
+
+class Anchor(ComplexSubParagraphDirective):
+    signature = IAnchor
+
+    def process(self):
+        attrs = dict(self.getAttributeValues())
+        # This gets access to the document.xml.rels file and gets
+        # a new relation id value
+        part = self.paragraph.docxParagraph.part
+        r_id = part.relate_to(
+            attrs['url'],
+            docx.opc.constants.RELATIONSHIP_TYPE.HYPERLINK,
+            is_external=True)
+
+        # Create the w:hyperlink tag and add needed values
+        hyperlink = docx.oxml.shared.OxmlElement('w:hyperlink')
+        hyperlink.set(docx.oxml.shared.qn('r:id'), r_id)
+
+        # Create a w:r element
+        run = docx.oxml.shared.OxmlElement('w:r')
+
+        # Create a new w:rPr element
+        rPr = docx.oxml.shared.OxmlElement('w:rPr')
+
+        # Sets the color
+        color = docx.oxml.shared.OxmlElement('w:color')
+        color.set(docx.oxml.shared.qn('w:val'), '0000FF')
+        rPr.append(color)
+
+        # Underlines the text
+        underline = docx.oxml.shared.OxmlElement('w:u')
+        underline.set(docx.oxml.shared.qn('w:val'), 'single')
+        rPr.append(underline)
+
+        # Join all the xml elements together add add the required
+        # text to the w:r element
+        run.append(rPr)
+        run.text = self.element.text
+        hyperlink.append(run)
+        self.paragraph.docxParagraph._p.append(hyperlink)
+
+
+ComplexSubParagraphDirective.factories = {
+    'i': Italic,
+    'b': Bold,
+    'u': Underline,
+    'strike': Strike,
+    'strong': Bold,
+    'font': Font,
+    'super': Super,
+    'sub': Sub,
+    'a': Anchor,
+    'br': Break,
+    'pageNumber': PageNumber,
+    # Unsupported tags:
+    # 'greek': Greek,
+}
+
+IComplexSubParagraphDirective.setTaggedValue(
+    'directives',
+    (occurence.ZeroOrMore('i', IItalic),
+     occurence.ZeroOrMore('b', IBold),
+     occurence.ZeroOrMore('u', IUnderline),
+     occurence.ZeroOrMore('strike', IStrike),
+     occurence.ZeroOrMore('strong', IBold),
+     occurence.ZeroOrMore('font', IFont),
+     occurence.ZeroOrMore('super', ISuper),
+     occurence.ZeroOrMore('sub', ISub),
+     occurence.ZeroOrMore('a', IAnchor),
+     occurence.ZeroOrMore('br', IBreak),
+    )
+)
+
+class IParagraph(zope.interface.Interface):
+    pass
+
+@zope.interface.implementer(IParagraph)
 class Paragraph(Flowable):
     signature = rml_flowable.IParagraph
     defaultStyle = 'Normal'
+    factories = {
+        'i': Italic,
+        'b': Bold,
+        'u': Underline,
+        'strike': Strike,
+        'strong': Bold,
+        'font': Font,
+        'super': Super,
+        'sub': Sub,
+        'a': Anchor,
+        'br': Break,
+        'pageNumber': PageNumber,
+        # Unsupported tags:
+        # 'greek': Greek,
+    }
 
-    @property
-    def container(self):
-        # Goes up the tree to find the content container in order to
-        # append new paragraph
-        parent = self.parent
-        while not IContentContainer.providedBy(parent):
-            parent = parent.parent
-        return parent.container
+    italic = None
+    bold = None
+    underline = None
+    strike = None
+    fontName = None
+    fontSize  = None
+    fontColor = None
+    superscript = None
+    subscript = None
 
     def _cleanText(self, text):
         if not text:
@@ -115,86 +427,37 @@ class Paragraph(Flowable):
         text = re.sub('\t', '', text)
         return text
 
-    def _handleText(self, element, paragraph):
-        # Maybe recursive implementation for nested tags !!
-        if (element.text is not None and element.text.strip() != ''):
-            run = paragraph.add_run(self._cleanText(element.text.lstrip()))
-
-        if element.tag == 'i':
-            run.italic = True
-        elif element.tag == 'b':
-            run.bold = True
-        elif element.tag == 'u':
-            run.underline = True
-        elif element.tag == 'br':
-            run = paragraph.add_run()
-            run.add_break(WD_BREAK.LINE)
-
-        if element.tag == 'pageNumber':
-            run = paragraph.add_run()
-            run.pageNumber = True
-
-        for subElement in element:
-            self._handleText(subElement, paragraph)
-
-        if element.tail:
-            text = self._cleanText(element.tail)
-            run = paragraph.add_run(self._cleanText(element.tail))
+    def addRun(self, text=None):
+        if text is not None:
+            text = self._cleanText(text)
+        run = self.docxParagraph.add_run(text)
+        run.font.italic = self.italic
+        run.font.bold = self.bold
+        run.font.underline = self.underline
+        run.font.strike = self.strike
+        run.font.name = self.fontName
+        run.font.size  = self.fontSize
+        if self.fontColor is not None:
+            run.font.color.rgb = RGBColor(
+                *[int(c*255) for c in self.fontColor.rgb()])
+        if self.superscript is not None:
+            run.font._element.rPr.superscript = self.superscript
+        if self.subscript is not None:
+            run.font.subscript = self.subscript
+        return run
 
     def process(self):
-        # Takes care of links
-        def add_hyperlink(paragraph, url, text):
-            # This gets access to the document.xml.rels file and gets
-            # a new relation id value
-            part = paragraph.part
-            r_id = part.relate_to(
-                url, docx.opc.constants.RELATIONSHIP_TYPE.HYPERLINK,
-                is_external=True)
-
-            # Create the w:hyperlink tag and add needed values
-            hyperlink = docx.oxml.shared.OxmlElement('w:hyperlink')
-            hyperlink.set(docx.oxml.shared.qn('r:id'), r_id, )
-
-            # Create a w:r element
-            run = docx.oxml.shared.OxmlElement('w:r')
-
-            # Create a new w:rPr element
-            rPr = docx.oxml.shared.OxmlElement('w:rPr')
-
-            # Sets the color
-            color = docx.oxml.shared.OxmlElement('w:color')
-            color.set(docx.oxml.shared.qn('w:val'), '0000FF')
-            rPr.append(color)
-
-            # Underlines the text
-            underline = docx.oxml.shared.OxmlElement('w:u')
-            underline.set(docx.oxml.shared.qn('w:val'), 'single')
-            rPr.append(underline)
-
-            # Join all the xml elements together add add the required
-            # text to the w:r element
-            run.append(rPr)
-            run.text = text
-            hyperlink.append(run)
-            paragraph._p.append(hyperlink)
-            return hyperlink
-
         # Styles within li tags are given to paras as attributes
         # This retrieves and applies the given style
         style = self.element.attrib.get('style', self.defaultStyle)
 
         # Append new paragraph.
-        paragraph = self.container.add_paragraph(style=style)
+        self.docxParagraph = self.container.add_paragraph(style=style)
 
-        # Checks for link tags and passes element to add_hyperlink function
-        if self.parent.element.tag == 'link':
-            add_hyperlink(
-                paragraph,
-                self.parent.element.attrib.get('url', None),
-                self.element.text)
-            return
-        self._handleText(self.element, paragraph)
-        return paragraph
+        if self.element.text:
+            self.addRun(self.element.text)
+
+        self.processSubDirectives()
 
 
 class Preformatted(Paragraph):

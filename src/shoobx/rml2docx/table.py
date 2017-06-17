@@ -14,13 +14,15 @@
 """``blockTableStyle``, ``blockTable``, ``row``, ``tr``, and ``td`` directives.
 """
 import lxml.etree
-
 from z3c.rml import directive
 from z3c.rml import flowable as rml_flowable
+import zope.interface
 
 from shoobx.rml2docx import flowable
+from shoobx.rml2docx.interfaces import IContentContainer
 
 
+@zope.interface.implementer(IContentContainer)
 class TableCell(flowable.Flow):
     signature = rml_flowable.ITableCell
     styleAttributesMapping = rml_flowable.TableCell.styleAttributesMapping
@@ -51,6 +53,11 @@ class TableCell(flowable.Flow):
     def process(self):
         self._convertSimpleContent()
         self.container = self.parent.row.cells[self.parent.colIdx]
+        self.width = self.table.columns[self.parent.colIdx].width
+        # Remove the empty paragraph that got added automatically.
+        p = self.container.paragraphs[0]._element
+        p.getparent().remove(p)
+        p._p = p._element = None
         super(TableCell, self).process()
         self.parent.colIdx += 1
 
@@ -70,12 +77,6 @@ class TableRow(directive.RMLDirective):
         self.parent.rowIdx += 1
 
 
-from docx.oxml.xmlchemy import OptionalAttribute, RequiredAttribute
-from docx.oxml.simpletypes import XsdString
-import docx.oxml.table
-RequiredAttribute('w:w', XsdString).populate_class_members(
-    docx.oxml.table.CT_TblWidth, 'w')
-
 class BlockTable(flowable.Flowable):
     signature = rml_flowable.IBlockTable
     factories = {
@@ -89,23 +90,26 @@ class BlockTable(flowable.Flowable):
             select=['colWidths'], valuesOnly=True)[0]
         if len(colWidths) != len(self.element[0]):
             raise ValueError('colWidths` entries do not match column count.')
-        self.table.allow_autofit = True
+        self.table.allow_autofit = False
 
-        for rowIdx, row in enumerate(self.table.rows):
-            for colIdx, cell in enumerate(row.cells):
-                width = colWidths[colIdx]
-                cell._element.tcPr.tcW.w = width
-                cell._element.tcPr.tcW.type = \
-                  'pct' if width.endswith('%') else 'dxa'
+        # Get container width.
+        cc = self.parent
+        while not IContentContainer.providedBy(cc):
+            cc = cc.parent
+        availWidth = cc.width
+
+        for colWidth, col in zip(colWidths, self.table.columns):
+            if colWidth.endswith('%'):
+                colWidth = availWidth*int(colWidth[:-1])/100
+            col.width = colWidth
 
     def process(self):
-        style = None
         # Naive way of determining the size of the table.
         rows = len(self.element)
         if not rows:
             raise ValueError('Empty table')
         cols = len(self.element[0])
-        self.table = self.parent.container.add_table(rows, cols, style=style)
+        self.table = self.parent.container.add_table(rows, cols)
         self.applyDimensions()
         self.rowIdx = 0
         self.processSubDirectives()

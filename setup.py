@@ -74,6 +74,7 @@ setup (
         test=TESTS_REQUIRE,
         ),
     install_requires=[
+        'lazy',
         'python-docx',
         'setuptools',
         'six',

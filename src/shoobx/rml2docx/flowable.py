@@ -41,6 +41,9 @@ except ImportError:
     reportlab.graphics.barcode.createBarcodeDrawing = None
 
 
+from shoobx.rml2docx.interfaces import IContentContainer
+
+
 def pygments2xpre(s, language="python"):
     "Return markup suitable for XPreformatted"
     try:

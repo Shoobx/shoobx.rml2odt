@@ -17,6 +17,8 @@
 import docx
 import lazy
 import lxml
+import odf.style
+import odf.text
 import re
 import zope.interface
 from docx.enum.text import WD_BREAK, WD_ALIGN_PARAGRAPH
@@ -258,8 +260,7 @@ class Break(SubParagraphDirective):
     signature = IBreak
 
     def process(self):
-        run = self.paragraph.addRun()
-        run.add_break(WD_BREAK.LINE)
+        run = self.paragraph.docxParagraph.addElement(odf.text.LineBreak())
 
         if self.element.tail:
             self.paragraph.addRun(self.element.tail)
@@ -283,6 +284,11 @@ class PageNumber(SubParagraphDirective):
 class IAnchor(IComplexSubParagraphDirective):
     """Adds an anchor link into the paragraph."""
 
+    url = attr.Text(
+        title=u'URL',
+        description=u'The URL to link to.',
+        required=True)
+
     backcolor = attr.Color(
         title=u'Background Color',
         description=u'The background color of the link area.',
@@ -291,11 +297,6 @@ class IAnchor(IComplexSubParagraphDirective):
     color = attr.Color(
         title=u'Font Color',
         description=u'The color in which the text will appear.',
-        required=False)
-
-    url = attr.Text(
-        title=u'URL',
-        description=u'The URL to link to.',
         required=False)
 
     fontName = attr.String(
@@ -319,40 +320,10 @@ class Anchor(ComplexSubParagraphDirective):
 
     def process(self):
         attrs = dict(self.getAttributeValues())
-        # This gets access to the document.xml.rels file and gets
-        # a new relation id value
-        part = self.paragraph.docxParagraph.part
-        r_id = part.relate_to(
-            attrs['url'],
-            docx.opc.constants.RELATIONSHIP_TYPE.HYPERLINK,
-            is_external=True)
-
-        # Create the w:hyperlink tag and add needed values
-        hyperlink = docx.oxml.shared.OxmlElement('w:hyperlink')
-        hyperlink.set(docx.oxml.shared.qn('r:id'), r_id)
-
-        # Create a w:r element
-        run = docx.oxml.shared.OxmlElement('w:r')
-
-        # Create a new w:rPr element
-        rPr = docx.oxml.shared.OxmlElement('w:rPr')
-
-        # Sets the color
-        color = docx.oxml.shared.OxmlElement('w:color')
-        color.set(docx.oxml.shared.qn('w:val'), '0000FF')
-        rPr.append(color)
-
-        # Underlines the text
-        underline = docx.oxml.shared.OxmlElement('w:u')
-        underline.set(docx.oxml.shared.qn('w:val'), 'single')
-        rPr.append(underline)
-
-        # Join all the xml elements together add add the required
-        # text to the w:r element
-        run.append(rPr)
-        run.text = self.element.text
-        hyperlink.append(run)
-        self.paragraph.docxParagraph._p.append(hyperlink)
+        anchor = odf.text.A(href=attrs['url'], text=self.element.text)
+        if 'name' in attrs:
+            anchor.setAttribute('name', attrs['name'])
+        self.paragraph.docxParagraph.addElement(anchor)
 
 
 ComplexSubParagraphDirective.factories = {
@@ -404,7 +375,7 @@ class Paragraph(Flowable):
         'sub': Sub,
         'a': Anchor,
         'br': Break,
-        'pageNumber': PageNumber,
+        #'pageNumber': PageNumber,
         # Unsupported tags:
         # 'greek': Greek,
     }
@@ -432,29 +403,42 @@ class Paragraph(Flowable):
     def addRun(self, text=None):
         if text is not None:
             text = self._cleanText(text)
-        run = self.docxParagraph.add_run(text)
-        run.font.italic = self.italic
-        run.font.bold = self.bold
-        run.font.underline = self.underline
-        run.font.strike = self.strike
-        run.font.name = self.fontName
-        run.font.size  = self.fontSize
+        run = odf.text.Span(text=text)
+        self.docxParagraph.addElement(run)
+        manager = attr.getManager(self)
+        styleName = manager.getNextSyleName('T')
+        style = odf.style.Style(name=styleName, family='text')
+        self.container.styles.addElement(style)
+        run.setAttribute('stylename', styleName)
+        textProps = odf.style.TextProperties()
+        style.addElement(textProps)
+        if self.italic:
+            textProps.setAttribute('fontstyle', 'italic')
+        if self.bold:
+            textProps.setAttribute('fontweight', 'bold')
+        if self.underline:
+            textProps.setAttribute('textunderlinetype', 'single')
+        if self.fontName:
+            textProps.setAttribute('fontname', self.fontName)
+        if self.fontName:
+            textProps.setAttribute('fontsize', self.fontSize)
         if self.fontColor is not None:
-            run.font.color.rgb = RGBColor(
-                *[int(c*255) for c in self.fontColor.rgb()])
+            textProps.setAttribute('color', '#'+self.fontColor.hexval()[2:])
         if self.superscript is not None:
-            run.font._element.rPr.superscript = self.superscript
+            textProps.setAttribute('textposition', 'super 58%')
         if self.subscript is not None:
-            run.font.subscript = self.subscript
+            textProps.setAttribute('textposition', 'sub 58%')
+        #run.font.strike = self.strike
         return run
 
     def process(self):
         # Styles within li tags are given to paras as attributes
         # This retrieves and applies the given style
-        style = self.element.attrib.get('style', self.defaultStyle)
+        #style = self.element.attrib.get('style', self.defaultStyle)
 
         # Append new paragraph.
-        self.docxParagraph = self.container.add_paragraph(style=style)
+        self.docxParagraph = odf.text.P()
+        self.container.text.addElement(self.docxParagraph)
 
         if self.element.text:
             self.addRun(self.element.text)

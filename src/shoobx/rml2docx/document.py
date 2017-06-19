@@ -13,8 +13,8 @@
 ##############################################################################
 """RML ``document`` element
 """
-import docx
 import zope.interface
+from odf.opendocument import OpenDocumentText
 from reportlab.lib import styles
 from z3c.rml import directive, canvas
 from z3c.rml import document as rml_document, interfaces as rml_interfaces
@@ -47,10 +47,16 @@ class Document(directive.RMLDirective):
         super(Document, self).__init__(element, None)
         self.names = {}
         self.styles = {}
+        self.styleCounters = {}
         self.colors = {}
         self.attributesCache = {}
         self.filename = '<unknown>'
         self.attributesCache = {}
+
+    def getNextSyleName(self, prefix):
+        self.styleCounters.setdefault(prefix, 0)
+        self.styleCounters[prefix] += 1
+        return prefix + str(self.styleCounters[prefix])
 
     def registerDefaultStyles(self):
         for name, style in stylesheet.SampleStyleSheet.byName.items():
@@ -62,13 +68,13 @@ class Document(directive.RMLDirective):
     def process(self, outputFile=None, maxPasses=2):
         """Process document"""
         # Initialize the DOCX Document.
-        self.document = docx.Document()
+        self.document = OpenDocumentText()
 
-        self.registerDefaultStyles()
+        #self.registerDefaultStyles()
 
         # Process common sub-directives
         #self.processSubDirectives(select=('docinit', 'stylesheet'))
-        self.processSubDirectives(select=('stylesheet',))
+        #self.processSubDirectives(select=('stylesheet',))
 
         # Handle Flowable-based documents.
         if self.element.find('template') is not None:
@@ -78,13 +84,3 @@ class Document(directive.RMLDirective):
 
         # Save the output.
         self.document.save(outputFile)
-
-
-class StartIndex(directive.RMLDirective):
-    signature = rml_document.IStartIndex
-
-    def process(self):
-        kwargs = dict(self.getAttributeValues())
-        name = kwargs['name']
-        manager = attr.getManager(self)
-        manager.indexes[name] = tableofcontents.SimpleIndex(**kwargs)

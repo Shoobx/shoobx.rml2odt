@@ -108,135 +108,6 @@ class ParagraphStyle(directive.RMLDirective):
         registerParagraphStyle(document, name, style)
 
 
-class TableStyleCommand(directive.RMLDirective):
-    name = None
-
-    def process(self):
-        args = [self.name]
-        args += self.getAttributeValues(valuesOnly=True)
-        self.parent.style.add(*args)
-
-
-class BlockFont(TableStyleCommand):
-    signature = rml_stylesheet.IBlockFont
-    name = 'FONT'
-
-
-class BlockLeading(TableStyleCommand):
-    signature = rml_stylesheet.IBlockLeading
-    name = 'LEADING'
-
-
-class BlockTextColor(TableStyleCommand):
-    signature = rml_stylesheet.IBlockTextColor
-    name = 'TEXTCOLOR'
-
-
-class BlockAlignment(TableStyleCommand):
-    signature = rml_stylesheet.IBlockAlignment
-    name = 'ALIGNMENT'
-
-
-class BlockLeftPadding(TableStyleCommand):
-    signature = rml_stylesheet.IBlockLeftPadding
-    name = 'LEFTPADDING'
-
-
-class BlockRightPadding(TableStyleCommand):
-    signature = rml_stylesheet.IBlockRightPadding
-    name = 'RIGHTPADDING'
-
-
-class BlockBottomPadding(TableStyleCommand):
-    signature = rml_stylesheet.IBlockBottomPadding
-    name = 'BOTTOMPADDING'
-
-
-class BlockTopPadding(TableStyleCommand):
-    signature = rml_stylesheet.IBlockTopPadding
-    name = 'TOPPADDING'
-
-
-class BlockBackground(TableStyleCommand):
-    signature = rml_stylesheet.IBlockBackground
-    name = 'BACKGROUND'
-
-    def process(self):
-        args = [self.name]
-        if 'colorsByRow' in self.element.keys():
-            args = [BlockRowBackground.name]
-        elif 'colorsByCol' in self.element.keys():
-            args = [BlockColBackground.name]
-
-        args += self.getAttributeValues(valuesOnly=True)
-        self.parent.style.add(*args)
-
-
-class BlockRowBackground(TableStyleCommand):
-    signature = rml_stylesheet.IBlockRowBackground
-    name = 'ROWBACKGROUNDS'
-
-
-class BlockColBackground(TableStyleCommand):
-    signature = rml_stylesheet.IBlockColBackground
-    name = 'COLBACKGROUNDS'
-
-
-class BlockValign(TableStyleCommand):
-    signature = rml_stylesheet.IBlockValign
-    name = 'VALIGN'
-
-
-class BlockSpan(TableStyleCommand):
-    signature = rml_stylesheet.IBlockSpan
-    name = 'SPAN'
-
-
-class LineStyle(TableStyleCommand):
-    signature = rml_stylesheet.ILineStyle
-
-    def process(self):
-        name = self.getAttributeValues(select=('kind',), valuesOnly=True)[0]
-        args = [name]
-        args += self.getAttributeValues(ignore=('kind',), valuesOnly=True,
-                                        includeMissing=True)
-        self.parent.style.add(*args)
-
-
-class BlockTableStyle(directive.RMLDirective):
-    signature = rml_stylesheet.IBlockTableStyle
-
-    factories = {
-        'blockFont': BlockFont,
-        'blockLeading': BlockLeading,
-        'blockTextColor': BlockTextColor,
-        'blockAlignment': BlockAlignment,
-        'blockLeftPadding': BlockLeftPadding,
-        'blockRightPadding': BlockRightPadding,
-        'blockBottomPadding': BlockBottomPadding,
-        'blockTopPadding': BlockTopPadding,
-        'blockBackground': BlockBackground,
-        'blockRowBackground': BlockRowBackground,
-        'blockColBackground': BlockColBackground,
-        'blockValign': BlockValign,
-        'blockSpan': BlockSpan,
-        'lineStyle': LineStyle,
-        }
-
-    def process(self):
-        kw = dict(self.getAttributeValues())
-        id  = kw.pop('id')
-        # Create Style
-        self.style = reportlab.platypus.tables.TableStyle()
-        for name, value in kw.items():
-            setattr(self.style, name, value)
-        # Fill style
-        self.processSubDirectives()
-        # Add style to the manager
-        manager = attr.getManager(self)
-        manager.styles[id] = self.style
-
-
 class ListStyle(directive.RMLDirective):
     signature = rml_stylesheet.IListStyle
 
@@ -261,6 +132,12 @@ class Stylesheet(directive.RMLDirective):
     factories = {
         'initialize': Initialize,
         'paraStyle': ParagraphStyle,
-        'blockTableStyle': BlockTableStyle,
-        'listStyle': ListStyle,
+        # XXX: Unsupported elements:
+
+        # Table styles are literally unsupported due to a lack of
+        # support in python-docx.
+        #'blockTableStyle': BlockTableStyle,
+
+        # Ignore list styles due to lack of support.
+        #'listStyle': ListStyle,
         }

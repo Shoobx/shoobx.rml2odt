@@ -48,7 +48,6 @@ def gs_command(path):
         'gs', '-q', '-sDEVICE=png256',
         '-o', '%s[Page-%%d].png' % path[:-4],
         path)
-    print ' '.join(cmd)
     return cmd
 
 
@@ -58,7 +57,6 @@ def unoconv_command(path, opath=None):
     cmd = (
         PYTHON_OFFICE_BIN, UNOCONV_BIN, '-vvv', '-T', '15', '-f',
         'pdf', '-o', opath, path)
-    print ' '.join(cmd)
     return cmd
 
 

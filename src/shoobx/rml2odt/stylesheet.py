@@ -49,6 +49,7 @@ def registerParagraphStyle(doc, name, rmlStyle):
 
     # Paragraph Properties
     paraProps = odf.style.ParagraphProperties()
+    odtStyle.addElement(paraProps)
     paraProps.setAttribute(
         'linespacing', pt(rmlStyle.leading))
     paraProps.setAttribute(
@@ -71,7 +72,13 @@ def registerParagraphStyle(doc, name, rmlStyle):
     # Text Properties
     textProps = odf.style.TextProperties()
     odtStyle.addElement(textProps)
-    textProps.setAttribute('fontname', rmlStyle.fontName)
+    if rmlStyle.fontName is not None:
+        # Make a font declaration, if necessary
+        doc.fontfacedecls.addElement(
+            odf.style.FontFace(
+                name=rmlStyle.fontName,
+                fontfamily=rmlStyle.fontName))
+        textProps.setAttribute('fontname', rmlStyle.fontName)
     textProps.setAttribute('fontsize', rmlStyle.fontSize)
 
     if rmlStyle.textColor is not None:
@@ -90,7 +97,6 @@ def registerParagraphStyle(doc, name, rmlStyle):
     # - borderPadding
     # - borderColor
     # - borderRadius
-    # - allowOrphans
     # - textTransform
     # - endDots
     # - splitLongWords

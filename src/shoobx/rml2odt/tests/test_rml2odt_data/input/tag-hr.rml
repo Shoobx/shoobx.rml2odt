@@ -9,7 +9,7 @@
   </template>
   <story>
 
-    <title><font face="Courier">&lt;blockTable&gt;</font> Tag Demo</title>
+    <title><font face="Courier">&lt;hr&gt;</font> Tag Demo</title>
 
     <para>Some text.</para>
     <hr width="80%" thickness="2" color="blue" dash="1 3"

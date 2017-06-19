@@ -412,6 +412,11 @@ class Paragraph(Flowable):
         if self.underline:
             textProps.setAttribute('textunderlinetype', 'single')
         if self.fontName:
+            # Make a font declaration, if necessary
+            manager.document.fontfacedecls.addElement(
+                odf.style.FontFace(
+                    name=self.fontName,
+                    fontfamily=self.fontName))
             textProps.setAttribute('fontname', self.fontName)
         if self.fontSize:
             textProps.setAttribute('fontsize', self.fontSize)
@@ -427,12 +432,13 @@ class Paragraph(Flowable):
         return span
 
     def process(self):
-        # Styles within li tags are given to paras as attributes
+        self.odtParagraph = odf.text.P()
+
         # This retrieves and applies the given style
-        #style = self.element.attrib.get('style', self.defaultStyle)
+        style = self.element.attrib.get('style', self.defaultStyle)
+        self.odtParagraph.setAttribute('stylename', style)
 
         # Append new paragraph.
-        self.odtParagraph = odf.text.P()
         self.container.text.addElement(self.odtParagraph)
 
         if self.element.text:

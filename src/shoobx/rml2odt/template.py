@@ -19,9 +19,9 @@ import zope.interface
 from reportlab import platypus
 from z3c.rml import directive, attr, interfaces, occurence
 from z3c.rml import template as rml_template
-from shoobx.rml2docx import flowable
-from shoobx.rml2docx.directive import NotImplementedDirective
-from shoobx.rml2docx.interfaces import IContentContainer
+from shoobx.rml2odt import flowable
+from shoobx.rml2odt.directive import NotImplementedDirective
+from shoobx.rml2odt.interfaces import IContentContainer
 
 
 @zope.interface.implementer(IContentContainer)

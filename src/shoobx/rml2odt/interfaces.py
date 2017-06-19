@@ -16,16 +16,16 @@
 import zope.interface
 
 class IRML2DOCX(zope.interface.Interface):
-    """This is the main public API of shoobx.rml2docx"""
+    """This is the main public API of shoobx.rml2odt"""
 
     def parseString(xml):
-        """Parse an XML string and convert it to DOCX.
+        """Parse an XML string and convert it to ODT.
 
         The output is a ``StringIO`` object.
         """
 
     def go(xmlInputName, outputFileName=None, outDir=None):
-        """Convert RML to DOCX.
+        """Convert RML to ODT.
 
         The generated file will be located in the ``outDir`` under the name
         ``outputFileName``.

@@ -14,19 +14,12 @@
 ##############################################################################
 """Flowable Element Processing
 """
-import docx
 import lazy
 import lxml
 import odf.style
 import odf.text
 import re
 import zope.interface
-from docx.enum.text import WD_BREAK, WD_ALIGN_PARAGRAPH
-from docx.enum.dml import MSO_THEME_COLOR_INDEX
-from docx.enum.style import WD_STYLE
-from docx.opc.constants import RELATIONSHIP_TYPE as RT
-from docx.shared import RGBColor
-from docx.text.run import Font, Run
 from z3c.rml import directive, occurence
 from z3c.rml import flowable as rml_flowable
 from z3c.rml import template as rml_template
@@ -43,7 +36,7 @@ except ImportError:
     reportlab.graphics.barcode.createBarcodeDrawing = None
 
 
-from shoobx.rml2docx.interfaces import IContentContainer
+from shoobx.rml2odt.interfaces import IContentContainer
 
 
 def pygments2xpre(s, language="python"):
@@ -260,7 +253,7 @@ class Break(SubParagraphDirective):
     signature = IBreak
 
     def process(self):
-        run = self.paragraph.docxParagraph.addElement(odf.text.LineBreak())
+        run = self.paragraph.odtParagraph.addElement(odf.text.LineBreak())
 
         if self.element.tail:
             self.paragraph.addRun(self.element.tail)
@@ -323,7 +316,7 @@ class Anchor(ComplexSubParagraphDirective):
         anchor = odf.text.A(href=attrs['url'], text=self.element.text)
         if 'name' in attrs:
             anchor.setAttribute('name', attrs['name'])
-        self.paragraph.docxParagraph.addElement(anchor)
+        self.paragraph.odtParagraph.addElement(anchor)
 
 
 ComplexSubParagraphDirective.factories = {
@@ -404,7 +397,7 @@ class Paragraph(Flowable):
         if text is not None:
             text = self._cleanText(text)
         run = odf.text.Span(text=text)
-        self.docxParagraph.addElement(run)
+        self.odtParagraph.addElement(run)
         manager = attr.getManager(self)
         styleName = manager.getNextSyleName('T')
         style = odf.style.Style(name=styleName, family='text')
@@ -437,8 +430,8 @@ class Paragraph(Flowable):
         #style = self.element.attrib.get('style', self.defaultStyle)
 
         # Append new paragraph.
-        self.docxParagraph = odf.text.P()
-        self.container.text.addElement(self.docxParagraph)
+        self.odtParagraph = odf.text.P()
+        self.container.text.addElement(self.odtParagraph)
 
         if self.element.text:
             self.addRun(self.element.text)
@@ -527,8 +520,8 @@ class HorizontalRow(Flowable):
         hr = self.parent.container.add_paragraph()
         hr_format = hr.paragraph_format
         hr_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        docx_bar = u'─'*60
-        self._handleText(docx_bar, hr)
+        odt_bar = u'─'*60
+        self._handleText(odt_bar, hr)
         return hr
 
 

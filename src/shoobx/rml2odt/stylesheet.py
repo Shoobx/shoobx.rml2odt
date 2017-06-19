@@ -20,18 +20,16 @@ import reportlab.platypus
 from z3c.rml import attr, directive, interfaces, occurence, SampleStyleSheet, \
     special
 
-from docx.enum.style import WD_STYLE_TYPE, WD_STYLE
-from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.shared import Pt, Inches, RGBColor
 from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT, TA_JUSTIFY
 from shoobx.rml2docx import flowable
 from z3c.rml import stylesheet as rml_stylesheet
 
 RML2DOCX_ALIGNMENTS = {
-    TA_LEFT: WD_PARAGRAPH_ALIGNMENT.LEFT,
-    TA_CENTER: WD_PARAGRAPH_ALIGNMENT.CENTER,
-    TA_RIGHT: WD_PARAGRAPH_ALIGNMENT.RIGHT,
-    TA_JUSTIFY: WD_PARAGRAPH_ALIGNMENT.JUSTIFY,
+#    TA_LEFT: WD_PARAGRAPH_ALIGNMENT.LEFT,
+#    TA_CENTER: WD_PARAGRAPH_ALIGNMENT.CENTER,
+#    TA_RIGHT: WD_PARAGRAPH_ALIGNMENT.RIGHT,
+#    TA_JUSTIFY: WD_PARAGRAPH_ALIGNMENT.JUSTIFY,
 }
 
 
@@ -46,8 +44,8 @@ class Initialize(directive.RMLDirective):
 def registerParagraphStyle(doc, name, rmlStyle):
     if name in doc.styles:
         doc.styles[name].delete()
-    docxStyle = doc.styles.add_style(name, WD_STYLE_TYPE.PARAGRAPH)
-    font = docxStyle.font
+    odtStyle = doc.styles.add_style(name, WD_STYLE_TYPE.PARAGRAPH)
+    font = odtStyle.font
     font.name = rmlStyle.fontName
     font.size = Pt(rmlStyle.fontSize)
     if rmlStyle.textColor is not None:
@@ -57,14 +55,14 @@ def registerParagraphStyle(doc, name, rmlStyle):
         font.highlight_color.rgb = RGBColor(
             *[int(c*255) for c in rmlStyle.backColor.rgb()])
 
-    format = docxStyle.paragraph_format
+    format = odtStyle.paragraph_format
     format.line_spacing = Pt(rmlStyle.leading)
     format.left_indent = Pt(rmlStyle.leftIndent)
     format.right_indent = Pt(rmlStyle.rightIndent)
     format.first_line_indent = Pt(rmlStyle.firstLineIndent)
     format.space_before = Pt(rmlStyle.spaceBefore)
     format.space_after = Pt(rmlStyle.spaceAfter)
-    format.alignment = RML2DOCX_ALIGNMENTS[rmlStyle.alignment]
+    format.alignment = RML2ODT_ALIGNMENTS[rmlStyle.alignment]
     # In OpenXML widow_control controls both widows and orphans. The
     # explicit decision here is to only listen to the "allowWidow"
     # attribute.
@@ -133,11 +131,6 @@ class Stylesheet(directive.RMLDirective):
         'initialize': Initialize,
         'paraStyle': ParagraphStyle,
         # XXX: Unsupported elements:
-
-        # Table styles are literally unsupported due to a lack of
-        # support in python-docx.
         #'blockTableStyle': BlockTableStyle,
-
-        # Ignore list styles due to lack of support.
         #'listStyle': ListStyle,
         }

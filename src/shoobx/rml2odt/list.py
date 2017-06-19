@@ -21,7 +21,7 @@ import lxml
 
 from z3c.rml import list as rml_list
 from z3c.rml import stylesheet  as rml_stylesheet
-from shoobx.rml2docx import flowable
+from shoobx.rml2odt import flowable
 from z3c.rml import flowable as rml_flowable
 from z3c.rml import directive
 from z3c.rml import stylesheet
@@ -31,7 +31,7 @@ class ListItem(flowable.Flow):
     styleAttributes = zope.schema.getFieldNames(stylesheet.IMinimalListStyle)
 
     def process(self):
-        # Takes care of case where li object does not have <para> tag 
+        # Takes care of case where li object does not have <para> tag
         children = self.element.getchildren()
         if children[0].tag != 'para':
             newPara = lxml.etree.Element('para')

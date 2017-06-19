@@ -18,8 +18,8 @@ from z3c.rml import directive
 from z3c.rml import flowable as rml_flowable
 import zope.interface
 
-from shoobx.rml2docx import flowable
-from shoobx.rml2docx.interfaces import IContentContainer
+from shoobx.rml2odt import flowable
+from shoobx.rml2odt.interfaces import IContentContainer
 
 
 @zope.interface.implementer(IContentContainer)

@@ -94,10 +94,6 @@ def registerParagraphStyle(doc, name, rmlStyle):
 class ParagraphStyle(directive.RMLDirective):
     signature = rml_stylesheet.IParagraphStyle
 
-    @property
-    def container(self):
-        return self.parent.document
-
     def process(self):
         kwargs = dict(self.getAttributeValues())
         parent = kwargs.pop(
@@ -105,29 +101,33 @@ class ParagraphStyle(directive.RMLDirective):
         name = kwargs.pop('name')
         style = copy.deepcopy(parent)
         style.name = name[6:] if name.startswith('style.') else name
-        for name, value in kwargs.items():
-            setattr(style, name, value)
-        manager = attr.getManager(self)
-        manager.styles[style.name] = style
+        for attrName, attrValue in kwargs.items():
+            setattr(style, attrName, attrValue)
 
+        document = self.parent.parent.document
+        registerParagraphStyle(document, name, style)
 
-        attributeDict = self.element.attrib
-        for key in attributeDict:
-            value = attributeDict[key]
-            value = value[6:] if value.startswith('style.') else value
-            attributeDict[key] = value
-
-        target = attributeDict['name']
-
-        if target == "Heading2":
-            document = self.parent.parent.document
-            styles = document.styles
-
-            new_style = styles.add_style('SHeading2', WD_STYLE_TYPE.PARAGRAPH)
-            font = new_style.font
-            font.name = attributeDict['fontName']
-            font.size = Pt(int(attributeDict['fontSize'].replace("pt", "")))
-            flowable.Heading2.overrideStyle = 'SHeading2'
+        #manager = attr.getManager(self)
+        #manager.styles[style.name] = style
+        #
+        #
+        #attributeDict = self.element.attrib
+        #for key in attributeDict:
+        #    value = attributeDict[key]
+        #    value = value[6:] if value.startswith('style.') else value
+        #    attributeDict[key] = value
+        #
+        #target = attributeDict['name']
+        #
+        #if target == "Heading2":
+        #    document = self.parent.parent.document
+        #    styles = document.styles
+        #
+        #    new_style = styles.add_style('SHeading2', WD_STYLE_TYPE.PARAGRAPH)
+        #    font = new_style.font
+        #    font.name = attributeDict['fontName']
+        #    font.size = Pt(int(attributeDict['fontSize'].replace("pt", "")))
+        #    flowable.Heading2.overrideStyle = 'SHeading2'
 
 
 class TableStyleCommand(directive.RMLDirective):

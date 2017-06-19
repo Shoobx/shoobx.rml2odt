@@ -29,8 +29,6 @@ from z3c.rml import directive, occurence
 from z3c.rml import flowable as rml_flowable
 from z3c.rml import template as rml_template
 
-from shoobx.rml2docx.interfaces import IContentContainer
-
 # from z3c.rml flowable.py file
 from z3c.rml import attr, directive, interfaces, platypus
 try:
@@ -92,7 +90,6 @@ class Spacer(Flowable):
     attrMapping = {'length': 'height'}
 
 
-# Adjust Process
 class Illustration(Flowable):
     signature = rml_flowable.IIllustration
     klass = platypus.Illustration
@@ -419,6 +416,8 @@ class Paragraph(Flowable):
     superscript = None
     subscript = None
 
+    overrideStyle = None
+
     def _cleanText(self, text):
         if not text:
             text = ''
@@ -478,6 +477,7 @@ class Heading1(Paragraph):
 class Heading2(Paragraph):
     signature = rml_flowable.IHeading2
     defaultStyle = "Heading2"
+    overrideStyle = None
 
 
 class Heading3(Paragraph):
@@ -535,7 +535,7 @@ class HorizontalRow(Flowable):
         hr = self.parent.container.add_paragraph()
         hr_format = hr.paragraph_format
         hr_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        docx_bar = u'─────────────────────────────────────────────────────────'
+        docx_bar = u'───────────────────────────────────────────────────────────'
         self._handleText(docx_bar, hr)
         return hr
 
@@ -558,8 +558,7 @@ class Title(directive.RMLDirective):
 
     def process(self):
         style = self.element.attrib.get('style', self.defaultStyle)
-        # Note: Using add_heading instead of add_paragraph. Does this
-        # still inherit?
+        # Note: Using add_heading instead of add_paragraph. Does this still inherit?
         title = self.parent.container.add_heading(level = 0)
         self._handleText(self.element, title)
         return title
@@ -579,7 +578,7 @@ class Flow(directive.RMLDirective):
         'h1': Heading1,
         'h2': Heading2,
         'h3': Heading3,
-        'h4': Heading4,
+        'h4': Heading4, 
         'h5': Heading5,
         'h6': Heading6,
         'title': Title,

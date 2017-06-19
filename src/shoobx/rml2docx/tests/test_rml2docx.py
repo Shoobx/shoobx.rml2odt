@@ -108,12 +108,11 @@ class CompareDOCXTestCase(unittest.TestCase):
         # If the base DOCX has not been converted to PDF yet, then
         # let's do that now.
         basePdfPath = self._basePath.rsplit('.', 1)[0] + '.pdf'
-        if not os.path.exists(basePdfPath):
-            status = subprocess.Popen(
-                unoconv_command(self._basePath)).wait()
-            if status:
-                raise ValueError(
-                    'Base DOCX -> PDF conversion failed: %i' % status)
+        status = subprocess.Popen(
+            unoconv_command(self._basePath)).wait()
+        if status:
+            raise ValueError(
+                'Base DOCX -> PDF conversion failed: %i' % status)
 
         # Convert the test DOCX file to PDF.
         testPdfPath = self._testPath.rsplit('.', 1)[0] + '.pdf'

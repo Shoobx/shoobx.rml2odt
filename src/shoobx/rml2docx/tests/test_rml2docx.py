@@ -45,9 +45,9 @@ if os.path.exists(ENV_PATH):
 
 def gs_command(path):
     cmd = (
-        'gs', '-q', '-sNOPAUSE', '-sDEVICE=png256',
-        '-sOutputFile=%s[Page-%%d].png' % path[:-4],
-        path, '-c', 'quit')
+        'gs', '-q', '-sDEVICE=png256',
+        '-o', '%s[Page-%%d].png' % path[:-4],
+        path)
     print ' '.join(cmd)
     return cmd
 

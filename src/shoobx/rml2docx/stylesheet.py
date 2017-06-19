@@ -1,6 +1,6 @@
 ##############################################################################
 #
-# Copyright (c) 2007 Zope Foundation and Contributors.
+# Copyright (c) 2017 Shoobx, Inc.
 # All Rights Reserved.
 #
 # This software is subject to the provisions of the Zope Public License,
@@ -64,7 +64,7 @@ class ParagraphStyle(directive.RMLDirective):
         if target == "Heading2":
             document = self.parent.parent.document
             styles = document.styles
-            
+
             new_style = styles.add_style('SHeading2', WD_STYLE_TYPE.PARAGRAPH)
             font = new_style.font
             font.name = attributeDict['fontName']

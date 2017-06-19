@@ -413,15 +413,17 @@ class Paragraph(Flowable):
             textProps.setAttribute('textunderlinetype', 'single')
         if self.fontName:
             textProps.setAttribute('fontname', self.fontName)
-        if self.fontName:
+        if self.fontSize:
             textProps.setAttribute('fontsize', self.fontSize)
+        if self.strike:
+            textProps.setAttribute('textlinethroughstyle', 'solid')
+            textProps.setAttribute('textlinethroughtype', 'single')
         if self.fontColor is not None:
             textProps.setAttribute('color', '#'+self.fontColor.hexval()[2:])
         if self.superscript is not None:
             textProps.setAttribute('textposition', 'super 58%')
         if self.subscript is not None:
             textProps.setAttribute('textposition', 'sub 58%')
-        #span.font.strike = self.strike
         return span
 
     def process(self):

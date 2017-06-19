@@ -70,7 +70,7 @@ class Document(directive.RMLDirective):
         # Initialize the ODT Document.
         self.document = OpenDocumentText()
 
-        #self.registerDefaultStyles()
+        self.registerDefaultStyles()
 
         # Process common sub-directives
         #self.processSubDirectives(select=('docinit', 'stylesheet'))

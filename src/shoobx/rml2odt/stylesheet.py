@@ -14,6 +14,7 @@
 """Style Related Element Processing
 """
 import copy
+import odf.style
 import reportlab.lib.styles
 import reportlab.lib.enums
 import reportlab.platypus
@@ -25,12 +26,14 @@ from shoobx.rml2odt import flowable
 from z3c.rml import stylesheet as rml_stylesheet
 
 RML2ODT_ALIGNMENTS = {
-#    TA_LEFT: WD_PARAGRAPH_ALIGNMENT.LEFT,
-#    TA_CENTER: WD_PARAGRAPH_ALIGNMENT.CENTER,
-#    TA_RIGHT: WD_PARAGRAPH_ALIGNMENT.RIGHT,
-#    TA_JUSTIFY: WD_PARAGRAPH_ALIGNMENT.JUSTIFY,
+    TA_LEFT: 'left',
+    TA_CENTER: 'center',
+    TA_RIGHT: 'right',
+    TA_JUSTIFY: 'justify',
 }
 
+def pt(pt):
+    return '%ipt' %pt
 
 class Initialize(directive.RMLDirective):
     signature = rml_stylesheet.IInitialize
@@ -41,31 +44,41 @@ class Initialize(directive.RMLDirective):
 
 
 def registerParagraphStyle(doc, name, rmlStyle):
-    if name in doc.styles:
-        doc.styles[name].delete()
-    odtStyle = doc.styles.add_style(name, WD_STYLE_TYPE.PARAGRAPH)
-    font = odtStyle.font
-    font.name = rmlStyle.fontName
-    font.size = Pt(rmlStyle.fontSize)
-    if rmlStyle.textColor is not None:
-        font.color.rgb = RGBColor(
-            *[int(c*255) for c in rmlStyle.textColor.rgb()])
-    if rmlStyle.backColor is not None:
-        font.highlight_color.rgb = RGBColor(
-            *[int(c*255) for c in rmlStyle.backColor.rgb()])
+    odtStyle = odf.style.Style(name=name, family='paragraph')
+    doc.styles.addElement(odtStyle)
 
-    format = odtStyle.paragraph_format
-    format.line_spacing = Pt(rmlStyle.leading)
-    format.left_indent = Pt(rmlStyle.leftIndent)
-    format.right_indent = Pt(rmlStyle.rightIndent)
-    format.first_line_indent = Pt(rmlStyle.firstLineIndent)
-    format.space_before = Pt(rmlStyle.spaceBefore)
-    format.space_after = Pt(rmlStyle.spaceAfter)
-    format.alignment = RML2ODT_ALIGNMENTS[rmlStyle.alignment]
-    # In OpenXML widow_control controls both widows and orphans. The
-    # explicit decision here is to only listen to the "allowWidow"
-    # attribute.
-    format.widow_control = bool(rmlStyle.allowWidows)
+    # Paragraph Properties
+    paraProps = odf.style.ParagraphProperties()
+    paraProps.setAttribute(
+        'linespacing', pt(rmlStyle.leading))
+    paraProps.setAttribute(
+        'textalign', RML2ODT_ALIGNMENTS[rmlStyle.alignment])
+    paraProps.setAttribute(
+        'textindent', pt(rmlStyle.firstLineIndent))
+    paraProps.setAttribute(
+        'widows', int(rmlStyle.allowWidows))
+    paraProps.setAttribute(
+        'orphans', int(rmlStyle.allowOrphans))
+    paraProps.setAttribute(
+        'marginleft', pt(rmlStyle.leftIndent))
+    paraProps.setAttribute(
+        'marginright', pt(rmlStyle.rightIndent))
+    paraProps.setAttribute(
+        'margintop', pt(rmlStyle.spaceBefore))
+    paraProps.setAttribute(
+        'marginbottom', pt(rmlStyle.spaceAfter))
+
+    # Text Properties
+    textProps = odf.style.TextProperties()
+    odtStyle.addElement(textProps)
+    textProps.setAttribute('fontname', rmlStyle.fontName)
+    textProps.setAttribute('fontsize', rmlStyle.fontSize)
+
+    if rmlStyle.textColor is not None:
+        textProps.setAttribute('color', '#'+rmlStyle.textColor.hexval()[2:])
+    if rmlStyle.backColor is not None:
+        textProps.setAttribute(
+            'backgroundcolor', '#'+rmlStyle.backColor.hexval()[2:])
 
     # Unsupported options:
     # - bulletFontName

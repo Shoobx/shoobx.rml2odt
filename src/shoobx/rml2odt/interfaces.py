@@ -11,11 +11,11 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
-"""RML to DOCX Converter Interfaces
+"""RML to ODT Converter Interfaces
 """
 import zope.interface
 
-class IRML2DOCX(zope.interface.Interface):
+class IRML2ODT(zope.interface.Interface):
     """This is the main public API of shoobx.rml2odt"""
 
     def parseString(xml):

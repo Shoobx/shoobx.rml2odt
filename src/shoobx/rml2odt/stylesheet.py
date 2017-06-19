@@ -20,12 +20,11 @@ import reportlab.platypus
 from z3c.rml import attr, directive, interfaces, occurence, SampleStyleSheet, \
     special
 
-from docx.shared import Pt, Inches, RGBColor
 from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT, TA_JUSTIFY
-from shoobx.rml2docx import flowable
+from shoobx.rml2odt import flowable
 from z3c.rml import stylesheet as rml_stylesheet
 
-RML2DOCX_ALIGNMENTS = {
+RML2ODT_ALIGNMENTS = {
 #    TA_LEFT: WD_PARAGRAPH_ALIGNMENT.LEFT,
 #    TA_CENTER: WD_PARAGRAPH_ALIGNMENT.CENTER,
 #    TA_RIGHT: WD_PARAGRAPH_ALIGNMENT.RIGHT,

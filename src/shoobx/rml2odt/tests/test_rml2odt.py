@@ -164,13 +164,13 @@ def test_suite():
         expectPath = os.path.join(EXPECT_DIR, inputFilename[:-3] + 'odt')
 
         # ** Test RML to ODT rednering! **
-        testName = 'rml2odt-' + inputFilename[:-3]
+        testName = 'rml2odt-' + inputFilename[:-4]
         TestCase = type(testName, (Rml2OdtConverterFileTest,), {})
         case = TestCase(inputPath, outputPath)
         suite.addTest(case)
 
         # ** Test ODT rendering correctness **
-        testName = 'compare-'+inputFilename[:-3]
+        testName = 'compare-'+inputFilename[:-4]
         TestCase = type(testName, (CompareODTTestCase,), {})
         case = TestCase(expectPath, outputPath)
         suite.addTest(case)

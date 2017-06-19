@@ -141,12 +141,12 @@ class ComplexSubParagraphDirective(SubParagraphDirective):
     def process(self):
         self.preProcess()
         if self.element.text:
-            self.paragraph.addRun(self.element.text)
+            self.paragraph.addSpan(self.element.text)
         self.processSubDirectives()
         self.postProcess()
 
         if self.element.tail:
-            self.paragraph.addRun(self.element.tail)
+            self.paragraph.addSpan(self.element.tail)
 
 
 class IItalic(IComplexSubParagraphDirective):
@@ -253,10 +253,10 @@ class Break(SubParagraphDirective):
     signature = IBreak
 
     def process(self):
-        run = self.paragraph.odtParagraph.addElement(odf.text.LineBreak())
+        span = self.paragraph.odtParagraph.addElement(odf.text.LineBreak())
 
         if self.element.tail:
-            self.paragraph.addRun(self.element.tail)
+            self.paragraph.addSpan(self.element.tail)
 
 
 class IPageNumber(interfaces.IRMLDirectiveSignature):
@@ -267,11 +267,11 @@ class PageNumber(SubParagraphDirective):
     signature = IPageNumber
 
     def process(self):
-        run = self.paragraph.addRun()
+        span = self.paragraph.addSpan()
         # XXX: TO BE DONE!!!
 
         if self.element.tail:
-            self.paragraph.addRun(self.element.tail)
+            self.paragraph.addSpan(self.element.tail)
 
 
 class IAnchor(IComplexSubParagraphDirective):
@@ -393,16 +393,16 @@ class Paragraph(Flowable):
         text = re.sub('\t', '', text)
         return text
 
-    def addRun(self, text=None):
+    def addSpan(self, text=None):
         if text is not None:
             text = self._cleanText(text)
-        run = odf.text.Span(text=text)
-        self.odtParagraph.addElement(run)
+        span = odf.text.Span(text=text)
+        self.odtParagraph.addElement(span)
         manager = attr.getManager(self)
         styleName = manager.getNextSyleName('T')
         style = odf.style.Style(name=styleName, family='text')
         self.container.styles.addElement(style)
-        run.setAttribute('stylename', styleName)
+        span.setAttribute('stylename', styleName)
         textProps = odf.style.TextProperties()
         style.addElement(textProps)
         if self.italic:
@@ -421,8 +421,8 @@ class Paragraph(Flowable):
             textProps.setAttribute('textposition', 'super 58%')
         if self.subscript is not None:
             textProps.setAttribute('textposition', 'sub 58%')
-        #run.font.strike = self.strike
-        return run
+        #span.font.strike = self.strike
+        return span
 
     def process(self):
         # Styles within li tags are given to paras as attributes
@@ -434,7 +434,7 @@ class Paragraph(Flowable):
         self.container.text.addElement(self.odtParagraph)
 
         if self.element.text:
-            self.addRun(self.element.text)
+            self.addSpan(self.element.text)
 
         self.processSubDirectives()
 
@@ -512,17 +512,10 @@ class HorizontalRow(Flowable):
     klass = reportlab.platypus.flowables.HRFlowable
     attrMapping = {'align': 'hAlign'}
 
-    def _handleText(self, element, hr):
-        run = hr.add_run(element)
-
     def process(self):
         # Implement other alignment styles? self.element.attrib has values
-        hr = self.parent.container.add_paragraph()
-        hr_format = hr.paragraph_format
-        hr_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        odt_bar = u'─'*60
-        self._handleText(odt_bar, hr)
-        return hr
+        hr = odf.text.P(stylename='Horizontal Line')
+        self.parent.container.text.addElement(hr)
 
 
 class Flow(directive.RMLDirective):

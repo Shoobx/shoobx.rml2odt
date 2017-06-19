@@ -503,6 +503,11 @@ class Heading6(Paragraph):
     defaultStyle = "Heading6"
 
 
+class Title(Paragraph):
+    signature = rml_flowable.ITitle
+    defaultStyle = "Title"
+
+
 class Link(Flowable):
     signature = rml_flowable.ILink
     attrMapping = {'destination': 'destinationname',
@@ -538,33 +543,9 @@ class HorizontalRow(Flowable):
         hr = self.parent.container.add_paragraph()
         hr_format = hr.paragraph_format
         hr_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        docx_bar = u'───────────────────────────────────────────────────────────'
+        docx_bar = u'─'*60
         self._handleText(docx_bar, hr)
         return hr
-
-
-class Title(directive.RMLDirective):
-    signature = rml_flowable.ITitle
-    defaultStyle = "Title"
-
-    def _cleanText(self, text):
-        if not text:
-            text = ''
-        text = re.sub('\n\s+', ' ', text)
-        text = re.sub('\s\s\s+', '', text)
-        text = re.sub('\t', '', text)
-        return text
-
-    def _handleText(self, element, title):
-        if element.text is not None and element.text.strip() != '':
-            run = title.add_run(self._cleanText(element.text.lstrip()))
-
-    def process(self):
-        style = self.element.attrib.get('style', self.defaultStyle)
-        # Note: Using add_heading instead of add_paragraph. Does this still inherit?
-        title = self.parent.container.add_heading(level = 0)
-        self._handleText(self.element, title)
-        return title
 
 
 class Flow(directive.RMLDirective):
@@ -581,7 +562,7 @@ class Flow(directive.RMLDirective):
         'h1': Heading1,
         'h2': Heading2,
         'h3': Heading3,
-        'h4': Heading4, 
+        'h4': Heading4,
         'h5': Heading5,
         'h6': Heading6,
         'title': Title,

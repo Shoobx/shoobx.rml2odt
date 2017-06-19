@@ -6,4 +6,9 @@ env
 ve/
 
 *.pyc
+src/shoobx/rml2docx/tests/test_rml2docx_data/expected/*.pdf
+src/shoobx/rml2docx/tests/test_rml2docx_data/expected/*.png
+src/shoobx/rml2docx/tests/test_rml2docx_data/output/*.docx
+src/shoobx/rml2docx/tests/test_rml2docx_data/output/*.pdf
+src/shoobx/rml2docx/tests/test_rml2docx_data/output/*.png
 src/shoobx.rml2docx.egg-info

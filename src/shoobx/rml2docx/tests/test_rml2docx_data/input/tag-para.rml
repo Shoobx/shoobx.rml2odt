@@ -30,7 +30,7 @@
     <paraStyle name="QuarterSpaceAfter" parent="Normal" spaceAfter="3pt"/>
     <paraStyle name="NoSpaceAfter" parent="Normal" spaceAfter="0pt"/>
     <paraStyle name="BlankMessage" parent="Normal" fontName="Garamond-Italic" alignment="center"/>
- 
+
     <!-- Used by Signature -->
     <paraStyle name="code" fontName="Courier" fontSize="10pt"/>
     <paraStyle name="signature-byword"/>
@@ -76,7 +76,7 @@
         <para> unordered 2 </para>
       </li>
     </ul>
-    
+
     <hr align="center"/>
     <h1 >Testing Heading 1</h1>
     <h2 >Testing Heading 2</h2>
@@ -95,7 +95,7 @@
 
     <spacer length="1in" />
 
-    <ol> 
+    <ol>
       <li><para>Another number 1</para></li>
     </ol>
 
@@ -107,7 +107,7 @@
     spaceBefore="5" spaceAfter="35" leftIndent="10" rightIndent="10">
         Paragraph with a border and a padding.
         <br/>
-        <b>Note:</b> The padding only affects the position of the border, not 
+        <b>Note:</b> The padding only affects the position of the border, not
         the paragraph text.
     </para>
 

@@ -20,7 +20,7 @@ ve/bin/zope-testrunner: | ve
 	ve/bin/pip install zope.testrunner
 
 ve/bin/unoconv: | ve
-	ve/bin/pip install unoconv
+	ve/bin/pip install ./ci/unoconv-0.7.tar.gz
 
 env:
 	echo $(PYTHON_OFFICE_BIN) > env

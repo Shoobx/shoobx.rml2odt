@@ -100,7 +100,7 @@ class BlockTable(flowable.Flowable):
 
         for colWidth, col in zip(colWidths, self.table.columns):
             if colWidth.endswith('%'):
-                colWidth = availWidth*int(colWidth[:-1])/100
+                colWidth = int(availWidth*int(colWidth[:-1])/100)
             col.width = colWidth
 
     def process(self):

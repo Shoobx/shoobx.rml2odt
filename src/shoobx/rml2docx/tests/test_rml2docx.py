@@ -44,16 +44,22 @@ if os.path.exists(ENV_PATH):
 
 
 def gs_command(path):
-    return ('gs', '-q', '-sNOPAUSE', '-sDEVICE=png256',
-            '-sOutputFile=%s[Page-%%d].png' % path[:-4],
-            path, '-c', 'quit')
+    cmd = (
+        'gs', '-q', '-sNOPAUSE', '-sDEVICE=png256',
+        '-sOutputFile=%s[Page-%%d].png' % path[:-4],
+        path, '-c', 'quit')
+    print ' '.join(cmd)
+    return cmd
+
 
 def unoconv_command(path, opath=None):
     if opath is None:
         opath = os.path.dirname(path)
-    return (
+    cmd = (
         PYTHON_OFFICE_BIN, UNOCONV_BIN, '-vvv', '-T', '15', '-f',
         'pdf', '-o', opath, path)
+    print ' '.join(cmd)
+    return cmd
 
 
 class Rml2DocxConverterTest(unittest.TestCase):

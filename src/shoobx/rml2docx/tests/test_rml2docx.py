@@ -54,7 +54,7 @@ def gs_command(path):
 
 def unoconv_command(path, opath=None):
     if opath is None:
-        opath = os.path.dirname(path)
+        opath = path[:-5] + '.pdf'
     cmd = (
         PYTHON_OFFICE_BIN, UNOCONV_BIN, '-vvv', '-T', '15', '-f',
         'pdf', '-o', opath, path)

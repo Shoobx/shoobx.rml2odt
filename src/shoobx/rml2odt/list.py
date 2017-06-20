@@ -14,37 +14,53 @@
 """``ul``, ``ol``, and ``li`` directives.
 """
 import copy
+import odf.text
 import reportlab.lib.styles
+import zope.interface
 import zope.schema
 import re
 import lxml
-
 from z3c.rml import list as rml_list
 from z3c.rml import stylesheet  as rml_stylesheet
-from shoobx.rml2odt import flowable
 from z3c.rml import flowable as rml_flowable
 from z3c.rml import directive
 from z3c.rml import stylesheet
 
+from shoobx.rml2odt import flowable
+from shoobx.rml2odt.interfaces import IContentContainer
+
+
+@zope.interface.implementer(IContentContainer)
 class ListItem(flowable.Flow):
     signature = rml_flowable.IParagraph
     styleAttributes = zope.schema.getFieldNames(stylesheet.IMinimalListStyle)
 
-    def process(self):
-        # Takes care of case where li object does not have <para> tag
-        children = self.element.getchildren()
-        if children[0].tag != 'para':
-            newPara = lxml.etree.Element('para')
-            newPara.text = self.element.text
-            self.element.text = None
-            for subElement in tuple(self.element): newPara.append(subElement)
-            self.element.append(newPara)
+    def _convertSimpleContent(self):
+        # Check whether we need to create a para element.
+        # 1. Is there text in the element?
+        # 2. Are any of the children valid Flow elements?
+        if (self.element.text is None or
+            not self.element.text.strip() or
+            any([sub.tag in flowable.Flow.factories
+                 for sub in self.element])):
+            return
+        # Create a <para> element.
+        para = lxml.etree.Element('para')
+        # Transfer text.
+        para.text = self.element.text
+        self.element.text = None
+        # Transfer children.
+        for sub in tuple(self.element):
+            para.append(sub)
+        # Add paragraph to list item..
+        self.element.append(para)
 
-        # Adds the style of the li tag to the nested para element
-        para = self.element.getchildren()[0]
-        style = self.element.attrib.get('style', self.defaultStyle)
-        para.attrib['style'] = style
-        self.processSubDirectives()
+    def process(self):
+        self._convertSimpleContent()
+        self.item = odf.text.ListItem()
+        self.parent.list.addElement(self.item)
+        self.contents = self.item
+        super(ListItem, self).process()
 
 
 class OrderedListItem(ListItem):
@@ -58,8 +74,7 @@ class UnorderedListItem(ListItem):
     defaultStyle = "ListBullet"
 
 
-class ListBase(directive.RMLDirective):
-    klass = rml_flowable.reportlab.platypus.ListFlowable
+class ListBase(flowable.Flowable):
     factories = {'li': ListItem}
     attrMapping = {}
     styleAttributes = zope.schema.getFieldNames(rml_stylesheet.IBaseListStyle)
@@ -77,8 +92,11 @@ class ListBase(directive.RMLDirective):
         return style
 
     def process(self):
+        # Create the list element.
+        self.list = odf.text.List()
+        self.contents.addElement(self.list)
+        # Add all list items.
         self.processSubDirectives()
-        args = dict(self.getAttributeValues(attrMapping=self.attrMapping))
 
 
 class OrderedList(ListBase):

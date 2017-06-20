@@ -36,6 +36,6 @@ class IContentContainer(zope.interface.Interface):
     """Content Container
     """
 
-    container = zope.interface.Attribute(
+    contents = zope.interface.Attribute(
         'Container to which content, such as paragraphs and tables can be '
         'added.')

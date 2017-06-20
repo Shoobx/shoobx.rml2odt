@@ -14,7 +14,8 @@
 """``blockTableStyle``, ``blockTable``, ``row``, ``tr``, and ``td`` directives.
 """
 import lxml.etree
-from z3c.rml import directive
+import odf.table
+from z3c.rml import attr, directive
 from z3c.rml import flowable as rml_flowable
 import zope.interface
 
@@ -26,10 +27,6 @@ from shoobx.rml2odt.interfaces import IContentContainer
 class TableCell(flowable.Flow):
     signature = rml_flowable.ITableCell
     styleAttributesMapping = rml_flowable.TableCell.styleAttributesMapping
-
-    @property
-    def table(self):
-        return self.parent.parent.table
 
     def _convertSimpleContent(self):
         # Check whether we need to create a para element.
@@ -52,29 +49,20 @@ class TableCell(flowable.Flow):
 
     def process(self):
         self._convertSimpleContent()
-        self.container = self.parent.row.cells[self.parent.colIdx]
-        self.width = self.table.columns[self.parent.colIdx].width
-        # Remove the empty paragraph that got added automatically.
-        p = self.container.paragraphs[0]._element
-        p.getparent().remove(p)
-        p._p = p._element = None
+        self.cell = odf.table.TableCell(valuetype='string')
+        self.parent.row.addElement(self.cell)
+        self.contents = self.cell
         super(TableCell, self).process()
-        self.parent.colIdx += 1
 
 
 class TableRow(directive.RMLDirective):
     signature = rml_flowable.ITableRow
     factories = {'td': TableCell}
 
-    @property
-    def table(self):
-        return self.parent.table
-
     def process(self):
-        self.row = self.table.rows[self.parent.rowIdx]
-        self.colIdx = 0
+        self.row = odf.table.TableRow()
+        self.parent.table.addElement(self.row)
         self.processSubDirectives()
-        self.parent.rowIdx += 1
 
 
 class BlockTable(flowable.Flowable):
@@ -85,33 +73,45 @@ class BlockTable(flowable.Flowable):
         # 'blockTableStyle': BlockTableStyle
     }
 
-    def applyDimensions(self):
+    def addColumns(self):
+        cols = len(self.element[0])
+
         colWidths = self.getAttributeValues(
             select=['colWidths'], valuesOnly=True)[0]
-        if len(colWidths) != len(self.element[0]):
+        if colWidths and len(colWidths) != len(self.element[0]):
             raise ValueError('colWidths` entries do not match column count.')
-        self.table.allow_autofit = False
 
-        # Get container width.
-        cc = self.parent
-        while not IContentContainer.providedBy(cc):
-            cc = cc.parent
-        availWidth = cc.width
+        manager = attr.getManager(self)
 
-        for colWidth, col in zip(colWidths, self.table.columns):
+        for idx in range(cols):
+            # Create a style for each col.
+            styleName = manager.getNextSyleName('TableColumn')
+            style = odf.style.Style(name=styleName, family='table-column')
+            manager.document.automaticstyles.addElement(style)
+            colProps = odf.style.TableColumnProperties()
+            style.addElement(colProps)
+            # Apply the width if available.
+            colWidth = colWidths[idx]
             if colWidth.endswith('%'):
-                colWidth = int(availWidth*int(colWidth[:-1])/100)
-            col.width = colWidth
+                colProps.setAttribute('relcolumnwidth', colWidth[:-1] + '*')
+            else:
+                colProps.setAttribute('columnwidth', colWidth)
+            self.table.addElement(odf.table.TableColumn(stylename=styleName))
 
     def process(self):
         # Naive way of determining the size of the table.
         rows = len(self.element)
         if not rows:
             raise ValueError('Empty table')
-        cols = len(self.element[0])
-        self.table = self.parent.container.add_table(rows, cols)
-        self.applyDimensions()
-        self.rowIdx = 0
+        manager = attr.getManager(self)
+        styleName = manager.getNextSyleName('Table')
+        style = odf.style.Style(name=styleName, family='table')
+        manager.document.automaticstyles.addElement(style)
+        tableProps = odf.style.TableProperties(relwidth='100%')
+        style.addElement(tableProps)
+        self.table = odf.table.Table(stylename=styleName)
+        self.contents.addElement(self.table)
+        self.addColumns()
         self.processSubDirectives()
 
 

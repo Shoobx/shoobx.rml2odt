@@ -29,24 +29,13 @@ class Story(flowable.Flow):
     signature = rml_template.IStory
 
     @property
-    def width(self):
-        # XXX: Later we need to keep track of the currently active
-        # section.
-        sec = self.parent.document.sections[0]
-        return sec.page_width - sec.left_margin - sec.right_margin
-
-    @property
-    def container(self):
-        return self.parent.document
+    def contents(self):
+        return self.parent.document.text
 
 
 @zope.interface.implementer(interfaces.ICanvasManager)
 class PageGraphics(directive.RMLDirective):
     signature = rml_template.IPageGraphics
-
-    @property
-    def container(self):
-        return self.parent.document
 
 
 class PageTemplate(directive.RMLDirective):
@@ -65,13 +54,8 @@ class Template(directive.RMLDirective):
         'pageTemplate': PageTemplate,
     }
 
-    @property
-    def container(self):
-        return self.parent.document
-
     def process(self):
         args = self.getAttributeValues()
-        # pdb.set_trace()
         args += self.parent.getAttributeValues(
             select=('debug', 'compression', 'invariant'),
             attrMapping={'debug': '_debug', 'compression': 'pageCompression'})

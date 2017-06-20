@@ -70,13 +70,13 @@ class Flowable(directive.RMLDirective):
     attrMapping = None
 
     @property
-    def container(self):
+    def contents(self):
         # Goes up the tree to find the content container in order to
         # append new paragraph
         parent = self.parent
         while not IContentContainer.providedBy(parent):
             parent = parent.parent
-        return parent.container
+        return parent.contents
 
     def process(self):
         args = dict(self.getAttributeValues(attrMapping=self.attrMapping))
@@ -401,7 +401,7 @@ class Paragraph(Flowable):
         manager = attr.getManager(self)
         styleName = manager.getNextSyleName('T')
         style = odf.style.Style(name=styleName, family='text')
-        self.container.styles.addElement(style)
+        manager.document.styles.addElement(style)
         span.setAttribute('stylename', styleName)
         textProps = odf.style.TextProperties()
         style.addElement(textProps)
@@ -439,7 +439,7 @@ class Paragraph(Flowable):
         self.odtParagraph.setAttribute('stylename', style)
 
         # Append new paragraph.
-        self.container.text.addElement(self.odtParagraph)
+        self.contents.addElement(self.odtParagraph)
 
         if self.element.text:
             self.addSpan(self.element.text)
@@ -523,7 +523,7 @@ class HorizontalRow(Flowable):
     def process(self):
         # Implement other alignment styles? self.element.attrib has values
         hr = odf.text.P(stylename='Horizontal Line')
-        self.parent.container.text.addElement(hr)
+        self.parent.contents.addElement(hr)
 
 
 class Flow(directive.RMLDirective):

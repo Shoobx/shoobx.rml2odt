@@ -54,6 +54,9 @@ def registerParagraphStyle(doc, name, rmlStyle):
         'linespacing', pt(rmlStyle.leading))
     paraProps.setAttribute(
         'textalign', RML2ODT_ALIGNMENTS[rmlStyle.alignment])
+    if rmlStyle.justifyLastLine:
+        paraProps.setAttribute(
+            'textalignlast', 'justify')
     paraProps.setAttribute(
         'textindent', pt(rmlStyle.firstLineIndent))
     paraProps.setAttribute(
@@ -102,7 +105,6 @@ def registerParagraphStyle(doc, name, rmlStyle):
     # - splitLongWords
     # - underlineProportion
     # - bulletAnchor
-    # - justifyLastLine
     # - justifyBreaks
     # - spaceShrinkage
 

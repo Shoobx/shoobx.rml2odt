@@ -53,7 +53,7 @@ def gs_command(path):
 
 def unoconv_command(path, opath=None):
     if opath is None:
-        opath = path[:-5] + '.pdf'
+        opath = path[:-4] + '.pdf'
     cmd = (
         PYTHON_OFFICE_BIN, UNOCONV_BIN, '-vvv', '-T', '15', '-f',
         'pdf', '-o', opath, path)
@@ -138,8 +138,8 @@ class CompareODTTestCase(unittest.TestCase):
         # Go through all pages and ensure their equality
         n = 1
         while True:
-            baseImage = self._basePath[:-5] + '[Page-%i].png' %n
-            testImage = self._testPath[:-5] + '[Page-%i].png' %n
+            baseImage = self._basePath[:-4] + '[Page-%i].png' %n
+            testImage = self._testPath[:-4] + '[Page-%i].png' %n
             if os.path.exists(baseImage) and os.path.exists(testImage):
                 self.assertSameImage(baseImage, testImage)
             else:

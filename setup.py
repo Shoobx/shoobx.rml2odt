@@ -41,18 +41,18 @@ TESTS_REQUIRE = [
     ]
 
 setup (
-    name="shoobx.rml2docx",
+    name="shoobx.rml2odt",
     version='0.1.0.dev0',
     author="Shoobx, Inc.",
     author_email="dev@shoobx.com",
-    description="A converter from RML to DOCX.",
+    description="A converter from RML to ODT.",
     long_description=(
         read('README.rst')
         + '\n\n' +
         read('CHANGES.rst')
         ),
     license="ZPL 2.1",
-    keywords="rml docx word pagetemplate",
+    keywords="rml odf odt libreoffice pagetemplate",
     classifiers=[
         'Development Status :: 2 - Alpha',
         'Intended Audience :: Developers',
@@ -66,7 +66,7 @@ setup (
         'Programming Language :: Python :: Implementation :: CPython',
         'Natural Language :: English',
         'Operating System :: OS Independent'],
-    url='http://pypi.python.org/pypi/shoobx.rml2docx',
+    url='http://pypi.python.org/pypi/shoobx.rml2odt',
     packages=find_packages('src'),
     package_dir={'':'src'},
     namespace_packages=['shoobx'],
@@ -75,7 +75,7 @@ setup (
         ),
     install_requires=[
         'lazy',
-        'python-docx',
+        'odfpy',
         'setuptools',
         'six',
         'z3c.rml',
@@ -83,7 +83,7 @@ setup (
         ],
     entry_points={
         'console_scripts': [
-            'rml2docx = shoobx.rml2docx.rml2docx:main'
+            'rml2odt = shoobx.rml2odt.rml2odt:main'
             ],
         },
     tests_require=TESTS_REQUIRE,

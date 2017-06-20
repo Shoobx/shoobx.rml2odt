@@ -22,14 +22,14 @@ import unittest
 from PIL import Image
 from zope.interface import verify
 
-from shoobx.rml2docx import interfaces, rml2docx
+from shoobx.rml2odt import interfaces, rml2odt
 
 INPUT_DIR = os.path.join(
-    os.path.dirname(__file__), 'test_rml2docx_data', 'input')
+    os.path.dirname(__file__), 'test_rml2odt_data', 'input')
 OUTPUT_DIR = os.path.join(
-    os.path.dirname(__file__), 'test_rml2docx_data', 'output')
+    os.path.dirname(__file__), 'test_rml2odt_data', 'output')
 EXPECT_DIR = os.path.join(
-    os.path.dirname(__file__), 'test_rml2docx_data', 'expected')
+    os.path.dirname(__file__), 'test_rml2odt_data', 'expected')
 
 LOG_FILE = os.path.join(os.path.dirname(__file__), 'render.log')
 
@@ -46,38 +46,38 @@ if os.path.exists(ENV_PATH):
 def gs_command(path):
     cmd = (
         'gs', '-q', '-sDEVICE=png256',
-        '-o', '%s[Page-%%d].png' % path[:-4],
+        '-o', '%s[Page-%%d].png' % path[:-3],
         path)
     return cmd
 
 
 def unoconv_command(path, opath=None):
     if opath is None:
-        opath = path[:-5] + '.pdf'
+        opath = path[:-4] + '.pdf'
     cmd = (
         PYTHON_OFFICE_BIN, UNOCONV_BIN, '-vvv', '-T', '15', '-f',
         'pdf', '-o', opath, path)
     return cmd
 
 
-class Rml2DocxConverterTest(unittest.TestCase):
+class Rml2OdtConverterTest(unittest.TestCase):
 
     def test_interface(self):
-        verify.verifyObject(interfaces.IRML2DOCX, rml2docx)
+        verify.verifyObject(interfaces.IRML2ODT, rml2odt)
 
 
-class Rml2DocxConverterFileTest(unittest.TestCase):
+class Rml2OdtConverterFileTest(unittest.TestCase):
 
     def __init__(self, inputPath, outputPath):
         self.inputPath = inputPath
         self.outputPath = outputPath
-        super(Rml2DocxConverterFileTest, self).__init__()
+        super(Rml2OdtConverterFileTest, self).__init__()
 
     def runTest(self):
-        rml2docx.go(self.inputPath, self.outputPath)
+        rml2odt.go(self.inputPath, self.outputPath)
 
 
-class CompareDOCXTestCase(unittest.TestCase):
+class CompareODTTestCase(unittest.TestCase):
 
     level = 2
 
@@ -100,28 +100,28 @@ class CompareDOCXTestCase(unittest.TestCase):
         test_file.close()
 
     def runTest(self):
-        # If the base DOCX file does not exist, throw an error.
+        # If the base ODT file does not exist, throw an error.
         if not os.path.exists(self._basePath):
             raise RuntimeError(
-                'The expected DOCX file is missing: ' + self._basePath)
+                'The expected ODT file is missing: ' + self._basePath)
 
-        # If the base DOCX has not been converted to PDF yet, then
+        # If the base ODT has not been converted to PDF yet, then
         # let's do that now.
         basePdfPath = self._basePath.rsplit('.', 1)[0] + '.pdf'
         status = subprocess.Popen(
             unoconv_command(self._basePath)).wait()
         if status:
             raise ValueError(
-                'Base DOCX -> PDF conversion failed: %i' % status)
+                'Base ODT -> PDF conversion failed: %i' % status)
 
-        # Convert the test DOCX file to PDF.
+        # Convert the test ODT file to PDF.
         testPdfPath = self._testPath.rsplit('.', 1)[0] + '.pdf'
         status = subprocess.Popen(
             unoconv_command(self._testPath)).wait()
 
         if status:
             raise ValueError(
-                'Test DOCX -> PDF conversion failed: %i' % status)
+                'Test ODT -> PDF conversion failed: %i' % status)
 
         # Convert the PDF file to image(s)
         status = subprocess.Popen(gs_command(basePdfPath)).wait()
@@ -138,8 +138,8 @@ class CompareDOCXTestCase(unittest.TestCase):
         # Go through all pages and ensure their equality
         n = 1
         while True:
-            baseImage = self._basePath[:-5] + '[Page-%i].png' %n
-            testImage = self._testPath[:-5] + '[Page-%i].png' %n
+            baseImage = self._basePath[:-4] + '[Page-%i].png' %n
+            testImage = self._testPath[:-4] + '[Page-%i].png' %n
             if os.path.exists(baseImage) and os.path.exists(testImage):
                 self.assertSameImage(baseImage, testImage)
             else:
@@ -149,7 +149,7 @@ class CompareDOCXTestCase(unittest.TestCase):
 
 def test_suite():
     suite = unittest.TestSuite((
-        unittest.makeSuite(Rml2DocxConverterTest),
+        unittest.makeSuite(Rml2OdtConverterTest),
     ))
 
     if not os.path.exists(OUTPUT_DIR):
@@ -160,18 +160,18 @@ def test_suite():
             continue
 
         inputPath = os.path.join(INPUT_DIR, inputFilename)
-        outputPath = os.path.join(OUTPUT_DIR, inputFilename[:-3] + 'docx')
-        expectPath = os.path.join(EXPECT_DIR, inputFilename[:-3] + 'docx')
+        outputPath = os.path.join(OUTPUT_DIR, inputFilename[:-3] + 'odt')
+        expectPath = os.path.join(EXPECT_DIR, inputFilename[:-3] + 'odt')
 
-        # ** Test RML to DOCX rednering! **
-        testName = 'rml2docx-' + inputFilename[:-4]
-        TestCase = type(testName, (Rml2DocxConverterFileTest,), {})
+        # ** Test RML to ODT rednering! **
+        testName = 'rml2odt-' + inputFilename[:-4]
+        TestCase = type(testName, (Rml2OdtConverterFileTest,), {})
         case = TestCase(inputPath, outputPath)
         suite.addTest(case)
 
-        # ** Test DOCX rendering correctness **
+        # ** Test ODT rendering correctness **
         testName = 'compare-'+inputFilename[:-4]
-        TestCase = type(testName, (CompareDOCXTestCase,), {})
+        TestCase = type(testName, (CompareODTTestCase,), {})
         case = TestCase(expectPath, outputPath)
         suite.addTest(case)
 

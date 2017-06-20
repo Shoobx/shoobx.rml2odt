@@ -11,7 +11,7 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
-"""RML to DOCX Converter
+"""RML to ODT Converter
 """
 
 
@@ -22,9 +22,9 @@ import six
 import sys
 import zope.interface
 
-from shoobx.rml2docx import document, interfaces
+from shoobx.rml2odt import document, interfaces
 
-zope.interface.moduleProvides(interfaces.IRML2DOCX)
+zope.interface.moduleProvides(interfaces.IRML2ODT)
 
 
 def parseString(xml, removeEncodingLine=True, filename=None):
@@ -62,7 +62,7 @@ def go(xmlInputName, outputFileName=None, outDir=None):
         if hasattr(outputFileName, 'write'):
             # it is already a file-like object
             outputFile = outputFileName
-            outputFileName = 'output.docx'
+            outputFileName = 'output.odt'
         else:
             if outDir is not None:
                 outputFileName = os.path.join(outDir, outputFileName)
@@ -80,7 +80,7 @@ def main(args=None):
     if args is None:
         parser = argparse.ArgumentParser(
             prog='rml2pdf',
-            description='Converts file in RML format into DOCX file.',
+            description='Converts file in RML format into ODT file.',
             epilog='Copyright (c) 2017 Shoobx, Inc.'
         )
         parser.add_argument(
@@ -88,7 +88,7 @@ def main(args=None):
             help='RML file to be processed')
         parser.add_argument(
             'outputFileName', nargs='?',
-            help='output DOCX file name')
+            help='output ODT file name')
         parser.add_argument(
             'outDir', nargs='?',
             help='output directory')

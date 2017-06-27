@@ -25,6 +25,8 @@ from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT, TA_JUSTIFY
 from shoobx.rml2odt import flowable
 from z3c.rml import stylesheet as rml_stylesheet
 
+
+
 RML2ODT_ALIGNMENTS = {
     TA_LEFT: 'left',
     TA_CENTER: 'center',
@@ -44,8 +46,12 @@ class Initialize(directive.RMLDirective):
 
 
 def registerParagraphStyle(doc, name, rmlStyle):
+
+    if 'style.' in name:
+        name = name[6:]
+
     odtStyle = odf.style.Style(name=name, family='paragraph')
-    doc.styles.addElement(odtStyle)
+    doc.automaticstyles.addElement(odtStyle)
 
     # Paragraph Properties
     paraProps = odf.style.ParagraphProperties()
@@ -71,12 +77,19 @@ def registerParagraphStyle(doc, name, rmlStyle):
         'margintop', pt(rmlStyle.spaceBefore))
     paraProps.setAttribute(
         'marginbottom', pt(rmlStyle.spaceAfter))
+    paraProps.setAttribute(
+        'borderlinewidth', pt(rmlStyle.borderWidth))
+    paraProps.setAttribute(
+        'padding', pt(rmlStyle.borderPadding))
+
+
 
     # Text Properties
     textProps = odf.style.TextProperties()
     odtStyle.addElement(textProps)
+
     if rmlStyle.fontName is not None:
-        # Make a font declaration, if necessary
+        
         doc.fontfacedecls.addElement(
             odf.style.FontFace(
                 name=rmlStyle.fontName,
@@ -87,8 +100,9 @@ def registerParagraphStyle(doc, name, rmlStyle):
     if rmlStyle.textColor is not None:
         textProps.setAttribute('color', '#'+rmlStyle.textColor.hexval()[2:])
     if rmlStyle.backColor is not None:
-        textProps.setAttribute(
-            'backgroundcolor', '#'+rmlStyle.backColor.hexval()[2:])
+        textProps.setAttribute('backgroundcolor', '#'+rmlStyle.backColor.hexval()[2:])
+    
+ 
 
     # Unsupported options:
     # - bulletFontName
@@ -96,9 +110,6 @@ def registerParagraphStyle(doc, name, rmlStyle):
     # - bulletIndent
     # - bulletColor
     # - wordWrap
-    # - borderWidth
-    # - borderPadding
-    # - borderColor
     # - borderRadius
     # - textTransform
     # - endDots
@@ -112,6 +123,9 @@ def registerParagraphStyle(doc, name, rmlStyle):
 class ParagraphStyle(directive.RMLDirective):
     signature = rml_stylesheet.IParagraphStyle
 
+
+    
+
     def process(self):
         kwargs = dict(self.getAttributeValues())
         parent = kwargs.pop(
@@ -122,9 +136,13 @@ class ParagraphStyle(directive.RMLDirective):
         for attrName, attrValue in kwargs.items():
             setattr(style, attrName, attrValue)
 
+    
         document = self.parent.parent.document
         registerParagraphStyle(document, name, style)
 
+
+
+            
 
 class ListStyle(directive.RMLDirective):
     signature = rml_stylesheet.IListStyle
@@ -150,7 +168,7 @@ class Stylesheet(directive.RMLDirective):
     factories = {
         'initialize': Initialize,
         'paraStyle': ParagraphStyle,
-        # XXX: Unsupported elements:
+        'para': ParagraphStyle,
         #'blockTableStyle': BlockTableStyle,
         #'listStyle': ListStyle,
         }

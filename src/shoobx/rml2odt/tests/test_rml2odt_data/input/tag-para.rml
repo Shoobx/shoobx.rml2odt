@@ -20,8 +20,8 @@
       <alias id="style.normal" value="style.Normal"/>
     </initialize>
 
-    <paraStyle name="Normal" parent="style.Normal" fontName="Garamond" fontSize="12pt" leading="14pt" alignment="justify" spaceAfter="12pt"/>
-    <paraStyle name="Small" parent="style.Normal" fontName="Garamond" fontSize="10pt" leading="12pt" alignment="justify" spaceAfter="8pt"/>
+    <paraStyle name="Normal" parent="Normal" fontName="Garamond" fontSize="12pt" leading="14pt" alignment="justify" spaceAfter="12pt"/>
+    <paraStyle name="Small" parent="Normal" fontName="Garamond" fontSize="10pt" leading="12pt" alignment="justify" spaceAfter="8pt"/>
     <paraStyle name="Indent" parent="Normal" leftIndent="0.75in"/>
     <paraStyle name="Right" parent="Normal" alignment="right"/>
     <paraStyle name="Left" parent="Normal" alignment="left" fontSize="12pt"/>
@@ -37,13 +37,13 @@
     <paraStyle name="code uuid" fontName="Courier" fontSize="10pt"/>
     <paraStyle name="sig-small-text" fontSize="7pt" leading="9pt" fontName="Source-Sans-Regular" textColor="Black"/>
     <paraStyle name="sig-small-logo" fontSize="28pt" leading="9pt" fontName="Shoobx" textColor="Black"/>
-    <paraStyle name="style.Heading1" parent="style.Heading1" fontName="Garamond-Bold" fontSize="14pt" leading="16pt" alignment="center" spaceAfter="14pt" keepWithNext="true"/>
-    <paraStyle name="style.Heading2" parent="style.Heading2" fontName="Garamond-BoldItalic" fontSize="40pt"/>
-    <paraStyle name="style.Heading3" parent="style.Heading3" fontName="Garamond-BoldItalic" fontSize="10pt"/>
-    <paraStyle name="style.Heading4" parent="style.Heading4" fontName="Garamond-BoldItalic" fontSize="8pt"/>
-    <paraStyle name="style.Heading5" parent="style.Heading5" fontName="Garamond-Bold" fontSize="8pt"/>
-    <paraStyle name="style.Heading6" parent="style.Heading6" fontName="Garamond-Bold" fontSize="7pt"/>
-    <paraStyle name="ExhibitTitle" parent="style.Heading1" fontName="Garamond-Bold" fontSize="12pt" alignment="center"/>
+    <paraStyle name="Heading1" parent="Heading1" fontName="Garamond-Bold" fontSize="14pt" leading="16pt" alignment="center" spaceAfter="14pt" keepWithNext="true" textColor="red"/>
+    <paraStyle name="style.Heading2" parent="style.Heading2" fontName="Garamond-BoldItalic" fontSize="12pt" textColor="orange"/>
+    <paraStyle name="Heading3" parent="Heading3" fontName="Garamond-BoldItalic" fontSize="10pt"/>
+    <paraStyle name="Heading4" parent="Heading4" fontName="Garamond-BoldItalic" fontSize="8pt"/>
+    <paraStyle name="Heading5" parent="Heading5" fontName="Garamond-Bold" fontSize="8pt"/>
+    <paraStyle name="Heading6" parent="Heading6" fontName="Garamond-Bold" fontSize="7pt"/>
+    <paraStyle name="ExhibitTitle" parent="Heading1" fontName="Garamond-Bold" fontSize="12pt" alignment="center"/>
     <paraStyle name="SectionTitle" parent="Normal" fontName="Garamond-Bold" fontSize="12pt" keepWithNext="true"/>
     <listStyle name="SectionEnum" bulletFontName="Garamond" bulletFontSize="12pt" bulletFormat="(%s)"/>
     <listStyle name="SubSectionEnum" bulletFontName="Garamond" bulletFontSize="12pt" bulletFormat="(%s)" bulletType="a"/>
@@ -58,6 +58,7 @@
     <listStyle name="Whereases" bulletFontName="Garamond-Bold" bulletFontSize="12pt" bulletType="bullet" bulletDedent="80" leftIndent="80" start="WHEREAS:"/>
     <listStyle name="Resolutions" bulletFontName="Garamond-Bold" bulletFontSize="12pt" bulletType="bullet" bulletDedent="80" leftIndent="80" start="RESOLVED:"/>
    <paraStyle name="ResolutionIndent" parent="Normal" leftIndent="80pt"/>
+   
   </stylesheet>
 
 
@@ -91,17 +92,12 @@
       <li><para><b>Numbered List 3</b></para></li>
     </ol>
 
-    <para><a url="http://www.google.com">Google</a></para>
+    <link url="http://www.google.com">Google (without nested para tag)</link>
 
     <spacer length="1in" />
 
     <ol>
       <li><para>Another number 1</para></li>
-      <li>Another number 2</li>
-    </ol>
-
-    <ol>
-      <li> Last Number 1? </li>
     </ol>
 
     <pre >Preformatted <b>text</b> only.</pre>

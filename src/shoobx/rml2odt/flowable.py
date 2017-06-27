@@ -87,6 +87,11 @@ class Spacer(Flowable):
     klass = reportlab.platypus.Spacer
     attrMapping = {'length': 'height'}
 
+    def process(self):
+        self.odtParagraph = odf.text.P()
+        # length = self.element.attrib.get('length', "o.5in")
+        self.contents.addElement(self.odtParagraph)
+
 
 class Illustration(Flowable):
     signature = rml_flowable.IIllustration
@@ -460,6 +465,7 @@ class XPreformatted(Paragraph):
 class Heading1(Paragraph):
     signature = rml_flowable.IHeading1
     defaultStyle = "Heading1"
+    overrideStyle = None
 
 
 class Heading2(Paragraph):
@@ -471,21 +477,25 @@ class Heading2(Paragraph):
 class Heading3(Paragraph):
     signature = rml_flowable.IHeading3
     defaultStyle = "Heading3"
+    overrideStyle = None
 
 
 class Heading4(Paragraph):
     signature = rml_flowable.IHeading4
     defaultStyle = "Heading4"
+    overrideStyle = None
 
 
 class Heading5(Paragraph):
     signature = rml_flowable.IHeading5
     defaultStyle = "Heading5"
+    overrideStyle = None
 
 
 class Heading6(Paragraph):
     signature = rml_flowable.IHeading6
     defaultStyle = "Heading6"
+    overrideStyle = None
 
 
 class Title(Paragraph):
@@ -499,7 +509,6 @@ class Link(Flowable):
                    'boxStrokeWidth': 'thickness',
                    'boxStrokeDashArray': 'dashArray',
                    'boxStrokeColor': 'color'}
-
     defaultStyle = "Normal"
 
     def process(self):

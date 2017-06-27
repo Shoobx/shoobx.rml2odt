@@ -91,12 +91,17 @@
       <li><para><b>Numbered List 3</b></para></li>
     </ol>
 
-    <link url="http://www.google.com">Google (without nested para tag)</link>
+    <para><a url="http://www.google.com">Google</a></para>
 
     <spacer length="1in" />
 
     <ol>
       <li><para>Another number 1</para></li>
+      <li>Another number 2</li>
+    </ol>
+
+    <ol>
+      <li> Last Number 1? </li>
     </ol>
 
     <pre >Preformatted <b>text</b> only.</pre>

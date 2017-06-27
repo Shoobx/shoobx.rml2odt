@@ -37,7 +37,6 @@ class Document(directive.RMLDirective):
 
     factories = {
         'story': template.Story,
-        'pageTemplate': template.PageTemplate,
         'template': template.Template,
         'pageGraphics': template.PageGraphics,
         'stylesheet': stylesheet.Stylesheet
@@ -74,13 +73,15 @@ class Document(directive.RMLDirective):
 
         # Process common sub-directives
         #self.processSubDirectives(select=('docinit', 'stylesheet'))
-        #self.processSubDirectives(select=('stylesheet',))
 
         # Handle Flowable-based documents.
         if self.element.find('template') is not None:
             # Probably wanna add style & template info here
-            #self.processSubDirectives(select=('template', 'story', 'pageTemplate', 'pageGraphics'))
-            self.processSubDirectives(select=('story',))
+            # self.processSubDirectives(select=('template', 'story', 'pageTemplate', 'styleSheet', 'pageGraphics'))
+            self.processSubDirectives(select=('stylesheet'))
+            # self.processSubDirectives(select=('template'))
+            self.processSubDirectives(select=('story'))
+
 
         # Save the output.
         self.document.save(outputFile)

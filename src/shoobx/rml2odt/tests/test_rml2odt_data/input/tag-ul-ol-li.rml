@@ -59,17 +59,27 @@
       <font face="Courier">&lt;li&gt;</font>
       Tags Demo</title>
 
-    <ol bulletColor="orange" bulletFontName="Times-Roman">
+    <ul bulletColor="orange" bulletFontName="Times-Roman">
       <li bulletColor="gray" bulletFontName="Helvetica">
         <para>Welcome to RML 1</para>
       </li>
       <li>
-        <ul bulletColor="red" bulletFontName="Times-Roman" bulletFontSize="8">
+        <ol bulletColor="red" bulletFontName="Times-Roman" bulletFontSize="8">
           <li value="disc" bulletFontName="Helvetica">
             <para>unordered 1</para>
           </li>
           <li value="square" bulletColor="blue">
             <para>unordered 2</para>
+          </li>
+          <li>
+            <ul>
+              <li>
+                <para>Unordered -another one</para>
+              </li>
+              <li>
+                <para>Unordered -another one</para>
+              </li>
+            </ul>
           </li>
           <li value="diamond" bulletColor="green">
             <para>unordered 3</para>
@@ -77,9 +87,12 @@
           <li value="rarrowhead" bulletColor="yellow">
             <para>unordered 4</para>
           </li>
-        </ul>
+        </ol>
       </li>
-    </ol>
+      <li bulletColor="gray" bulletFontName="Helvetica">
+        <para>Welcome to RML 2</para>
+      </li>
+    </ul>
 
     <spacer length="0.5in" />
 

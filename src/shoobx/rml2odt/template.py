@@ -42,10 +42,23 @@ class PageTemplate(directive.RMLDirective):
     signature = rml_template.IPageTemplate
     attrMapping = {'autoNextTemplate': 'autoNextPageTemplate'}
     factories = {
-        'pageGraphics': NotImplementedDirective,
-        'mergePage': NotImplementedDirective,
-        'mergePage': NotImplementedDirective
+        'pageGraphics': PageGraphics,
         }
+
+    def process(self):
+        args = dict(self.getAttributeValues(attrMapping=self.attrMapping))
+        pagesize = args.pop('pagesize', None)
+
+        self.frames = []
+        self.pt = platypus.PageTemplate(**args)
+
+        self.processSubDirectives()
+        self.pt.frames = self.frames
+
+        if pagesize:
+            self.pt.pagesize = pagesize
+
+        self.parent.parent.doc.addPageTemplates(self.pt)
 
 
 class Template(directive.RMLDirective):
@@ -59,7 +72,6 @@ class Template(directive.RMLDirective):
         args += self.parent.getAttributeValues(
             select=('debug', 'compression', 'invariant'),
             attrMapping={'debug': '_debug', 'compression': 'pageCompression'})
-        # args += (('cropMarks',  self.parent.cropMarks),)
         self.parent.doc = platypus.BaseDocTemplate(
             self.parent.outputFile, **dict(args))
         self.processSubDirectives()

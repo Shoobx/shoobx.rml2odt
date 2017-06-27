@@ -8,16 +8,40 @@
   </template>
 
   <story>
-
     <title><font face="Courier">&lt;blockTable&gt;</font> Tag Demo</title>
-    <blockTable colWidths="30% 70%" rowHeights="1cm 1cm">
+    <blockTable colWidths="25% 25% 25% 25%" rowHeights="2cm 2cm 2cm 2cm">
       <tr>
-       <td>This</td>
-       <td>is</td>
+        <td>Evaluation Criterium</td>
+        <td>Takeoff</td>
+        <td>Quavo</td>
+        <td>Offset</td>
       </tr>
       <tr>
-        <td>a</td>
-        <td>blockTable.</td>
+        <td>Features</td>
+        <td>4</td>
+        <td>100</td>
+        <td>10</td>
+      </tr>
+      <tr>
+        <td>Swag</td>
+        <td>12%</td>
+        <td>89%</td>
+        <td>76%</td>
+      </tr>
+      <tr>
+        <td>Favorite Word</td>
+        <td>Mama!</td>
+        <td>
+          <ul>
+            <li>
+              <para>Actavis!</para>
+            </li>
+            <li>
+              <para>Cash!</para>
+            </li>
+          </ul>
+        </td>
+        <td>Cookie!</td>
       </tr>
     </blockTable>
 

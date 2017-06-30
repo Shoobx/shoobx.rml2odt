@@ -40,22 +40,80 @@ class ListItem(flowable.Flow):
     signature = rml_flowable.IParagraph
     styleAttributes = zope.schema.getFieldNames(stylesheet.IMinimalListStyle)
     createdLiStyles = {}
+    ListIDTracker = []
+    liStyleCount = 0
 
     def modifyStyle(self):
-        if isinstance(self, UnorderedListItem):
-            # Retrieve parent list's style
+        if isinstance(self, UnorderedListItem) and self.element.attrib != {}:
+            ListItem.liStyleCount += 1
+            # Retrieve parent's list style
             parentStyleName = ListBase.createdStylesDict[self.parent.styleID]
-            parentStyle = ListBase.createdStylesLog.get(parentStyleName, None)
-            # Tweak inherited style
-            modifiedStyle = parentStyle
-            if modifiedStyle is not None:
-                bullet = ListLevelStyleBullet(
-                    level=str(self.parent.level), 
-                    stylename="Standard",
-                    bulletchar=UnorderedListItem.bulletDict.get('value', 'disc')
-                    )
-                modifiedStyle.addElement(bullet)
-                ListItem.createdLiStyles[self.styleID] = modifiedStyle(name="Q1")
+            newStyleName = "Sh_Li%d"%ListItem.liStyleCount
+
+            newStyle = ListStyle(name=newStyleName, consecutivenumbering=False)
+            selectedBullet = self.element.attrib.get('value', 'disc')
+            bul = ListLevelStyleBullet(
+                level=str(self.parent.level), 
+                stylename="Standard",
+                bulletchar=UnorderedListItem.bulletDict.get(selectedBullet, 
+                    UnorderedListItem.bulletDict['disc'])
+                )
+
+            prop = ListLevelProperties(
+                spacebefore=str(0.25*self.parent.level) + "in", 
+                minlabelwidth="0.25in", 
+                fontname=self.element.attrib.get('bulletFontName', 'Arial')
+                )
+            bul.addElement(prop)
+            newStyle.addElement(bul)
+
+            # Add to styles repo
+            parent = self.parent
+            while parent.element.tag != 'document':
+                parent = parent.parent
+            parent.document.automaticstyles.addElement(newStyle)
+            return newStyleName
+        else:
+            return None
+
+
+    def createList(self):
+        # Attempts to retrieve <li> style name, but sets it to it's parent's 
+        # style name if it doesn't have one
+        styleName = (self.newStyleName if self.newStyleName!=None 
+                    else ListBase.createdStylesDict[self.parent.styleID])
+
+        # Creates a new List ID for every <li> element since each of them 
+        # creates a new list
+        listID = str(uuid.uuid4())
+
+        # Keeps track of the list ID of every first <li> element
+        # for subsequent <li> element lists to continue from
+        if self.parent.element.getchildren()[0] == self.element and isinstance(self, OrderedListItem): 
+            ListItem.ListIDTracker.append(listID)
+
+        # Creates a new list for each <li> element and continues from the 
+        # initial created list by its listID
+        if isinstance(self, OrderedListItem):
+            self.parent.list = odf.text.List(
+                id = listID,
+                continuelist=ListItem.ListIDTracker[-1],
+                stylename=styleName
+                )
+        else:
+            self.parent.list = odf.text.List(
+                id = listID,
+                stylename=styleName
+                )
+
+        # Removes the last list ID from the tracker list if the current <li>
+        # element is the last element
+        if self.parent.element.getchildren()[-1] == self.element and isinstance(self, OrderedListItem):
+            del(ListItem.ListIDTracker[-1])
+
+        # Adds list to the document
+        self.parent.contents.addElement(self.parent.list)
+
 
     def _convertSimpleContent(self):
         # Check whether we need to create a para element.
@@ -77,15 +135,17 @@ class ListItem(flowable.Flow):
         # Add paragraph to list item.
         self.element.append(para)
 
+
     def process(self):
         self.styleID = str(uuid.uuid4())
         self._convertSimpleContent()
         self.item = odf.text.ListItem()
+        self.newStyleName = self.modifyStyle()
+        self.createList()
         self.parent.list.addElement(self.item)
         self.contents = self.item
         super(ListItem, self).process()
-        # self.modifyStyle()
-
+        
 
 class OrderedListItem(ListItem):
     signature = rml_list.IOrderedListItem
@@ -96,10 +156,10 @@ class UnorderedListItem(ListItem):
     signature = rml_list.IUnorderedListItem
     styleAttributes = ListItem.styleAttributes + ['value']
     bulletDict = {
-    'disc':u'\u2022',
-    'square':u'\u25AA',
-    'diamond':u'\u2B29',
-    'rarrowhead':u'\u2B9E'
+    'disc':u'\u25CF',
+    'square':u'\u25A0',
+    'diamond':u'\u25C6',
+    'rarrowhead': u'\u27A4',
     }
     bulletList = ['disc', 'square', 'diamond', 'rarrowhead']
 
@@ -119,7 +179,8 @@ class createStyle(object):
             bullet = ListLevelStyleBullet(
                 level=str(self.listLevel), 
                 stylename="Standard",
-                bulletchar=UnorderedListItem.bulletDict[selectedBullet]
+                bulletchar=UnorderedListItem.bulletDict.get(selectedBullet, 
+                    UnorderedListItem.bulletDict['disc'])
                 )
             prop = ListLevelProperties(
                 spacebefore=self.spacebefore, 
@@ -198,16 +259,6 @@ class ListBase(flowable.Flowable):
         return style
 
 
-    def createList(self):
-        # XXX: Removed id from here
-        # Applies style retrieved from createdStylesDict
-        styleName = ListBase.createdStylesDict[self.styleID]
-        self.list = odf.text.List(
-            stylename=styleName
-            )
-        self.contents.addElement(self.list)
-
-
     def determineStyle(self):
         # Checks if the list was supplied an already declared style
         existingStyleName = self.element.attrib.get('style', None)
@@ -232,15 +283,8 @@ class ListBase(flowable.Flowable):
             self.level = 1
             self.rootList = self
 
-        # Handles list style creation
-        children = self.element.getchildren()
-        if len(children)==0: return
-        else:
-            # Generates a random styleID for each new list
-            self.styleID = str(uuid.uuid4())
-            self.determineStyle()
-            # XXX: Check back on this
-            for child in children: self.createList()
+        self.styleID = str(uuid.uuid4())
+        self.determineStyle()
 
         # Add all list items.
         self.processSubDirectives()

@@ -39,7 +39,6 @@ from shoobx.rml2odt.interfaces import IContentContainer
 class ListItem(flowable.Flow):
     signature = rml_flowable.IParagraph
     styleAttributes = zope.schema.getFieldNames(stylesheet.IMinimalListStyle)
-    createdLiStyles = {}
     ListIDTracker = []
     liStyleCount = 0
 
@@ -93,7 +92,7 @@ class ListItem(flowable.Flow):
             ListItem.ListIDTracker.append(listID)
 
         # Creates a new list for each <li> element and continues from the 
-        # initial created list by its listID
+        # initial created list by its listID if it's parent is an <ol>
         if isinstance(self, OrderedListItem):
             self.parent.list = odf.text.List(
                 id = listID,
@@ -101,6 +100,7 @@ class ListItem(flowable.Flow):
                 stylename=styleName
                 )
         else:
+        # Creates a new list for each <li> element if it's parent is a <ul>
             self.parent.list = odf.text.List(
                 id = listID,
                 stylename=styleName
@@ -165,8 +165,7 @@ class UnorderedListItem(ListItem):
 
 
 class createStyle(object):
-    # XXX: styleCount starts with 3 so that 1 & 2 can be defaults
-    styleCount = 2
+    styleCount = 0
 
     def applyAttributes(self, attributes):
         if self.tag == "ul":
@@ -219,7 +218,6 @@ class createStyle(object):
         while parent.element.tag != 'document':
             parent = parent.parent
         parent.document.automaticstyles.addElement(self.new_style)
-        ListBase.createdStylesLog[self.name] = self.new_style
 
 
     def __init__(self, tag, listLevel, parent, attributes):
@@ -242,9 +240,6 @@ class ListBase(flowable.Flowable):
     attrMapping = {}
     # Stores list id and maps that to name of created style
     createdStylesDict = {}
-    # Stores name of created style and maps that to copy of the style element itself
-    createdStylesLog = {}
-
 
     def __init__(self, *args, **kw):
         super(ListBase, self).__init__(*args, **kw)
@@ -268,7 +263,8 @@ class ListBase(flowable.Flowable):
                 self.element.attrib)
             ListBase.createdStylesDict[self.styleID] = style.name
         else:
-            # XXX: Find a way to check if provided styleNames have already been initialized
+            # XXX: Find a way to check if provided styleNames have already 
+            # been initialized
             ListBase.createdStylesDict[self.styleID] = existingStyleName
 
 

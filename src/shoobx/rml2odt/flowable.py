@@ -86,11 +86,24 @@ class Spacer(Flowable):
     signature = rml_flowable.ISpacer
     klass = reportlab.platypus.Spacer
     attrMapping = {'length': 'height'}
+    spacerCount = 0
 
     def process(self):
+        Spacer.spacerCount+=1
+        spacerStyleName = "Sp%d"%Spacer.spacerCount
+        spacer = odf.style.Style(name=spacerStyleName, family='paragraph')
+        prop = odf.style.ParagraphProperties()
+        length = self.element.attrib.get('length', "0.5in")
+        prop.setAttribute("linespacing", length)
+        spacer.addElement(prop)
+        self.parent.parent.document.automaticstyles.addElement(spacer) 
+
         self.odtParagraph = odf.text.P()
-        # length = self.element.attrib.get('length', "o.5in")
+        self.odtParagraph.setAttribute('stylename', spacerStyleName)
+
         self.contents.addElement(self.odtParagraph)
+        # if self.element.text:
+        #     self.addSpan(self.element.text)
 
 
 class Illustration(Flowable):

@@ -37,10 +37,10 @@
     <paraStyle name="code uuid" fontName="Courier" fontSize="10pt"/>
     <paraStyle name="sig-small-text" fontSize="7pt" leading="9pt" fontName="Source-Sans-Regular" textColor="Black"/>
     <paraStyle name="sig-small-logo" fontSize="28pt" leading="9pt" fontName="Shoobx" textColor="Black"/>
-    <paraStyle name="Heading1" parent="Heading1" fontName="Garamond-Bold" fontSize="14pt" leading="16pt" alignment="center" spaceAfter="14pt" keepWithNext="true" textColor="red"/>
+    <paraStyle name="Heading1" parent="Heading1" fontName="Arial" fontSize="14pt" leading="16pt" alignment="center" spaceAfter="14pt" keepWithNext="true" textColor="red"/>
     <paraStyle name="style.Heading2" parent="style.Heading2" fontName="Garamond-BoldItalic" fontSize="12pt" textColor="orange"/>
-    <paraStyle name="Heading3" parent="Heading3" fontName="Garamond-BoldItalic" fontSize="10pt"/>
-    <paraStyle name="Heading4" parent="Heading4" fontName="Garamond-BoldItalic" fontSize="8pt"/>
+    <paraStyle name="Heading3" parent="Heading3" fontName="Garamond-BoldItalic" fontSize="10pt" textColor='green'/>
+    <paraStyle name="Heading4" parent="Heading4" fontName="Garamond-BoldItalic" fontSize="8pt" textColor='blue'/>
     <paraStyle name="Heading5" parent="Heading5" fontName="Garamond-Bold" fontSize="8pt"/>
     <paraStyle name="Heading6" parent="Heading6" fontName="Garamond-Bold" fontSize="7pt"/>
     <paraStyle name="ExhibitTitle" parent="Heading1" fontName="Garamond-Bold" fontSize="12pt" alignment="center"/>
@@ -58,6 +58,7 @@
     <listStyle name="Whereases" bulletFontName="Garamond-Bold" bulletFontSize="12pt" bulletType="bullet" bulletDedent="80" leftIndent="80" start="WHEREAS:"/>
     <listStyle name="Resolutions" bulletFontName="Garamond-Bold" bulletFontSize="12pt" bulletType="bullet" bulletDedent="80" leftIndent="80" start="RESOLVED:"/>
    <paraStyle name="ResolutionIndent" parent="Normal" leftIndent="80pt"/>
+   <paraStyle name='Normal' parent='Normal' borderColor="red" borderWidth="2" borderPadding="5 10 30" borderRadius="5" backColor="yellow" spaceBefore="5" spaceAfter="35" leftIndent="10" rightIndent="10" />
    
   </stylesheet>
 

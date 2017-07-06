@@ -48,6 +48,8 @@ def styleFromString(name, specifiers, delim, spacing, showAllLevels):
 
 def styleFromList( styleName, specArray, spacing, showAllLevels):
     bullet = ""
+    fontname = ""
+    fontsize = ""
     numPrefix = ""
     numSuffix = ""
     numberFormat = ""
@@ -72,6 +74,7 @@ def styleFromList( styleName, specArray, spacing, showAllLevels):
             numPrefix = specification[0:m.start(1)]
             numSuffix = specification[m.end(1):]
             bullet = ""
+            fontname = ""
             numbered = True
             if (showAllLevels):
                 displayLevels = i + 1
@@ -80,6 +83,7 @@ def styleFromList( styleName, specArray, spacing, showAllLevels):
         else:    # it's a bullet style
             bullet = specification
             numPrefix = ""
+            fontname = ""
             numSuffix = ""
             numberFormat = ""
             displayLevels = 1
@@ -88,6 +92,8 @@ def styleFromList( styleName, specArray, spacing, showAllLevels):
             lls = ListLevelStyleNumber(level=(i+1))
             if (numPrefix != ''):
                 lls.setAttribute('numprefix', numPrefix)
+            if (fontname != ''):
+                lls.setAttribute('fontname', bulletFontName)
             if (numSuffix != ''):
                 lls.setAttribute('numsuffix', numSuffix)
             lls.setAttribute('displaylevels', displayLevels)

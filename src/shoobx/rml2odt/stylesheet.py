@@ -14,7 +14,9 @@
 """Style Related Element Processing
 """
 import copy
+import odf.easyliststyle
 import odf.style
+import odf.text
 import reportlab.lib.styles
 import reportlab.lib.enums
 import reportlab.platypus
@@ -78,11 +80,35 @@ def registerParagraphStyle(doc, name, rmlStyle):
     paraProps.setAttribute(
         'marginbottom', pt(rmlStyle.spaceAfter))
     paraProps.setAttribute(
-        'borderlinewidth', pt(rmlStyle.borderWidth))
+        'padding', str(rmlStyle.borderPadding))
     paraProps.setAttribute(
-        'padding', pt(rmlStyle.borderPadding))
+        'paddingtop', str(rmlStyle.spaceBefore))
+    paraProps.setAttribute(
+        'paddingbottom', pt(rmlStyle.spaceAfter))
+    paraProps.setAttribute(
+        'paddingleft', pt(rmlStyle.leftIndent))
+    paraProps.setAttribute(
+        'paddingright', pt(rmlStyle.rightIndent))
+    paraProps.setAttribute(
+        'pagenumber', pt(rmlStyle.pageNumber))
+    paraProps.setAttribute(
+        'bordertop', (rmlStyle.spaceBefore))
+    paraProps.setAttribute(
+        'borderbottom', (rmlStyle.spaceAfter))
+    paraProps.setAttribute(
+        'borderleft', (rmlStyle.leftIndent))
+    paraProps.setAttribute(
+        'borderright', (rmlStyle.rightIndent))
+    paraProps.setAttribute(
+        'borderlinewidth', (rmlStyle.borderWidth))
+    paraProps.setAttribute(
+        'borderlinewidthtop', (rmlStyle.borderWidth))
+    
 
-
+    if rmlStyle.backColor is not None:
+        paraProps.setAttribute('backgroundcolor', '#'+rmlStyle.backColor.hexval()[2:])
+    
+ 
 
     # Text Properties
     textProps = odf.style.TextProperties()
@@ -104,27 +130,79 @@ def registerParagraphStyle(doc, name, rmlStyle):
     
  
 
-    # Unsupported options:
-    # - bulletFontName
-    # - bulletFontSize
-    # - bulletIndent
-    # - bulletColor
-    # - wordWrap
-    # - borderRadius
-    # - textTransform
-    # - endDots
-    # - splitLongWords
-    # - underlineProportion
-    # - bulletAnchor
-    # - justifyBreaks
-    # - spaceShrinkage
 
+def registerListStyle(doc, attributes):
+    name = attributes.get('name', 'undefined')
+    bulletType = attributes.get('start', 'disc')
+    fontname = attributes.get('bulletFontName', 'Arial')
+    bulletColor = attributes.get('bulletColor', 'black')
+    bulletFormat = attributes.get('bulletFormat', "%s:")
+    textalign = attributes.get('textalign', 'left')
+    
+    textDict = {
+    'right',
+    'left',
+    'center',
+    'justify',
+    }
+
+    bulletDict = {
+    'disc':u'\u2022',
+    'square':u'\u25AA',
+    'diamond':u'\u2B29',
+    'arrowhead':u'\u2B9E'
+    }
+
+
+
+    # Create new style object
+    odtStyle = odf.text.ListStyle(name=name)
+
+    # Create new bullet object
+    try:
+        retrievedBullet = bulletDict[bulletType]
+    except:
+        retrievedBullet = bulletType
+
+    bullet = odf.text.ListLevelStyleBullet(
+        bulletchar = retrievedBullet, 
+        level='1', 
+        stylename="Standard",
+        bulletrelativesize='75%')
+
+    
+    odf.style.ListLevelProperties()
+
+    listProps = odf.style.ListLevelProperties()
+
+    
+    # Declare properties of the list style
+    # You can declare fontname here (which should be supplied as an attribute)
+   
+    
+    listProps.setAttribute('minlabelwidth', '0.25in')
+    listProps.setAttribute('minlabeldistance','0.15in')
+   
+
+
+    # Add properties to created bullet style object
+    bullet.addElement(listProps)
+   
+    
+   
+    # Add bullet object to created style
+    odtStyle.addElement(bullet)
+    
+
+    doc.automaticstyles.addElement(odtStyle)
+    
+    # Finally, add style to collection of styles (which can be accessed anywhere)
+    # in the document
+
+    
 
 class ParagraphStyle(directive.RMLDirective):
     signature = rml_stylesheet.IParagraphStyle
-
-
-    
 
     def process(self):
         kwargs = dict(self.getAttributeValues())
@@ -135,31 +213,17 @@ class ParagraphStyle(directive.RMLDirective):
         style.name = name[6:] if name.startswith('style.') else name
         for attrName, attrValue in kwargs.items():
             setattr(style, attrName, attrValue)
-
-    
         document = self.parent.parent.document
         registerParagraphStyle(document, name, style)
-
-
-
             
 
 class ListStyle(directive.RMLDirective):
     signature = rml_stylesheet.IListStyle
 
     def process(self):
-        kwargs = dict(self.getAttributeValues())
-        parent = kwargs.pop(
-            'parent', reportlab.lib.styles.ListStyle(name='List'))
-        name = kwargs.pop('name')
-        style = copy.deepcopy(parent)
-        style.name = name[6:] if name.startswith('style.') else name
-
-        for name, value in kwargs.items():
-            setattr(style, name, value)
-
-        manager = attr.getManager(self)
-        manager.styles[style.name] = style
+        attributeDict = self.element.attrib
+        document=self.parent.parent.document
+        registerListStyle(document, attributeDict)
 
 
 class Stylesheet(directive.RMLDirective):
@@ -168,7 +232,7 @@ class Stylesheet(directive.RMLDirective):
     factories = {
         'initialize': Initialize,
         'paraStyle': ParagraphStyle,
-        'para': ParagraphStyle,
         #'blockTableStyle': BlockTableStyle,
-        #'listStyle': ListStyle,
+        'listStyle': ListStyle,
         }
+

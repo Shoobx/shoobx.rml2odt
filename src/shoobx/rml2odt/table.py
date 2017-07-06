@@ -59,9 +59,10 @@ class TableBulkData(directive.RMLDirective):
 	signature = rml_flowable.ITableBulkData
 
 	def process(self):
+		# Retrieves the text in the bulkData tag.
 		contents = self.element.text.strip().split('\n')
 		contents = [x.strip() for x in contents]
-		# newTable = lxml.etree.Element('blockTable')
+		# Converts the retrieved text into table row and cell objects
 		for rowData in contents:
 			newRow = lxml.etree.Element('tr')
 			for cell in range(len(rowData.split(','))):
@@ -69,10 +70,10 @@ class TableBulkData(directive.RMLDirective):
 				newCell.text = rowData.split(',')[cell]
 				newRow.append(newCell)
 			self.parent.element.append(newRow)
-		
+		# Removes bulkData object so that infinite recursion loop does not
+		# occur when parent is processed.
 		self.parent.element.remove(self.element)
 		self.parent.process()
-		#self.element.append(newTable)
 			
 
 class TableRow(directive.RMLDirective):

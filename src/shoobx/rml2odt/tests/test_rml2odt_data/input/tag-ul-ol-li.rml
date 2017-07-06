@@ -56,60 +56,45 @@
   </stylesheet>
 
   <story>
-
     <title>
       <font face="Courier">&lt;ul&gt;</font>,
       <font face="Courier">&lt;ol&gt;</font>, and
       <font face="Courier">&lt;li&gt;</font>
-      Tags Demo</title>
-
-    <ul bulletColor="orange" bulletFontName="Times-Roman">
-      <li bulletColor="gray" bulletFontName="Helvetica">
-        <para>Welcome to RML 1</para>
-      </li>
-      <li>
-        <ol bulletColor="red" bulletFontName="Times-Roman" bulletFontSize="8">
-          <li value="disc" bulletFontName="Helvetica">
-            <para>unordered 1</para>
-          </li>
-          <li value="square" bulletColor="blue">
-            <para>unordered 2</para>
-          </li>
-          <li>
-            <ul>
-              <li>
-                <para>Unordered -another one</para>
-              </li>
-              <li>
-                <para>Unordered -another one</para>
-              </li>
-            </ul>
-          </li>
-          <li value="diamond" bulletColor="green">
-            <para>unordered 3</para>
-          </li>
-          <li value="rarrowhead" bulletColor="yellow">
-            <para>unordered 4</para>
-          </li>
-        </ol>
-      </li>
-      <li bulletColor="gray" bulletFontName="Helvetica">
-        <para>Welcome to RML 2</para>
-      </li>
-    </ul>
-
-    <spacer length="0.5in" />
+      Tags Demo
+    </title>
 
     <ol bulletColor="orange" bulletFontName="Times-Roman">
-      <li bulletColor="gray" bulletFontName="Helvetica">
-        <para>Item 1</para>
-      </li>
+      <li bulletColor="gray" bulletFontName="Helvetica"><para>Welcome to RML 1</para></li>
       <li>
-        <para>Item 2</para>
+        <ul bulletColor="red" bulletFontName="Times-Roman" bulletFontSize="8">
+          <li value="disc" bulletFontName="Helvetica"><para>unordered 1</para></li>
+          <li value="square" bulletColor="blue"><para>unordered 2</para></li>
+          <li>
+            <ul>
+              <li><para>Unordered - another one</para></li>
+              <li><para>Unordered - another one</para></li>
+            </ul>
+          </li>
+          <li value="diamond" bulletColor="green"><para>unordered 3</para></li>
+          <li value="rarrowhead" bulletColor="yellow"><para>unordered 4</para></li>
+          <li><para>unordered 5</para></li>
+          <li><para>unordered 6</para></li>
+          <li value="disc" bulletColor="green"><para>unordered 3</para></li>
+          <li value="triangle" bulletColor="yellow"><para>unordered 4</para></li>
+        </ul>
       </li>
+      <li><para>Welcome to RML 2</para></li>
+      <li><para>Welcome to RML 3</para></li>
     </ol>
 
-    <spacer length="0.5in" />
+
+    <spacer length="1.5in" />
+
+
+    <ol bulletColor="orange" bulletFontName="Times-Roman">
+      <li bulletColor="gray" bulletFontName="Helvetica"><para>Item 1</para></li>
+      <li><para>Item 2</para></li>
+    </ol>
 
     <ul style="MyList">
       <li><para>One</para></li>
@@ -117,7 +102,9 @@
       <li><para>Three</para></li>
     </ul>
 
-    <spacer length="0.5in" />
+
+    <spacer length="1in" />
+
 
     <ol style="MyEnum">
       <li><para>One</para></li>
@@ -125,13 +112,16 @@
       <li><para>Three</para></li>
     </ol>
 
-    <spacer length="0.5in" />
+
+    <spacer length="0.75in" />
+
 
     <ul style="CustomBulletTextList">
       <li><para>One</para></li>
       <li><para>Two</para></li>
       <li><para>Three</para></li>
     </ul>
+
 
     <spacer length="0.8in" />
 
@@ -145,7 +135,7 @@
       <li><para>Three</para></li>
     </ol>
 
-    <spacer length="0.5in" />
+    <spacer length="0.3in" />
 
     <ol style="Ordered" bulletType="a">
       <li><para>One</para></li>
@@ -153,7 +143,7 @@
       <li><para>Three</para></li>
     </ol>
 
-    <spacer length="0.5in" />
+    <spacer length="0.2in" />
 
     <ol style="Ordered" bulletType="A">
       <li><para>One</para></li>
@@ -169,7 +159,7 @@
       <li><para>Three</para></li>
     </ol>
 
-    <spacer length="0.5in" />
+    <spacer length="1in" />
 
     <ol style="Ordered" bulletType="I">
       <li><para>One</para></li>
@@ -177,7 +167,7 @@
       <li><para>Three</para></li>
     </ol>
 
-    <spacer length="0.5in" />
+    <spacer length="1.5in" />
 
     <ol style="Ordered" bulletType="l">
       <li><para>One</para></li>
@@ -193,7 +183,7 @@
       <li><para>Three</para></li>
     </ol>
 
-    <spacer length="0.5in" />
+    <spacer length="1in" />
 
     <ol style="Ordered" bulletType="o">
       <li><para>One</para></li>
@@ -201,7 +191,7 @@
       <li><para>Three</para></li>
     </ol>
 
-    <spacer length="0.5in" />
+    <spacer length="0.1in" />
 
     <ol style="Ordered" bulletType="O">
       <li><para>One</para></li>
@@ -209,7 +199,7 @@
       <li><para>Three</para></li>
     </ol>
 
-    <spacer length="0.5in" />
+    <spacer length="0.05in" />
 
     <ol style="Ordered" bulletType="r">
       <li><para>One</para></li>
@@ -236,5 +226,4 @@
     </ol>
 
   </story>
-
 </document>

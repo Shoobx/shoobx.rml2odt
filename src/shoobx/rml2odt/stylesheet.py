@@ -24,7 +24,7 @@ from z3c.rml import attr, directive, interfaces, occurence, SampleStyleSheet, \
     special
 
 from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT, TA_JUSTIFY
-from shoobx.rml2odt import flowable
+# from shoobx.rml2odt import flowable
 from z3c.rml import stylesheet as rml_stylesheet
 
 
@@ -153,6 +153,65 @@ def registerListStyle(doc, attributes):
     'arrowhead':u'\u2B9E'
     }
 
+    # Unsupported options:
+    
+    # - bulletFontSize
+    # - bulletIndent
+    # - bulletColor
+    # - wordWrap
+    # - borderRadius
+    # - textTransform
+    # - endDots
+    # - splitLongWords
+    # - underlineProportion
+    # - bulletAnchor
+    # - justifyBreaks
+    # - spaceShrinkage
+
+
+def registerListStyle(doc, attributes):
+    name = attributes.get('name', 'undefined')
+    bulletType = attributes.get('start', 'disc')
+    fontSize = attributes.get('bulletFontSize', '12')
+    fontName = attributes.get('bulletFontName', 'Arial')
+    bulletColor = attributes.get('bulletColor', 'black')
+    bulletDict = {
+    'disc':u'\u25CF',
+    'square':u'\u25A0',
+    'diamond':u'\u25C6',
+    'rarrowhead': u'\u27A4',
+    }
+
+    # Create new sttyle object
+    odtStyle = odf.text.ListStyle(name=name)
+    # Create new bullet object
+    try:
+        retrievedBullet = bulletDict[bulletType]
+    except:
+        retrievedBullet = bulletType
+    bullet = odf.text.ListLevelStyleBullet(
+        bulletchar = retrievedBullet, 
+        level=1, 
+        stylename="Standard")
+    # Declare properties of the list style
+    # You can declare fontname here (which should be supplied as an attribute)
+    listProps = odf.style.ListLevelProperties(minlabelwidth='0.25in')
+
+
+    # if rmlStyle.bulletFontName is not None:
+    #     doc.automaticstyles.addElement(
+    #         odf.text.ListStyle(
+    #             name = rmlStyle.bulletFontName))
+    #     listProps.setAttribute('fontname',rmlStyle.bulletFontName)
+
+    # Add properties to created bullet style object
+    bullet.addElement(listProps)
+    # Add bullet object to created style
+    odtStyle.addElement(bullet)
+    # Finally, add style to collection of styles (which can be accessed anywhere)
+    # in the document
+    doc.automaticstyles.addElement(odtStyle)
+    
 
 
     # Create new style object
@@ -215,6 +274,7 @@ class ParagraphStyle(directive.RMLDirective):
             setattr(style, attrName, attrValue)
         document = self.parent.parent.document
         registerParagraphStyle(document, name, style)
+
             
 
 class ListStyle(directive.RMLDirective):
@@ -234,5 +294,7 @@ class Stylesheet(directive.RMLDirective):
         'paraStyle': ParagraphStyle,
         #'blockTableStyle': BlockTableStyle,
         'listStyle': ListStyle,
+
         }
+
 

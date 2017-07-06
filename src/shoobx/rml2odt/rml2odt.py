@@ -44,7 +44,7 @@ def parseString(xml, removeEncodingLine=True, filename=None):
     return output
 
 
-def go(xmlInputName, outputFileName=None, outDir=None):
+def go(xmlInputName, outputFileName='', outDir=None):
     if hasattr(xmlInputName, 'read'):
         # it is already a file-like object
         xmlFile = xmlInputName

@@ -37,9 +37,10 @@ class Document(directive.RMLDirective):
 
     factories = {
         'story': template.Story,
-        'template': template.Template,
-        'pageGraphics': template.PageGraphics,
-        'stylesheet': stylesheet.Stylesheet
+        # 'template': template.Template,
+        # 'pageGraphics': template.PageGraphics,
+        'stylesheet': stylesheet.Stylesheet,
+        # 'frame': template.Frame
         }
 
     def __init__(self, element):
@@ -77,9 +78,15 @@ class Document(directive.RMLDirective):
         # Handle Flowable-based documents.
         if self.element.find('template') is not None:
             # Probably wanna add style & template info here
+
             # self.processSubDirectives(select=('template', 'story', 'pageTemplate', 'styleSheet', 'pageGraphics'))
             self.processSubDirectives(select=('stylesheet'))
             # self.processSubDirectives(select=('template'))
+            # self.processSubDirectives(select=('story'))
+
+
+            #self.processSubDirectives(select=('template', 'story', 'pageTemplate', 'pageGraphics'))
+            # self.processSubDirectives(select=('story','template', 'frame'))
             self.processSubDirectives(select=('story'))
 
 

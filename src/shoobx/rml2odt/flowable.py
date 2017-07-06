@@ -23,6 +23,7 @@ import zope.interface
 from z3c.rml import directive, occurence
 from z3c.rml import flowable as rml_flowable
 from z3c.rml import template as rml_template
+from shoobx.rml2odt import stylesheet as rml_stylesheet
 
 # from z3c.rml flowable.py file
 from z3c.rml import attr, directive, interfaces, platypus
@@ -94,9 +95,10 @@ class Spacer(Flowable):
         spacer = odf.style.Style(name=spacerStyleName, family='paragraph')
         prop = odf.style.ParagraphProperties()
         length = self.element.attrib.get('length', "0.5in")
-        prop.setAttribute("linespacing", length)
+        intLength = float(length.replace("in", ""))/2
+        prop.setAttribute("linespacing", str(intLength)+'in')
         spacer.addElement(prop)
-        self.parent.parent.document.automaticstyles.addElement(spacer) 
+        self.parent.parent.document.automaticstyles.addElement(spacer)
 
         self.odtParagraph = odf.text.P()
         self.odtParagraph.setAttribute('stylename', spacerStyleName)
@@ -125,10 +127,9 @@ class SubParagraphDirective(directive.RMLDirective):
     @lazy.lazy
     def paragraph(self):
         para = self.parent
-        while not IParagraph.providedBy(para):
+        while not rml_flowable.IParagraph.providedBy(para):
             para = para.parent
         return para
-
 
 class IComplexSubParagraphDirective(interfaces.IRMLDirectiveSignature):
     """A sub-paragraph directive that can contian further elements."""
@@ -167,31 +168,22 @@ class ComplexSubParagraphDirective(SubParagraphDirective):
             self.paragraph.addSpan(self.element.tail)
 
 
-class IItalic(IComplexSubParagraphDirective):
-    """Renders the text inside as italic."""
-
 class Italic(ComplexSubParagraphDirective):
-    signature = IItalic
+    signature = rml_flowable.IItalic
 
     def preProcess(self):
         self.setStyle('italic', True)
 
 
-class IBold(IComplexSubParagraphDirective):
-    """Renders the text inside as bold."""
-
 class Bold(ComplexSubParagraphDirective):
-    signature = IBold
+    signature = rml_flowable.IBold
 
     def preProcess(self):
         self.setStyle('bold', True)
 
 
-class IUnderline(IComplexSubParagraphDirective):
-    """Renders the text inside as underline."""
-
 class Underline(ComplexSubParagraphDirective):
-    signature = IUnderline
+    signature = rml_flowable.IUnderLine
 
     def preProcess(self):
         self.setStyle('underline', True)
@@ -263,12 +255,8 @@ class Sub(ComplexSubParagraphDirective):
         self.setStyle('subscript', True)
 
 
-class IBreak(interfaces.IRMLDirectiveSignature):
-    """Adds a break in the paragraph.
-    """
-
 class Break(SubParagraphDirective):
-    signature = IBreak
+    signature = rml_flowable.IBreak
 
     def process(self):
         span = self.paragraph.odtParagraph.addElement(odf.text.LineBreak())
@@ -277,12 +265,8 @@ class Break(SubParagraphDirective):
             self.paragraph.addSpan(self.element.tail)
 
 
-class IPageNumber(interfaces.IRMLDirectiveSignature):
-    """Adds a break in the paragraph.
-    """
-
 class PageNumber(SubParagraphDirective):
-    signature = IPageNumber
+    signature = rml_flowable.IPageNumber
 
     def process(self):
         span = self.paragraph.addSpan()
@@ -355,23 +339,20 @@ ComplexSubParagraphDirective.factories = {
 
 IComplexSubParagraphDirective.setTaggedValue(
     'directives',
-    (occurence.ZeroOrMore('i', IItalic),
-     occurence.ZeroOrMore('b', IBold),
-     occurence.ZeroOrMore('u', IUnderline),
+    (occurence.ZeroOrMore('i', rml_flowable.IItalic),
+     occurence.ZeroOrMore('b', rml_flowable.IBold),
+     occurence.ZeroOrMore('u', rml_flowable.IUnderLine),
      occurence.ZeroOrMore('strike', IStrike),
-     occurence.ZeroOrMore('strong', IBold),
+     occurence.ZeroOrMore('strong', rml_flowable.IBold),
      occurence.ZeroOrMore('font', IFont),
      occurence.ZeroOrMore('super', ISuper),
      occurence.ZeroOrMore('sub', ISub),
      occurence.ZeroOrMore('a', IAnchor),
-     occurence.ZeroOrMore('br', IBreak),
+     occurence.ZeroOrMore('br', rml_flowable.IBreak),
     )
 )
 
-class IParagraph(zope.interface.Interface):
-    pass
-
-@zope.interface.implementer(IParagraph)
+@zope.interface.implementer(rml_flowable.IParagraph)
 class Paragraph(Flowable):
     signature = rml_flowable.IParagraph
     defaultStyle = 'Normal'
@@ -536,6 +517,15 @@ class Link(Flowable):
         flow = Flow(self.element, self.parent)
         flow.process()
 
+class NextPage(Flowable):
+    signature = rml_flowable.INextPage
+    klass = reportlab.platypus.PageBreak
+
+    def process(self):
+        span = self.paragraph.odtParagraph.addElement(odf.text.PageBreak())
+
+        if self.element.tail:
+            self.paragraph.addSpan(self.element.tail)
 
 class HorizontalRow(Flowable):
     signature = rml_flowable.IHorizontalRow

@@ -23,7 +23,7 @@ from z3c.rml import attr, directive, interfaces, occurence, SampleStyleSheet, \
     special
 
 from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT, TA_JUSTIFY
-from shoobx.rml2odt import flowable
+# from shoobx.rml2odt import flowable
 from z3c.rml import stylesheet as rml_stylesheet
 
 

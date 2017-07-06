@@ -84,16 +84,13 @@
     </ol>
 
 
-    <spacer length="0.5in" />
+    <spacer length="1.5in" />
 
 
     <ol bulletColor="orange" bulletFontName="Times-Roman">
       <li bulletColor="gray" bulletFontName="Helvetica"><para>Item 1</para></li>
       <li><para>Item 2</para></li>
     </ol>
-
-    <spacer length="0.5in" />
-
 
     <ul style="MyList">
       <li><para>One</para></li>
@@ -102,7 +99,7 @@
     </ul>
 
 
-    <spacer length="0.5in" />
+    <spacer length="1in" />
 
 
     <ol style="MyEnum">
@@ -112,7 +109,7 @@
     </ol>
 
 
-    <spacer length="0.5in" />
+    <spacer length="0.75in" />
 
 
     <ul style="CustomBulletTextList">
@@ -123,8 +120,6 @@
 
 
     <spacer length="0.8in" />
-    <spacer length="0.8in" />
-
 
     <h1>Ordered List Bullet Types</h1>
 
@@ -136,7 +131,7 @@
       <li><para>Three</para></li>
     </ol>
 
-    <spacer length="0.5in" />
+    <spacer length="0.3in" />
 
     <ol style="Ordered" bulletType="a">
       <li><para>One</para></li>
@@ -144,7 +139,7 @@
       <li><para>Three</para></li>
     </ol>
 
-    <spacer length="0.5in" />
+    <spacer length="0.2in" />
 
     <ol style="Ordered" bulletType="A">
       <li><para>One</para></li>
@@ -160,7 +155,7 @@
       <li><para>Three</para></li>
     </ol>
 
-    <spacer length="0.5in" />
+    <spacer length="1in" />
 
     <ol style="Ordered" bulletType="I">
       <li><para>One</para></li>
@@ -168,7 +163,7 @@
       <li><para>Three</para></li>
     </ol>
 
-    <spacer length="0.5in" />
+    <spacer length="1.5in" />
 
     <ol style="Ordered" bulletType="l">
       <li><para>One</para></li>
@@ -184,7 +179,7 @@
       <li><para>Three</para></li>
     </ol>
 
-    <spacer length="0.5in" />
+    <spacer length="1in" />
 
     <ol style="Ordered" bulletType="o">
       <li><para>One</para></li>
@@ -192,7 +187,7 @@
       <li><para>Three</para></li>
     </ol>
 
-    <spacer length="0.5in" />
+    <spacer length="0.1in" />
 
     <ol style="Ordered" bulletType="O">
       <li><para>One</para></li>
@@ -200,7 +195,7 @@
       <li><para>Three</para></li>
     </ol>
 
-    <spacer length="0.5in" />
+    <spacer length="0.05in" />
 
     <ol style="Ordered" bulletType="r">
       <li><para>One</para></li>

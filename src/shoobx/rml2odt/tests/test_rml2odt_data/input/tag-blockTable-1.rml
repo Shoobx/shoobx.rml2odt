@@ -9,39 +9,24 @@
 
   <story>
     <title><font face="Courier">&lt;blockTable&gt;</font> Tag Demo</title>
-    <blockTable colWidths="25% 25% 25% 25%" rowHeights="2cm 2cm 2cm 2cm">
+    <blockTable colWidths="50% 15% 15% 20%" rowHeights="25in 25cm 25cm" alignment="center">
       <tr>
         <td>Evaluation Criterium</td>
-        <td>Takeoff</td>
-        <td>Quavo</td>
-        <td>Offset</td>
+        <td>Java</td>
+        <td>Python</td>
+        <td>C++</td>
       </tr>
       <tr>
-        <td>Features</td>
-        <td>4</td>
-        <td>100</td>
-        <td>10</td>
+        <td>Speed</td>
+        <td>8/10</td>
+        <td>9/10</td>
+        <td>10/10</td>
       </tr>
       <tr>
-        <td>Swag</td>
-        <td>12%</td>
-        <td>89%</td>
-        <td>76%</td>
-      </tr>
-      <tr>
-        <td>Favorite Word</td>
-        <td>Mama!</td>
-        <td>
-          <ul>
-            <li>
-              <para>Actavis!</para>
-            </li>
-            <li>
-              <para>Cash!</para>
-            </li>
-          </ul>
-        </td>
-        <td>Cookie!</td>
+        <td>Robustness</td>
+        <td>90%</td>
+        <td>85%</td>
+        <td>79%</td>
       </tr>
     </blockTable>
 

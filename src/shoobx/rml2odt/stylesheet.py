@@ -29,6 +29,7 @@ from z3c.rml import stylesheet as rml_stylesheet
 
 
 
+
 RML2ODT_ALIGNMENTS = {
     TA_LEFT: 'left',
     TA_CENTER: 'center',
@@ -56,6 +57,7 @@ def registerParagraphStyle(doc, name, rmlStyle):
     doc.automaticstyles.addElement(odtStyle)
 
     # Paragraph Properties
+
     paraProps = odf.style.ParagraphProperties()
     odtStyle.addElement(paraProps)
     paraProps.setAttribute(
@@ -80,30 +82,20 @@ def registerParagraphStyle(doc, name, rmlStyle):
     paraProps.setAttribute(
         'marginbottom', pt(rmlStyle.spaceAfter))
     paraProps.setAttribute(
-        'padding', str(rmlStyle.borderPadding))
-    paraProps.setAttribute(
-        'paddingtop', str(rmlStyle.spaceBefore))
-    paraProps.setAttribute(
-        'paddingbottom', pt(rmlStyle.spaceAfter))
-    paraProps.setAttribute(
-        'paddingleft', pt(rmlStyle.leftIndent))
-    paraProps.setAttribute(
-        'paddingright', pt(rmlStyle.rightIndent))
-    paraProps.setAttribute(
         'pagenumber', pt(rmlStyle.pageNumber))
     paraProps.setAttribute(
-        'bordertop', str(rmlStyle.spaceBefore))
+        'borderlinewidth', pt(rmlStyle.borderWidth))
     paraProps.setAttribute(
-        'borderbottom', str(rmlStyle.spaceAfter))
+        'borderlinewidthtop', pt(rmlStyle.borderWidth))
     paraProps.setAttribute(
-        'borderleft', str(rmlStyle.leftIndent))
-    paraProps.setAttribute(
-        'borderright', str(rmlStyle.rightIndent))
-    paraProps.setAttribute(
-        'borderlinewidth', str(rmlStyle.borderWidth))
-    paraProps.setAttribute(
-        'borderlinewidthtop', str(rmlStyle.borderWidth))
-    
+        'borderlinewidthbottom', pt(rmlStyle.borderWidth))
+
+    if rmlStyle.padding:
+        paraProps.setAttribute(
+            'paddingtop', 'paddingbottom', 'paddingleft', 'paddingright')
+    if rmlStyle.border is not None:
+        paraProps.setAttribute(
+            'bordertop', 'borderbottom', 'borderleft', 'borderright')
 
     if rmlStyle.backColor is not None:
         paraProps.setAttribute('backgroundcolor', '#'+rmlStyle.backColor.hexval()[2:])
@@ -111,6 +103,7 @@ def registerParagraphStyle(doc, name, rmlStyle):
  
 
     # Text Properties
+
     textProps = odf.style.TextProperties()
     odtStyle.addElement(textProps)
 
@@ -135,28 +128,24 @@ def registerListStyle(doc, attributes):
     name = attributes.get('name', 'undefined')
     bulletType = attributes.get('start', 'disc')
     fontname = attributes.get('bulletFontName', 'Arial')
-    bulletColor = attributes.get('bulletColor', 'black')
     bulletFormat = attributes.get('bulletFormat', "%s:")
     textalign = attributes.get('textalign', 'left')
     
-    textDict = {
-    'right',
-    'left',
-    'center',
-    'justify',
-    }
 
     bulletDict = {
-    'disc':u'\u2022',
-    'square':u'\u25AA',
-    'diamond':u'\u2B29',
-    'arrowhead':u'\u2B9E'
-    }
+     'disc':u'\u2022',
+     'square':u'\u25AA',
+     'diamond':u'\u2B29',
+     'arrowhead':u'\u2B9E'
+     }
+
 
 
 
     # Create new style object
+    rmlStyle = reportlab.lib.styles
     odtStyle = odf.text.ListStyle(name=name)
+
 
     # Create new bullet object
     try:
@@ -165,31 +154,40 @@ def registerListStyle(doc, attributes):
         retrievedBullet = bulletType
 
     bullet = odf.text.ListLevelStyleBullet(
-        bulletchar = retrievedBullet, 
-        level='1', 
-        stylename="Standard",
-        bulletrelativesize='75%')
+         bulletchar = retrievedBullet, 
+         level='1', 
+         stylename="Standard",
+         bulletrelativesize='75%')
+
     odf.style.ListLevelProperties()
 
     listProps = odf.style.ListLevelProperties()
+
 
     
     # Declare properties of the list style
     # You can declare fontname here (which should be supplied as an attribute)
    
-    
+
+    listProps.setAttribute('spacebefore', '0.15in')
+    listProps.setAttribute('fontname', str('bulletFontName'))
+    listProps.setAttribute('width', name)
+    listProps.setAttribute('height', name)
+    listProps.setAttribute('textalign', RML2ODT_ALIGNMENTS)
     listProps.setAttribute('minlabelwidth', '0.25in')
     listProps.setAttribute('minlabeldistance','0.15in')
    
 
 
     # Add properties to created bullet style object
-    bullet.addElement(listProps)
+    bullet.addElement(listProps) 
+   
    
     
    
     # Add bullet object to created style
     odtStyle.addElement(bullet)
+    
     
 
     doc.automaticstyles.addElement(odtStyle)
@@ -197,7 +195,8 @@ def registerListStyle(doc, attributes):
     # Finally, add style to collection of styles (which can be accessed anywhere)
     # in the document
 
-    
+#def registerBlockTableStyle(doc, name, rmlStyle):
+
 
 class ParagraphStyle(directive.RMLDirective):
     signature = rml_stylesheet.IParagraphStyle

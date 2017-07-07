@@ -56,9 +56,9 @@
     <paraStyle name="LegendSmall" parent="Normal" fontName="Garamond-Bold" fontSize="8pt" alignment="justify"/>
     <listStyle name="Simple" bulletFontName="Helvetica" bulletFontSize="6pt" bulletType="bullet" bulletOffsetY="-5pt" bulletDedent="12" leftIndent="24" start="circle"/>
     <listStyle name="Whereases" bulletFontName="Garamond-Bold" bulletFontSize="12pt" bulletType="bullet" bulletDedent="80" leftIndent="80" start="WHEREAS:"/>
-    <listStyle name="Resolutions" bulletFontName="Garamond-Bold" bulletFontSize="12pt" bulletType="bullet" bulletDedent="80" leftIndent="80" start="RESOLVED:"/>
+    <listStyle name="MyList" parent= "Normal" bulletFontName="Arial" bulletFontSize="12pt" bulletType="bullet" bulletDedent="80" leftIndent="80" start="RESOLVED:"/>
    <paraStyle name="ResolutionIndent" parent="Normal" leftIndent="80pt"/>
-   <paraStyle name='Normal' parent='Normal' borderColor="red" borderWidth="2" borderPadding="5 10 30" borderRadius="5" backColor="yellow" spaceBefore="5" spaceAfter="35" leftIndent="10" rightIndent="10" />
+   <paraStyle name='Normal' parent='Normal' borderWidth="2" borderPadding="5 10 30" backColor="red" spaceBefore="5" spaceAfter="35" leftIndent="10" rightIndent="10" />
    
   </stylesheet>
 

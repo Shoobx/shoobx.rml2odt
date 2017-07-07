@@ -13,6 +13,7 @@
     <initialize>
       <alias id="style.normal" value="style.Normal"/>
     </initialize>
+
     <listStyle
         name="MyList"
         bulletFontName="Arial"

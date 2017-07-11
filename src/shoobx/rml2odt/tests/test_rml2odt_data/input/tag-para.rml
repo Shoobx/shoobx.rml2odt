@@ -37,17 +37,17 @@
     <paraStyle name="code uuid" fontName="Courier" fontSize="10pt"/>
     <paraStyle name="sig-small-text" fontSize="7pt" leading="9pt" fontName="Source-Sans-Regular" textColor="Black"/>
     <paraStyle name="sig-small-logo" fontSize="28pt" leading="9pt" fontName="Shoobx" textColor="Black"/>
-    <paraStyle name="Heading1" parent="Heading1" fontName="Arial" fontSize="14pt" leading="16pt" alignment="center" spaceAfter="14pt" keepWithNext="true" textColor="red"/>
-    <paraStyle name="style.Heading2" parent="style.Heading2" fontName="Garamond-BoldItalic" fontSize="12pt" textColor="orange"/>
-    <paraStyle name="Heading3" parent="Heading3" fontName="Garamond-BoldItalic" fontSize="10pt" textColor='green'/>
+    <paraStyle name="Heading1" parent="Heading1" fontName="Arial" fontSize="14pt" leading="16pt" alignment="center" spaceAfter="14pt" keepWithNext="true" textColor="blue"/>
+    <paraStyle name="style.Heading2" parent="style.Heading2" fontName="Chalkduster" fontSize="12pt" textColor="orange"/>
+    <paraStyle name="Heading3" parent="Heading3" fontName="Arial" fontSize="10pt" textColor='green'/>
     <paraStyle name="Heading4" parent="Heading4" fontName="Garamond-BoldItalic" fontSize="8pt" textColor='blue'/>
     <paraStyle name="Heading5" parent="Heading5" fontName="Garamond-Bold" fontSize="8pt"/>
     <paraStyle name="Heading6" parent="Heading6" fontName="Garamond-Bold" fontSize="7pt"/>
     <paraStyle name="ExhibitTitle" parent="Heading1" fontName="Garamond-Bold" fontSize="12pt" alignment="center"/>
     <paraStyle name="SectionTitle" parent="Normal" fontName="Garamond-Bold" fontSize="12pt" keepWithNext="true"/>
     <listStyle name="SectionEnum" bulletFontName="Garamond" bulletFontSize="12pt" bulletFormat="(%s)"/>
-    <listStyle name="SubSectionEnum" bulletFontName="Garamond" bulletFontSize="12pt" bulletFormat="(%s)" bulletType="a"/>
-    <listStyle name="RomanEnum" bulletFontName="Garamond" bulletFontSize="12pt" bulletFormat="(%s)" bulletType="i" rightIndent="60pt" leftIndent="24pt"/>
+    <listStyle name="SubSectionEnum" bulletFontName="Arial" bulletFontSize="12pt" bulletFormat="(%s)" bulletType="a"/>
+    <listStyle name="RomanEnum" bulletFontName="Chalkduster" bulletFontSize="12pt" bulletFormat="(%s)" bulletType="i" rightIndent="60pt" leftIndent="24pt"/>
     <paraStyle name="MultiHeading" parent="Normal" fontName="Garamond-Bold" fontSize="12pt" keepWithNext="true" alignment="Center"/>
     <paraStyle name="ArticleTitle" parent="Normal" fontName="Garamond-Bold" fontSize="12pt" keepWithNext="true"/>
     <paraStyle name="ArticleEnum" parent="Normal" fontName="Garamond-Bold" fontSize="12pt" keepWithNext="true" alignment="Center" spaceBefore="24pt"/>
@@ -55,7 +55,7 @@
     <paraStyle name="Legend" parent="Normal" fontName="Garamond-Bold" fontSize="12pt" alignment="justify"/>
     <paraStyle name="LegendSmall" parent="Normal" fontName="Garamond-Bold" fontSize="8pt" alignment="justify"/>
     <listStyle name="Simple" bulletFontName="Helvetica" bulletFontSize="6pt" bulletType="bullet" bulletOffsetY="-5pt" bulletDedent="12" leftIndent="24" start="circle"/>
-    <listStyle name="Whereases" bulletFontName="Garamond-Bold" bulletFontSize="12pt" bulletType="bullet" bulletDedent="80" leftIndent="80" start="WHEREAS:"/>
+    <listStyle name="Whereases" bulletFontName="Arial" bulletFontSize="12pt" bulletType="bullet" bulletDedent="80" leftIndent="80" start="WHEREAS:"/>
     <listStyle name="MyList" parent= "Normal" bulletFontName="Arial" bulletFontSize="12pt" bulletType="bullet" bulletDedent="80" leftIndent="80" start="RESOLVED:"/>
    <paraStyle name="ResolutionIndent" parent="Normal" leftIndent="80pt"/>
    <paraStyle name='Normal' parent='Normal' borderWidth="2" borderPadding="5 10 30" backColor="red" spaceBefore="5" spaceAfter="35" leftIndent="10" rightIndent="10" />
@@ -70,8 +70,8 @@
       <para>Link to ReportLab Web Site.</para>
     </link>
 
-    <ul bulletColor="red" bulletFontName="Times-Roman" bulletFontSize="5" rightIndent="10">
-      <li bulletColor="blue" bulletFontName="Helvetica">
+    <ul bulletColor="red" bulletFontName="Chalkduster" bulletFontSize="20" rightIndent="10">
+      <li bulletColor="blue" bulletFontName="Chalkduster">
         <para> unordered 1 </para>
       </li>
       <li>

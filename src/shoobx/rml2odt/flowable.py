@@ -18,6 +18,7 @@ import lazy
 import lxml
 import odf.style
 import odf.text
+import reportlab.lib.styles
 import re
 import zope.interface
 from z3c.rml import directive, occurence
@@ -446,6 +447,7 @@ class Paragraph(Flowable):
         self.processSubDirectives()
 
 
+
 class Preformatted(Paragraph):
     signature = rml_flowable.IPreformatted
     klass = reportlab.platypus.Preformatted
@@ -536,7 +538,6 @@ class HorizontalRow(Flowable):
         # Implement other alignment styles? self.element.attrib has values
         hr = odf.text.P(stylename='Horizontal Line')
         self.parent.contents.addElement(hr)
-
 
 class Flow(directive.RMLDirective):
     factories = {

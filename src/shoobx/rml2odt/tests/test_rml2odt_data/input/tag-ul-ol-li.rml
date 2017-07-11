@@ -16,8 +16,8 @@
 
     <listStyle
         name="MyList"
-        bulletFontName="Arial"
         bulletFontSize="50pt"
+        bulletFontName="Arial"
         bulletColor="green"
         start="diamond"
         />

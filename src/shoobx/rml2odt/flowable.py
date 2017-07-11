@@ -96,17 +96,14 @@ class Spacer(Flowable):
         spacer = odf.style.Style(name=spacerStyleName, family='paragraph')
         prop = odf.style.ParagraphProperties()
         length = self.element.attrib.get('length', "0.5in")
-        intLength = float(length.replace("in", ""))/2
-        prop.setAttribute("linespacing", str(intLength)+'in')
+        unit = length[-2:]
+        floatLength = float(length[:-2])/2
+        prop.setAttribute("linespacing", str(floatLength)+ unit)
         spacer.addElement(prop)
         self.parent.parent.document.automaticstyles.addElement(spacer)
-
         self.odtParagraph = odf.text.P()
         self.odtParagraph.setAttribute('stylename', spacerStyleName)
-
         self.contents.addElement(self.odtParagraph)
-        # if self.element.text:
-        #     self.addSpan(self.element.text)
 
 
 class Illustration(Flowable):

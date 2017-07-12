@@ -51,8 +51,6 @@ def registerParagraphStyle(doc, name, rmlStyle):
     if 'style.' in name:
         name = name[6:]
 
-
-
     odtStyle = odf.style.Style(name=name, family='paragraph')
     doc.automaticstyles.addElement(odtStyle)
 
@@ -61,7 +59,7 @@ def registerParagraphStyle(doc, name, rmlStyle):
     paraProps = odf.style.ParagraphProperties()
     odtStyle.addElement(paraProps)
     paraProps.setAttribute(
-        'linespacing', pt(rmlStyle.leading))
+        'linespacing', pt(rmlStyle.leading-rmlStyle.fontSize))
     paraProps.setAttribute(
         'textalign', RML2ODT_ALIGNMENTS[rmlStyle.alignment])
     if rmlStyle.justifyLastLine:
@@ -125,7 +123,7 @@ def registerParagraphStyle(doc, name, rmlStyle):
         textProps.setAttribute('backgroundcolor', '#'+rmlStyle.backColor.hexval()[2:])
     
 
-def registerListStyle(doc, attributes):
+def registerListStyle(doc, attributes, style, name):
 
     name = attributes.get('name', 'undefined')
     bulletType = attributes.get('start', 'diamond')
@@ -155,12 +153,12 @@ def registerListStyle(doc, attributes):
     listProps.setAttribute('minlabeldistance','0.15in')
     
 
-    if rmlStyle.bulletFontName is not None:
-        doc.fontfacedecls.addElement(
-            odf.style.FontFace(
-                name=rmlStyle.bulletFontName,
-                fontfamily=rmlStyle.bulletFontName))
-        listProps.setAttribute('fontname', rmlStyle.bulletFontName)
+    # if rmlStyle.bulletFontName is not None:
+    #     doc.fontfacedecls.addElement(
+    #         odf.style.FontFace(
+    #             name=rmlStyle.bulletFontName,
+    #             fontfamily=rmlStyle.bulletFontName))
+    #     listProps.setAttribute('fontname', rmlStyle.bulletFontName)
     
     
 

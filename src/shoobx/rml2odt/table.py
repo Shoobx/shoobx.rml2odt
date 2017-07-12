@@ -32,7 +32,7 @@ class TableCell(flowable.Flow):
         # Check whether we need to create a para element.
         # 1. Is there text in the element?
         # 2. Are any of the children valid Flow elements?
-        if (not self.element.text.strip() or
+        if (self.element.text == None or not self.element.text.strip() or
             any([sub.tag in flowable.Flow.factories
                  for sub in self.element])):
             return
@@ -280,7 +280,8 @@ class BlockTable(flowable.Flowable):
             style.addElement(colProps)
             # Apply the width if available.
             colWidth = colWidths[idx]
-            if colWidth.endswith('%'):
+
+            if isinstance(colWidth, basestring) and colWidth.endswith('%'):
                 colProps.setAttribute('relcolumnwidth', colWidth[:-1] + '*')
             else:
                 colProps.setAttribute('columnwidth', colWidth)

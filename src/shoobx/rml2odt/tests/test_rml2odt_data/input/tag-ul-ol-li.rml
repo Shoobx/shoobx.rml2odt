@@ -17,13 +17,14 @@
     <listStyle
         name="MyList"
         bulletFontSize="50pt"
-        bulletFontName="Arial"
+        textalign='right'
+        bulletFontName="Chalkduster"
         bulletColor="green"
         start="diamond"
         />
     <listStyle
         name="MyEnum"
-        bulletFontName="Arial"
+        bulletFontName="Chalkduster"
         bulletFontSize="8pt"
         bulletFormat="(%s)"
         bulletType="a"
@@ -38,8 +39,8 @@
         leftIndent="100"
         />
     <listStyle
-        name="Ordered"
-        bulletFontName="Arial"
+        name="OrderedList"
+        bulletFontName="Chalkduster"
         bulletFontSize="50pt"
         bulletFormat="%s:"
         bulletDedent="100pt"
@@ -93,7 +94,7 @@
 
 
     <ol bulletColor="orange" bulletFontName="Times-Roman">
-      <li bulletColor="gray" bulletFontName="Helvetica"><para>Item 1</para></li>
+      <li bulletColor="gray" bulletFontName="Chalkduster"><para>Item 1</para></li>
       <li><para>Item 2</para></li>
     </ol>
 

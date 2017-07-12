@@ -133,13 +133,16 @@ def registerParagraphStyle(doc, name, rmlStyle):
 
 
 
-def registerListStyle(doc, attributes):
+def registerListStyle(doc, attributes, rmlStyle, name):
 
 
     name = attributes.get('name', 'undefined')
-    bulletType = attributes.get('start', 'disc')
+    bulletType = attributes.get('start', 'diamond')
     bulletFormat = attributes.get('bulletformat', "%s:")
+    bulletOffsetY = attributes.get('bulletOffsetY', '0pt')
+    bulletDedent = attributes.get('bulletDedent', '50pt')
     fontsize = attributes.get('bulletFontSize', '14pt')
+   
     
     bulletDict = {
      'disc':u'\u2022',
@@ -160,8 +163,20 @@ def registerListStyle(doc, attributes):
     listProps.setAttribute('minlabelwidth', '0.25in')
     listProps.setAttribute('minlabeldistance','0.15in')
     
+
+    if rmlStyle.bulletFontName is not None:
+        doc.fontfacedecls.addElement(
+            odf.style.FontFace(
+                name=rmlStyle.bulletFontName,
+                fontfamily=rmlStyle.bulletFontName))
+        listProps.setAttribute('fontname', rmlStyle.bulletFontName)
+    
+    listProps.setAttribute(
+        'textalign', RML2ODT_ALIGNMENTS)
+
+    
     # Create new bullet object
-    retrievedBullet = bulletDict.get(bulletType, 'disc')
+    retrievedBullet = bulletDict.get(bulletType, 'diamond')
 
     bullet = odf.text.ListLevelStyleBullet(
          bulletchar = retrievedBullet, 
@@ -175,29 +190,9 @@ def registerListStyle(doc, attributes):
     odtStyle.addElement(bullet)
 
     doc.automaticstyles.addElement(odtStyle)
+
+
     
-
-
-   
-    
-def registerListBulletFont(doc, rmlStyle):
-
-    odtStyle = odf.text.ListStyle(name=name)
-    listProps = odf.style.ListLevelProperties()
-
-    listProps.setAttribute(
-        'textalign', RML2ODT_ALIGNMENTS[rmlStyle.alignment])
-
-    doc.automaticstyles.addElement(odtStyle)
-
-
-    if rmlStyle.bulletFontName is not None:
-        doc.fontfacedecls.addElement(
-            odf.style.FontFace(
-                name=rmlStyle.bulletFontName,
-                fontfamily=rmlStyle.bulletFontName))
-        
-        listProps.setAttribute('fontname', rmlStyle.bulletFontName)
 
 
 
@@ -412,20 +407,16 @@ class ListStyle(directive.RMLDirective):
     signature = rml_stylesheet.IListStyle
 
     def process(self):
-        attributeDict = self.element.attrib
-        document=self.parent.parent.document
-        registerListStyle(document, attributeDict)
-
-class ListBulletFont(directive.RMLDirective):
-    signature = rml_stylesheet.IListStyle
-
-    def process(self):
         kwargs = dict(self.getAttributeValues())
         parent = kwargs.pop(
-            'parent', reportlab.lib.ListStyle(name='List'))
+            'parent', reportlab.lib.styles.ListStyle(name=None))
         name = kwargs.pop('name')
-        document = self.parent.parent.document
-        registerListBulletFont(document, name)
+        style = copy.deepcopy(parent)
+        for name, value in kwargs.items():
+            setattr(style, name, value)
+        attributeDict = self.element.attrib
+        document=self.parent.parent.document
+        registerListStyle(document, attributeDict, style, name)
 
 
 

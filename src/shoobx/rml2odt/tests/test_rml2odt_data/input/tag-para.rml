@@ -20,7 +20,8 @@
       <alias id="style.normal" value="style.Normal"/>
     </initialize>
 
-    <paraStyle name="Normal" parent="Normal" fontName="Garamond" fontSize="12pt" leading="14pt" alignment="justify" spaceAfter="12pt"/>
+    <paraStyle name="Normal" parent="Normal" fontName="Arial" fontSize="12pt"
+     leading="14pt" alignment="justify" spaceAfter="12pt"/>
     <paraStyle name="Small" parent="Normal" fontName="Garamond" fontSize="10pt" leading="12pt" alignment="justify" spaceAfter="8pt"/>
     <paraStyle name="Indent" parent="Normal" leftIndent="0.75in"/>
     <paraStyle name="Right" parent="Normal" alignment="right"/>
@@ -37,7 +38,7 @@
     <paraStyle name="code uuid" fontName="Courier" fontSize="10pt"/>
     <paraStyle name="sig-small-text" fontSize="7pt" leading="9pt" fontName="Source-Sans-Regular" textColor="Black"/>
     <paraStyle name="sig-small-logo" fontSize="28pt" leading="9pt" fontName="Shoobx" textColor="Black"/>
-    <paraStyle name="Heading1" parent="Heading1" fontName="Arial" fontSize="14pt" leading="16pt" alignment="center" spaceAfter="14pt" keepWithNext="true" textColor="blue"/>
+    <paraStyle name="Heading1" parent="Heading1" fontName="Arial" fontSize="40pt" leading="16pt" alignment="center" spaceAfter="14pt" keepWithNext="true" textColor="blue"/>
     <paraStyle name="style.Heading2" parent="style.Heading2" fontName="Chalkduster" fontSize="12pt" textColor="orange"/>
     <paraStyle name="Heading3" parent="Heading3" fontName="Arial" fontSize="10pt" textColor='green'/>
     <paraStyle name="Heading4" parent="Heading4" fontName="Garamond-BoldItalic" fontSize="8pt" textColor='blue'/>
@@ -54,9 +55,9 @@
     <paraStyle name="ArticleHeading" parent="Normal" fontName="Garamond-Bold" fontSize="12pt" keepWithNext="true" alignment="Center"/>
     <paraStyle name="Legend" parent="Normal" fontName="Garamond-Bold" fontSize="12pt" alignment="justify"/>
     <paraStyle name="LegendSmall" parent="Normal" fontName="Garamond-Bold" fontSize="8pt" alignment="justify"/>
-    <listStyle name="Simple" bulletFontName="Helvetica" bulletFontSize="6pt" bulletType="bullet" bulletOffsetY="-5pt" bulletDedent="12" leftIndent="24" start="circle"/>
-    <listStyle name="Whereases" bulletFontName="Arial" bulletFontSize="12pt" bulletType="bullet" bulletDedent="80" leftIndent="80" start="WHEREAS:"/>
-    <listStyle name="MyList" parent= "Normal" bulletFontName="Arial" bulletFontSize="12pt" bulletType="bullet" bulletDedent="80" leftIndent="80" start="RESOLVED:"/>
+    <listStyle name="Simple" fontName="Chalkduster" bulletFontName="Chalkduster" bulletFontSize="6pt" bulletType="bullet" bulletOffsetY="-5pt" bulletDedent="12" leftIndent="24" start="circle"/>
+    <listStyle name="Whereases" fontName= "Chalkduster" bulletFontName="Arial" bulletFontSize="12pt" bulletType="bullet" bulletDedent="80" leftIndent="80" start="WHEREAS:"/>
+    <listStyle name="OrderedList" bulletFontName="Chalkduster" bulletFontSize="50pt" bulletType="diamond" bulletDedent="80" leftIndent="80" start="RESOLVED:"/>
    <paraStyle name="ResolutionIndent" parent="Normal" leftIndent="80pt"/>
    <paraStyle name='Normal' parent='Normal' borderWidth="2" borderPadding="5 10 30" backColor="red" spaceBefore="5" spaceAfter="35" leftIndent="10" rightIndent="10" />
    
@@ -87,7 +88,7 @@
     <h5 >Testing Heading 5</h5>
     <h6 >Testing Heading 6</h6>
 
-    <ol>
+    <ol style="OrderedList" >
       <li><u>Numbered List 1</u></li>
       <li><para><i>Numbered List 2</i></para></li>
       <li><para><b>Numbered List 3</b></para></li>
@@ -97,7 +98,7 @@
  
     <spacer length="4in" />
 
-    <ol>
+    <ol style='Simple' >
       <li><para>Another number 1</para></li>
     </ol>
 

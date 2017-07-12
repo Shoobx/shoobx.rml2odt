@@ -20,19 +20,21 @@
         textalign='right'
         bulletFontName="Chalkduster"
         bulletColor="green"
-        start="diamond"
+        start="circle"
         />
     <listStyle
         name="MyEnum"
-        bulletFontName="Chalkduster"
+        bulletFontName="Times-Roman"
         bulletFontSize="8pt"
+        bulletAlign="right"
         bulletFormat="(%s)"
         bulletType="a"
-        start="square"
+        start="darrowhead"
         />
     <listStyle
         name="CustomBulletTextList"
-        start="Item:"
+        start="square"
+        bulletFontName = "Times-Roman"
         bulletFontSize="50pt"
         bulletOffsetY="0pt"
         bulletDedent="100"

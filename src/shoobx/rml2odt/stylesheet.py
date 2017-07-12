@@ -145,10 +145,10 @@ def registerListStyle(doc, attributes, rmlStyle, name):
    
     
     bulletDict = {
-     'disc':u'\u2022',
+     'circle':u'\u2022',
      'square':u'\u25AA',
      'diamond':u'\u2B29',
-     'arrowhead':u'\u2B9E'
+     'darrowhead':u'\u2304'
      }
 
 
@@ -171,12 +171,11 @@ def registerListStyle(doc, attributes, rmlStyle, name):
                 fontfamily=rmlStyle.bulletFontName))
         listProps.setAttribute('fontname', rmlStyle.bulletFontName)
     
-    listProps.setAttribute(
-        'textalign', RML2ODT_ALIGNMENTS)
+    
 
     
     # Create new bullet object
-    retrievedBullet = bulletDict.get(bulletType, 'diamond')
+    retrievedBullet = bulletDict.get(bulletType, 'circle')
 
     bullet = odf.text.ListLevelStyleBullet(
          bulletchar = retrievedBullet, 
@@ -191,6 +190,7 @@ def registerListStyle(doc, attributes, rmlStyle, name):
 
     doc.automaticstyles.addElement(odtStyle)
 
+    #text properties
 
     
 

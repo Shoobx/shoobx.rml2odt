@@ -521,27 +521,26 @@ class Link(Flowable):
         flow.process()
 
 #Work on this
-class NextPage(Flowable):
-    signature = rml_flowable.INextPage
-    klass = reportlab.platypus.PageBreak
-    breakCount = 0
+# class NextPage(Flowable):
+#     signature = rml_flowable.INextPage
+#     klass = reportlab.platypus.PageBreak
+#     breakCount = 0
     
-    def process(self):
-        NextPage.breakCount+=1
-        breakStyleName = "Np%d"%NextPage.breakCount
-        Pagebreak = odf.style.Style(name=breakStyleName, family='paragraph' )
-        prop = odf.style.ParagraphProperties()
-        import pdb; pdb.set_trace()
-        length = self.element.attrib.get('length', "0.5in")
-        intLength = float(length.replace("in", ""))/2
-        prop.setAttribute("linespacing", str(intLength)+'in')
-        Pagebreak.addElement(prop)
-        self.parent.parent.document.automaticstyles.addElement(Pagebreak)
+#     def process(self):
+#         NextPage.breakCount+=1
+#         breakStyleName = "Np%d"%NextPage.breakCount
+#         Pagebreak = odf.style.Style(name=breakStyleName, family='paragraph' )
+#         prop = odf.style.ParagraphProperties()
+#         length = self.element.attrib.get('length', "0.5in")
+#         intLength = float(length.replace("in", ""))/2
+#         prop.setAttribute("linespacing", str(intLength)+'in')
+#         Pagebreak.addElement(prop)
+#         self.parent.parent.document.automaticstyles.addElement(Pagebreak)
 
-        self.odtParagraph = odf.text.P()
-        self.odtParagraph.setAttribute('stylename', spacerStyleName)
+#         self.odtParagraph = odf.text.P()
+#         self.odtParagraph.setAttribute('stylename', spacerStyleName)
 
-        self.contents.addElement(self.odtParagraph)
+#         self.contents.addElement(self.odtParagraph)
 
 
 
@@ -582,7 +581,7 @@ class Flow(directive.RMLDirective):
         'hr':HorizontalRow,
         'link': Link,
         #Page-Level Flowables
-        'NextPage': NextPage,
+        # 'NextPage': NextPage,
         # 'condPageBreak': ConditionalPageBreak
     }
 

@@ -11,27 +11,25 @@
 
   <stylesheet>
 
-
-
     <blockTableStyle id="table">
       <blockAlignment
           start="0,0" stop="-1,1" value="right"
           doc:example="" />
-      <blockBackground start="1,1" stop="-2,-2" colorName="blue"
+      <blockBackground start="1,1" stop="-2,-2" colorName="purple"
           doc:example="" />
-      <blockTopPadding start="0,0" stop="-1,1" length="0mm"
+      <blockRightPadding start="0,0" stop="-1,1" length="0.1in"
           doc:example="" />
-      <blockRightPadding start="0,0" stop="-1,1" length="5mm"
+      <blockBottomPadding start="0,0" stop="-1,1" length="0.02in"
           doc:example="" />
-      <blockBottomPadding start="0,0" stop="-1,1" length="5mm"
+      <blockLeftPadding start="0,0" stop="-1,1" length="0.2in"
           doc:example="" />
-      <blockLeftPadding start="0,0" stop="-1,1" length="5mm"
+      <blockTopPadding start="0,0" stop="-1,1" length="0.04in"
           doc:example="" />
       <blockFont
-          start="0,0" stop="1,-1" name="Courier" size="14" leading="18"
+          start="0,0" stop="1,-1" name="Courier" size="14" leading="0.5in"
           doc:example="" />
-      <blockTextColor start="0,0" stop="1,-1" colorName="red"
-          doc:example="" />''
+      <blockTextColor start="0,0" stop="1,-1" colorName="white"
+          doc:example="" />
     </blockTableStyle>
 
 
@@ -40,10 +38,10 @@
 
     <blockTableStyle id="table2">
       <blockRowBackground
-          start="3,0" stop="-1,-1" colorNames="purple yellow"
+          start="3,0" stop="-1,-1" colorNames="blue yellow"
           doc:example="" />
       <blockLeading
-          start="0,0" stop="-1,1" length="18"
+          start="0,0" stop="-1,1" length="0.18in"
           doc:example="" />
     </blockTableStyle>
 
@@ -53,7 +51,7 @@
 
     <blockTableStyle id="table3">
       <blockColBackground
-          start="0,0" stop="2,-1" colorNames="red lime"
+          start="0,0" stop="2,-1" colorNames="red green"
           doc:example="" />
       <blockSpan
           start="0,0" stop="2,2" doc:example="" />

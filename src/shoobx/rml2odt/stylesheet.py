@@ -20,14 +20,11 @@ import reportlab.lib.styles
 import reportlab.lib.enums
 import reportlab.platypus
 
-from z3c.rml import attr, directive, interfaces, occurence, SampleStyleSheet, \
-    special
 
 from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT, TA_JUSTIFY
-
+from z3c.rml import attr, directive, interfaces, occurence, SampleStyleSheet, \
+    special
 from z3c.rml import stylesheet as rml_stylesheet
-
-
 
 
 RML2ODT_ALIGNMENTS = {
@@ -47,8 +44,6 @@ class Initialize(directive.RMLDirective):
         'name': special.Name,
         'alias': special.Alias,
         }
-
-
 
 
 def registerParagraphStyle(doc, name, rmlStyle):
@@ -86,8 +81,8 @@ def registerParagraphStyle(doc, name, rmlStyle):
         'margintop', pt(rmlStyle.spaceBefore))
     paraProps.setAttribute(
         'marginbottom', pt(rmlStyle.spaceAfter))
-    paraProps.setAttribute(
-        'pagenumber', pt(rmlStyle.pageNumber))
+    # paraProps.setAttribute(
+        # 'pagenumber', pt(rmlStyle.pageNumber))
     paraProps.setAttribute(
         'borderlinewidth', pt(rmlStyle.borderWidth))
     paraProps.setAttribute(
@@ -95,15 +90,15 @@ def registerParagraphStyle(doc, name, rmlStyle):
     paraProps.setAttribute(
         'borderlinewidthbottom', pt(rmlStyle.borderWidth))
 
-    if rmlStyle.padding:
-        paraProps.setAttribute(
-            'paddingtop', 'paddingbottom', 'paddingleft', 'paddingright')
-    if rmlStyle.border is not None:
-        paraProps.setAttribute(
-            'bordertop', 'borderbottom', 'borderleft', 'borderright')
+    # if rmlStyle.padding:
+    #     paraProps.setAttribute(
+    #         'paddingtop', 'paddingbottom', 'paddingleft', 'paddingright')
+    # if rmlStyle.border is not None:
+    #     paraProps.setAttribute(
+    #         'bordertop', 'borderbottom', 'borderleft', 'borderright')
 
-    if rmlStyle.backColor is not None:
-        paraProps.setAttribute('backgroundcolor', '#'+rmlStyle.backColor.hexval()[2:])
+    # if rmlStyle.backColor is not None:
+    #     paraProps.setAttribute('backgroundcolor', '#'+rmlStyle.backColor.hexval()[2:])
     
  
 
@@ -130,11 +125,7 @@ def registerParagraphStyle(doc, name, rmlStyle):
         textProps.setAttribute('backgroundcolor', '#'+rmlStyle.backColor.hexval()[2:])
     
 
-
-
-
-def registerListStyle(doc, attributes, rmlStyle, name):
-
+def registerListStyle(doc, attributes):
 
     name = attributes.get('name', 'undefined')
     bulletType = attributes.get('start', 'diamond')
@@ -219,49 +210,72 @@ class TableStyleCommand(directive.RMLDirective):
     colProps = {}
     tableProps = {}
     rowProps = {}
+    textProps = {}
+    paraProps = {}
 
     def process(self):
-        cellProps = TableStyleCommand.cellProps
-        colProps = TableStyleCommand.colProps
-        rowProps = TableStyleCommand.rowProps
-        tableProps = TableStyleCommand.tableProps
-
         attributes = self.element.attrib
-
         # Loops through all attributes of the blockTableStyle and attempts to 
         # implement them using the correct property 'type'
         for key in attributes:
+            if key == "colorName" and isinstance(self, BlockTextColor):
+                value = '#' + reportlab.lib.colors.toColor(attributes[key]).hexval()[2:]
+                self.parent.tableProps.setAttribute('backgroundcolor', [value]+['text'])
 
-            if 'color' in key:
-                # Takes care of cases where multiple colors are given
+            elif key == 'colorName' and not isinstance(self, BlockTextColor):
+                value = '#' + reportlab.lib.colors.toColor(attributes[key]).hexval()[2:]
+                self.parent.cellProps.setAttribute('backgroundcolor', [value]+['back'])
+
+            elif key == 'colorNames':
                 tempVal = attributes[key].split(" ")
                 value = ['#' + reportlab.lib.colors.toColor(x).hexval()[2:] for x in tempVal]
             else:
                 value = attributes[key]
 
+            # Takes care of 'length' belonging to different properties
+            if key == 'length':
+                if isinstance(self, BlockLeftPadding):
+                    self.parent.cellProps.setAttribute('paddingleft', value)
+                elif isinstance(self, BlockRightPadding):
+                    self.parent.cellProps.setAttribute('paddingright', value)
+                elif isinstance(self, BlockTopPadding):
+                    self.parent.cellProps.setAttribute('paddingtop', value)
+                elif isinstance(self, BlockBottomPadding):
+                    self.parent.cellProps.setAttribute('paddingbottom', value)
+                elif isinstance(self, BlockLeading):
+                    self.parent.paraProps.setAttribute('linespacing', value)
 
-            if key in colProps:
-                self.parent.colProps.setAttribute(colProps[key], value)
 
-            elif key in cellProps:
-                # Retrieves the singular color for backgroundcolor
-                if 'color' in key:
-                    self.parent.cellProps.setAttribute(cellProps[key], value[0])
-                else:
-                    self.parent.cellProps.setAttribute(cellProps[key], value)
+            if key in TableStyleCommand.colProps:
+                self.parent.colProps.setAttribute(TableStyleCommand.colProps[key], value)
 
-            elif key in tableProps:
-                self.parent.tableProps.setAttribute(tableProps[key], value)
+            elif key in TableStyleCommand.textProps:
+                if key == 'name':
+                    manager = attr.getManager(self)
+                    manager.document.fontfacedecls.addElement(
+                        odf.style.FontFace(
+                            name=value,
+                            fontfamily=value))
+                self.parent.textProps.setAttribute(TableStyleCommand.textProps[key], value)
 
-            elif key in rowProps:
+            elif key in TableStyleCommand.cellProps:
+                self.parent.cellProps.setAttribute(TableStyleCommand.cellProps[key], value)
+
+            elif key in TableStyleCommand.paraProps:
+                self.parent.paraProps.setAttribute(TableStyleCommand.paraProps[key], value)
+
+            elif key in TableStyleCommand.tableProps:
+                self.parent.tableProps.setAttribute(TableStyleCommand.tableProps[key], value)
+
+            elif key in TableStyleCommand.rowProps:
                 # TableColProperties do not support background colors at all
                 # TableRowProperties is being used to process both alternating
                 # rows and cols colors. Appending either 'row' or 'col' is used 
                 # to distinguish between alternating colored rows or cols
                 if isinstance(self, BlockColBackground):
-                    self.parent.rowProps.setAttribute(rowProps[key], value+['col'])
+                    self.parent.rowProps.setAttribute(TableStyleCommand.rowProps[key], value+['col'])
                 elif isinstance(self, BlockRowBackground):
-                    self.parent.rowProps.setAttribute(rowProps[key], value+['row'])
+                    self.parent.rowProps.setAttribute(TableStyleCommand.rowProps[key], value+['row'])
             else:
                 pass
 
@@ -269,13 +283,14 @@ class TableStyleCommand(directive.RMLDirective):
 class BlockFont(TableStyleCommand):
     signature = rml_stylesheet.IBlockFont
     name = 'FONT'
+    TableStyleCommand.textProps['name'] = 'fontname'
+    TableStyleCommand.textProps['size'] = 'fontsize'
+    TableStyleCommand.paraProps['leading'] = 'linespacing'
 
 
 class BlockLeading(TableStyleCommand):
     signature = rml_stylesheet.IBlockLeading
     name = 'LEADING'
-    # XXX: FIGURE IT OUT - Probably a regular style linespacing attribute
-    # TableStyleCommand.cellProps['length'] = 'FIGUREITOUT'
 
 
 class BlockTextColor(TableStyleCommand):
@@ -292,31 +307,26 @@ class BlockAlignment(TableStyleCommand):
 class BlockLeftPadding(TableStyleCommand):
     signature = rml_stylesheet.IBlockLeftPadding
     name = 'LEFTPADDING'
-    TableStyleCommand.cellProps['length'] = 'leftpadding'
 
 
 class BlockRightPadding(TableStyleCommand):
     signature = rml_stylesheet.IBlockRightPadding
     name = 'RIGHTPADDING'
-    TableStyleCommand.cellProps['length'] = 'rightpadding'
 
 
 class BlockBottomPadding(TableStyleCommand):
     signature = rml_stylesheet.IBlockBottomPadding
     name = 'BOTTOMPADDING'
-    TableStyleCommand.cellProps['length'] = 'bottompadding'
 
 
 class BlockTopPadding(TableStyleCommand):
     signature = rml_stylesheet.IBlockTopPadding
     name = 'TOPPADDING'
-    TableStyleCommand.cellProps['length'] = 'paddingtop'
 
 
 class BlockBackground(TableStyleCommand):
     signature = rml_stylesheet.IBlockBackground
     name = 'BACKGROUND'
-    TableStyleCommand.cellProps['colorName'] = 'backgroundcolor'
 
     # def process(self):
     #     args = [self.name]
@@ -338,7 +348,6 @@ class BlockColBackground(TableStyleCommand):
     signature = rml_stylesheet.IBlockColBackground
     name = 'COLBACKGROUNDS'
     TableStyleCommand.rowProps['colorNames'] = 'backgroundcolor'
-
 
 
 class BlockValign(TableStyleCommand):
@@ -366,14 +375,14 @@ class BlockTableStyle(directive.RMLDirective):
     signature = rml_stylesheet.IBlockTableStyle
 
     factories = {
-        # 'blockFont': BlockFont,
+        'blockFont': BlockFont,
         # 'blockLeading': BlockLeading,
-        # 'blockTextColor': BlockTextColor,
+        'blockTextColor': BlockTextColor,
         'blockAlignment': BlockAlignment,
-        # 'blockLeftPadding': BlockLeftPadding,
-        # 'blockRightPadding': BlockRightPadding,
-        # 'blockBottomPadding': BlockBottomPadding,
-        # 'blockTopPadding': BlockTopPadding,
+        'blockLeftPadding': BlockLeftPadding,
+        'blockRightPadding': BlockRightPadding,
+        'blockBottomPadding': BlockBottomPadding,
+        'blockTopPadding': BlockTopPadding,
         'blockBackground': BlockBackground,
         'blockRowBackground': BlockRowBackground,
         'blockColBackground': BlockColBackground,
@@ -392,11 +401,15 @@ class BlockTableStyle(directive.RMLDirective):
         self.cellProps  = odf.style.TableCellProperties()
         self.tableProps = odf.style.TableProperties()
         self.rowProps   = odf.style.TableRowProperties()
+        self.textProps  = odf.style.TextProperties()
+        self.paraProps  = odf.style.ParagraphProperties()
         # Fill style
         self.style.addElement(self.colProps)
         self.style.addElement(self.cellProps)
         self.style.addElement(self.tableProps)
         self.style.addElement(self.rowProps)
+        self.style.addElement(self.textProps)
+        self.style.addElement(self.paraProps)
         self.processSubDirectives()
         # Add style to the manager
         manager = attr.getManager(self)

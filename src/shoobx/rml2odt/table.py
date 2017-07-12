@@ -37,16 +37,16 @@ class TableCell(flowable.Flow):
                  for sub in self.element])):
             return
         # Create a <para> element.
-        para = lxml.etree.Element('para')
+        para = lxml.etree.Element('para', style=self.cellContentStyleName)
         # Transfer text.
         para.text = self.element.text
         self.element.text = None
         # Transfer children.
         for sub in tuple(self.element):
             para.append(sub)
+
         # Add paragraph to table cell.
         self.element.append(para)
-        # XXX: Make style object here for alignment
 
 
     def searchStyle(self, tableStyleName):
@@ -63,12 +63,14 @@ class TableCell(flowable.Flow):
     def processStyle(self):
         rows = len(self.parent.parent.element)
         cols = len(self.parent.parent.element[0])
-        allowedCellProperties = ['backgroundcolor', 'paddingtop', 
-        'paddingbottom', 'paddingleft', 'paddingright', 'padding']
-        allowedTableProperties = []
-        allowedTextProperties = ['align', 'color']
+        allowedCellProperties = ['backbackgroundcolor','paddingtop', 
+        'paddingbottom', 'paddingleft', 'paddingright', 'padding', 
+        'textbackgroundcolor']
+        allowedTableProperties = ['align']
         allowedColProperties = ['blockColBackground']
         allowedRowProperties = ['backgroundcolors']
+        allowedTextProperties = ['fontname', 'fontsize']
+        allowedParaProperties = ['leading']
 
 
         tableStyleName = self.parent.parent.element.attrib.get('style', None)
@@ -82,8 +84,16 @@ class TableCell(flowable.Flow):
                     childAttrs = child.attributes
                     simplifiedDict = dict([(x[1], childAttrs[x]) for x in childAttrs])
                     for key in simplifiedDict:
+                        # The key 'backgroundcolor' is processed by cellProps 
+                        # (the TableCellProperties method) 
+                        # 'backgroundcolor' passed in by 'rowProperties' is 
+                        # modified to 'backgroundcolors' for later distinction
                         if child.tagName == u'style:table-row-properties':
                             stylesCollection[str(key)+'s'] = str(simplifiedDict[key])
+                        elif key == u'background-color':
+                            tempVal = str(simplifiedDict[key])
+                            identifier = tempVal[13:17]
+                            stylesCollection[identifier+str(key)] = tempVal[2:9]
                         else:
                             stylesCollection[str(key)] = str(simplifiedDict[key])
 
@@ -93,17 +103,37 @@ class TableCell(flowable.Flow):
 
             if key in allowedColProperties:
                 pass
+
             elif key in allowedCellProperties:
-                self.cellProps.setAttribute(key, value)
+                if key == 'textbackgroundcolor':
+                    self.textProps.setAttribute('color', value)
+                elif key == 'backbackgroundcolor':
+                    self.cellProps.setAttribute('backgroundcolor', value)
+                else:
+                    self.cellProps.setAttribute(key, value)
+
+
             elif key in allowedTableProperties:
-                pass
+                if key == 'align':
+                    self.paraProps.setAttribute('textalign', value)
+                else:
+                    # XXX: come back to this
+                    self.paraProps.setAttribute(key, value)
+
+            elif key in allowedParaProperties:
+                self.paraProps.setAttribute(key, value)
+
+            elif key in allowedTextProperties:
+                self.textProps.setAttribute(key, value)
+
+
             elif key in allowedRowProperties:
                 if key=='backgroundcolors':
                     # Alternating rows
                     color1, color2 = value[2:9], value[13:20]
                     # Checks if this applies to alternating row colors
                     if 'row' in value:
-                        if ((int(self.styleName.replace('TableCell', ''))-1)//
+                        if ((int(self.cellStyleName.replace('TableCell', ''))-1)//
                                                                 cols)%2 == 0:
                             self.cellProps.setAttribute(key[:-1], color1)
                         else:
@@ -111,39 +141,55 @@ class TableCell(flowable.Flow):
 
                     # Checks if this applies to alternating columns
                     elif 'col' in value:
-                        if ((int(self.styleName.replace('TableCell', ''))-1)%
+                        if ((int(self.cellStyleName.replace('TableCell', ''))-1)%
                                                                 cols)%2 == 0:
                             self.cellProps.setAttribute(key[:-1], color1)
                         else:
                             self.cellProps.setAttribute(key[:-1], color2)
-            else:
-                pass
 
-        # self.textProps.setAttribute('color', '#FFFFFF')
 
-        self.style.addElement(self.cellProps)
-        self.style.addElement(self.textProps)
+        self.cellStyle.addElement(self.cellProps)
+        self.contentStyle.addElement(self.textProps)
+        self.contentStyle.addElement(self.paraProps)
+
 
 
 
     def process(self):
         manager = attr.getManager(self)
-        self.textProps = odf.style.TextProperties()
+
+        # Cell Stuff
         self.cellProps  = odf.style.TableCellProperties()
+        self.cellStyleName = manager.getNextSyleName('TableCell')
+        self.cellStyle = odf.style.Style(
+            name=self.cellStyleName, 
+            family='table-cell')
+        self.cell = odf.table.TableCell(
+            stylename=self.cellStyleName,
+            valuetype='string')
 
+        # Cell Text Stuff
+        self.cellContentStyleName = manager.getNextSyleName('CellContent')
+        self.contentStyle = odf.style.Style(
+            name=self.cellContentStyleName, 
+            family='paragraph')
 
-        self.styleName = manager.getNextSyleName('TableCell')
-        self.style = odf.style.Style(name=self.styleName, family='table-cell')
-        self.cell = odf.table.TableCell(stylename=self.styleName, valuetype='string')
+        # Has textalign, justifysingleword
+        self.paraProps = odf.style.ParagraphProperties()
+        # Has color (text color)
+        self.textProps = odf.style.TextProperties()
+        # self.contentStyle.addElement(self.paraProps)
 
         self._convertSimpleContent()
         self.processStyle()
+
         self.parent.row.addElement(self.cell)
         self.contents = self.cell
         super(TableCell, self).process()
 
-        manager.document.automaticstyles.addElement(self.style)
-        # import pdb; pdb.set_trace()
+        manager.document.automaticstyles.addElement(self.cellStyle)
+        manager.document.automaticstyles.addElement(self.contentStyle)
+
 
 
 class TableBulkData(directive.RMLDirective):
@@ -211,7 +257,7 @@ class BlockTable(flowable.Flowable):
         try:
         	self.element.attrib['rowHeights']
         except:
-        	self.element.attrib['rowHeights'] = "10cm "* rows
+        	self.element.attrib['rowHeights'] = "12cm "* rows
 
         try:
         	self.element.attrib['colWidths']
@@ -250,7 +296,7 @@ class BlockTable(flowable.Flowable):
     	else:
     		contents = element.text
     		numOfCols = contents.strip().split('\n')
-    		rowHeights = "10cm "*len(numOfCols)
+    		rowHeights = "12cm "*len(numOfCols)
     		numOfCols = max([len(x.split(',')) for x in numOfCols])
     		base_width = 100/numOfCols
     		colWidths = [str(base_width)+'%' for x in range(numOfCols)]

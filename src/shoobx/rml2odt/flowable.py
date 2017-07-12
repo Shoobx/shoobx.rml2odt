@@ -15,12 +15,16 @@
 """Flowable Element Processing
 """
 import lazy
+import reportlab.lib.styles, reportlab.platypus
+import reportlab.platypus.doctemplate, reportlab.platypus.flowables
+import reportlab.platypus.tables
 import lxml
 import odf.style
 import odf.text
 import reportlab.lib.styles
 import re
 import zope.interface
+from reportlab.lib import styles, utils
 from z3c.rml import directive, occurence
 from z3c.rml import flowable as rml_flowable
 from z3c.rml import template as rml_template
@@ -516,15 +520,36 @@ class Link(Flowable):
         flow = Flow(self.element, self.parent)
         flow.process()
 
+#Work on this
 class NextPage(Flowable):
     signature = rml_flowable.INextPage
     klass = reportlab.platypus.PageBreak
-
+    breakCount = 0
+    
     def process(self):
-        span = self.paragraph.odtParagraph.addElement(odf.text.PageBreak())
+        NextPage.breakCount+=1
+        breakStyleName = "Np%d"%NextPage.breakCount
+        Pagebreak = odf.style.Style(name=breakStyleName, family='paragraph' )
+        prop = odf.style.ParagraphProperties()
+        import pdb; pdb.set_trace()
+        length = self.element.attrib.get('length', "0.5in")
+        intLength = float(length.replace("in", ""))/2
+        prop.setAttribute("linespacing", str(intLength)+'in')
+        Pagebreak.addElement(prop)
+        self.parent.parent.document.automaticstyles.addElement(Pagebreak)
 
-        if self.element.tail:
-            self.paragraph.addSpan(self.element.tail)
+        self.odtParagraph = odf.text.P()
+        self.odtParagraph.setAttribute('stylename', spacerStyleName)
+
+        self.contents.addElement(self.odtParagraph)
+
+
+
+
+class ConditionalPageBreak(Flowable):
+    signature = rml_flowable.IConditionalPageBreak
+    klass = reportlab.platypus.CondPageBreak
+
 
 class HorizontalRow(Flowable):
     signature = rml_flowable.IHorizontalRow
@@ -555,7 +580,10 @@ class Flow(directive.RMLDirective):
         'h6': Heading6,
         'title': Title,
         'hr':HorizontalRow,
-        'link': Link
+        'link': Link,
+        #Page-Level Flowables
+        'NextPage': NextPage,
+        # 'condPageBreak': ConditionalPageBreak
     }
 
     def __init__(self, *args, **kw):

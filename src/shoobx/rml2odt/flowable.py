@@ -15,10 +15,8 @@
 """Flowable Element Processing
 """
 import lazy
-import reportlab.lib.styles, reportlab.platypus
-import reportlab.platypus.doctemplate, reportlab.platypus.flowables
-import reportlab.platypus.tables
 import lxml
+import reportlab.platypus.flowables
 import odf.style
 import odf.text
 import reportlab.lib.styles
@@ -520,34 +518,27 @@ class Link(Flowable):
         flow = Flow(self.element, self.parent)
         flow.process()
 
-#Work on this
-# class NextPage(Flowable):
-#     signature = rml_flowable.INextPage
-#     klass = reportlab.platypus.PageBreak
-#     breakCount = 0
+class nextPage(Flowable):
+    signature = rml_flowable.INextPage
+    klass = reportlab.platypus.PageBreak
     
-#     def process(self):
-#         NextPage.breakCount+=1
-#         breakStyleName = "Np%d"%NextPage.breakCount
-#         Pagebreak = odf.style.Style(name=breakStyleName, family='paragraph' )
-#         prop = odf.style.ParagraphProperties()
-#         length = self.element.attrib.get('length', "0.5in")
-#         intLength = float(length.replace("in", ""))/2
-#         prop.setAttribute("linespacing", str(intLength)+'in')
-#         Pagebreak.addElement(prop)
-#         self.parent.parent.document.automaticstyles.addElement(Pagebreak)
-
-#         self.odtParagraph = odf.text.P()
-#         self.odtParagraph.setAttribute('stylename', spacerStyleName)
-
-#         self.contents.addElement(self.odtParagraph)
+    def process(self):
+        manager = attr.getManager(self)
+        pageBreakStyleName = manager.getNextSyleName("PageBreak")
+        pageBreakStyle = odf.style.Style(name=pageBreakStyleName, family='paragraph')
+        prop = odf.style.ParagraphProperties()
+        prop.setAttribute('breakbefore', 'page')
+        pageBreakStyle.addElement(prop)
+        manager.document.automaticstyles.addElement(pageBreakStyle)
+        self.para = odf.text.P()
+        self.para.setAttribute('stylename', pageBreakStyleName)
+        self.contents.addElement(self.para)
 
 
 
-
-class ConditionalPageBreak(Flowable):
-    signature = rml_flowable.IConditionalPageBreak
-    klass = reportlab.platypus.CondPageBreak
+# class ConditionalPageBreak(Flowable):
+#     signature = rml_flowable.IConditionalPageBreak
+#     klass = reportlab.platypus.CondPageBreak
 
 
 class HorizontalRow(Flowable):
@@ -581,7 +572,7 @@ class Flow(directive.RMLDirective):
         'hr':HorizontalRow,
         'link': Link,
         #Page-Level Flowables
-        # 'NextPage': NextPage,
+        'nextPage': nextPage,
         # 'condPageBreak': ConditionalPageBreak
     }
 

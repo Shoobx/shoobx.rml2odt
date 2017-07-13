@@ -32,7 +32,7 @@
     <paraStyle name="NoSpaceAfter" parent="Normal" spaceAfter="0pt"/>
     <paraStyle name="BlankMessage" parent="Normal" fontName="Garamond-Italic" alignment="center"/>
 
-    <!-- Used by Signature -->
+    Used by Signature
     <paraStyle name="code" fontName="Courier" fontSize="10pt"/>
     <paraStyle name="signature-byword"/>
     <paraStyle name="code uuid" fontName="Courier" fontSize="10pt"/>
@@ -55,13 +55,21 @@
     <paraStyle name="ArticleHeading" parent="Normal" fontName="Garamond-Bold" fontSize="12pt" keepWithNext="true" alignment="Center"/>
     <paraStyle name="Legend" parent="Normal" fontName="Garamond-Bold" fontSize="12pt" alignment="justify"/>
     <paraStyle name="LegendSmall" parent="Normal" fontName="Garamond-Bold" fontSize="8pt" alignment="justify"/>
-    <listStyle name="Simple" fontName="Chalkduster" bulletFontName="Chalkduster" bulletFontSize="6pt" bulletType="circle" bulletOffsetY="-5pt" bulletDedent="12" leftIndent="24" start="circle"/>
-    <listStyle name="UnorderedList" fontName= "Chalkduster" bulletFontName="Arial" bulletFontSize="12pt" bulletType="square" bulletDedent="80" leftIndent="80" start="darrowhead"/>
-    <listStyle name="OrderedList" bulletFontName="Chalkduster" bulletAlign='center' bulletFontSize="50pt" bulletType="circle" bulletDedent="80" leftIndent="80" start="circle"/>
-    <listStyle name="MyList" parent= "Normal" bulletFontName="Arial" bulletFontSize ="12pt" bulletType="bullet" bulletDedent="80" leftIndent="80" start="RESOLVED" />
+
+
+    <listStyle name="Simple" bulletFontName="Helvetica" bulletFontSize="6pt" bulletType="bullet" bulletOffsetY="-5pt" bulletDedent="12" leftIndent="24" start="circle"/>
+
+    <listStyle name="Whereases" bulletFontName="Arial" bulletFontSize="12pt" bulletType="bullet" bulletDedent="80" leftIndent="80" start="WHEREAS:"/>
+    <listStyle name="MyList" parent= "Normal" bulletFontName="Arial" bulletFontSize="12pt" bulletType="bullet" bulletDedent="80" leftIndent="80" start="RESOLVED:"/>
    <paraStyle name="ResolutionIndent" parent="Normal" leftIndent="80pt"/>
-   <paraStyle name="BodPa" alignment="Justify" borderWidth="50" borderPadding="50 100 30" borderColor="red" backColor="blue" spaceBefore="50" spaceAfter="10" leftIndent="40" rightIndent="40" />
-  
+   <paraStyle name='Normal' parent='Normal' borderWidth="2" borderPadding="5 10 30" backColor="red" spaceBefore="5" spaceAfter="35" leftIndent="10" rightIndent="10" />
+
+    <listStyle name="Whereases" bulletFontName="Garamond-Bold" bulletFontSize="12pt" bulletType="bullet" bulletDedent="80" leftIndent="80" start="WHEREAS:"/>
+    <listStyle name="Resolutions" bulletFontName="Garamond-Bold" bulletFontSize="12pt" bulletType="bullet" bulletDedent="80" leftIndent="80" start="RESOLVED:"/>
+    <paraStyle name="ResolutionIndent" parent="Normal" leftIndent="80pt"/>
+    <paraStyle name="PageBreak" parent="Normal" fontName="Helvetica" fontSize="12" leading="14" pageBreakBefore="1" />
+
+
    
   </stylesheet>
 
@@ -90,7 +98,11 @@
     <h5 >Testing Heading 5</h5>
     <h6 >Testing Heading 6</h6>
 
-    <ol style="OrderedList" >
+
+
+    <nextPage/>
+
+    <ol>
       <li><u>Numbered List 1</u></li>
       <li><para><i>Numbered List 2</i></para></li>
       <li><para><b>Numbered List 3</b></para></li>

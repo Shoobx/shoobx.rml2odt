@@ -55,7 +55,6 @@ def registerParagraphStyle(doc, name, rmlStyle):
     doc.automaticstyles.addElement(odtStyle)
 
     # Paragraph Properties
-
     paraProps = odf.style.ParagraphProperties()
     odtStyle.addElement(paraProps)
     paraProps.setAttribute(
@@ -115,20 +114,28 @@ def registerParagraphStyle(doc, name, rmlStyle):
     if rmlStyle.borderColor is not None:
         paraProps.setAttribute('backgroundcolor', '#'+rmlStyle.borderColor.hexval()[2:])
  
-
     # Text Properties
-
     textProps = odf.style.TextProperties()
     odtStyle.addElement(textProps)
 
-         
     if rmlStyle.fontName is not None:
-        
+        flag = rmlStyle.fontName.find('-')
+        if flag == -1:
+            fontName = rmlStyle.fontName
+        else: 
+            fontName = rmlStyle.fontName[:flag]
+            transform = rmlStyle.fontName[flag+1:]
+            if transform == 'Italic':
+                #import pdb; pdb.set_trace()
+                textProps.setAttribute('fontstyle', 'italic')
+            elif transform == 'Bold':
+                textProps.setAttribute('fontweight', 'bold')
+            
         doc.fontfacedecls.addElement(
             odf.style.FontFace(
-                name=rmlStyle.fontName,
-                fontfamily=rmlStyle.fontName))
-        textProps.setAttribute('fontname', rmlStyle.fontName)
+                name=fontName,
+                fontfamily=fontName))
+        textProps.setAttribute('fontname', fontName)
     textProps.setAttribute('fontsize', rmlStyle.fontSize)
     textProps.setAttribute('texttransform', rmlStyle.textTransform)
 
@@ -140,15 +147,14 @@ def registerParagraphStyle(doc, name, rmlStyle):
     
 
 def registerListStyle(doc, attributes, rmlStyle, name):
-
     name = attributes.get('name', 'undefined')
     bulletType = attributes.get('start', 'diamond')
-    bulletFormat = attributes.get('bulletformat', "%s:")
+    bulletFormat = attributes.get('bulletFormat', None)
     bulletOffsetY = attributes.get('bulletOffsetY', '0pt')
     bulletDedent = attributes.get('bulletDedent', '50pt')
     fontsize = attributes.get('bulletFontSize', '14pt')
+    numType = attributes.get('bulletType', None)
    
-    
     bulletDict = {
      'circle':u'\u2022',
      'square':u'\u25AA',
@@ -156,21 +162,19 @@ def registerListStyle(doc, attributes, rmlStyle, name):
      'darrowhead':u'\u2304'
      }
 
-
-
     # Declare properties of the list style
-    
     odtStyle = odf.text.ListStyle(name=name)
     listProps = odf.style.ListLevelProperties()
-    listProps.setAttribute('spacebefore', '0.15in')
-    listProps.setAttribute('width', '0,15in')
-    listProps.setAttribute('height', '0.15in')
+
+    # listProps.setAttribute('width', '0,15in')
+    # listProps.setAttribute('height', '0.15in')
     listProps.setAttribute('minlabelwidth', '0.25in')
     listProps.setAttribute('minlabeldistance','0.15in')
     listProps.setAttribute('textalign', rmlStyle.leftIndent)
     listProps.setAttribute('textalign', rmlStyle.rightIndent)
     #listProps.setAttribute('verticalpos', rmlStyle.bulletOffsetY)
-
+    # XXX: May use this later if need be
+    # listProps.setAttribute('spacebefore', '0.15in')
 
     
   
@@ -181,34 +185,32 @@ def registerListStyle(doc, attributes, rmlStyle, name):
                 fontfamily=rmlStyle.bulletFontName))
         listProps.setAttribute('fontname', rmlStyle.bulletFontName)
     
-    
+    if bulletFormat != None:
+        if bulletFormat == '(%s)':
+            numbering = odf.text.ListLevelStyleNumber(
+                level='1', 
+                stylename="Numbering_20_Symbols", 
+                numsuffix=")",
+                numprefix="(" ,
+                numformat=numType)
+            numbering.addElement(listProps)
+            odtStyle.addElement(numbering)
 
-    
-    # Create new bullet object
-    retrievedBullet = bulletDict.get(bulletType, 'circle')
-
-    bullet = odf.text.ListLevelStyleBullet(
-         bulletchar = retrievedBullet, 
-         level='1', 
-         stylename="Standard",
-         bulletrelativesize='75%')
-
-    # Add properties to created bullet style object
-    bullet.addElement(listProps)     
-    # Add bullet object to created style
-    odtStyle.addElement(bullet)
+    else:
+        retrievedBullet = bulletDict.get(bulletType, 'circle')
+        bullet = odf.text.ListLevelStyleBullet(
+            bulletchar = retrievedBullet, 
+            level='1', 
+            stylename="Standard",
+            bulletrelativesize='75%')
+        bullet.addElement(listProps)     
+        odtStyle.addElement(bullet)
 
     doc.automaticstyles.addElement(odtStyle)
 
-    #text properties
-
-    
-
-
-
 
 class ParagraphStyle(directive.RMLDirective):
-    signature = rml_stylesheet.IParagraphStyle    
+    signature = rml_stylesheet.IParagraphStyle
 
     def process(self):
         kwargs = dict(self.getAttributeValues())

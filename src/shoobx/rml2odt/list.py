@@ -28,7 +28,7 @@ from odf.text  import ListLevelStyleNumber, ListLevelStyleBullet, Span
 from z3c.rml import list as rml_list
 from z3c.rml import stylesheet  as rml_stylesheet
 from z3c.rml import flowable as rml_flowable
-from z3c.rml import directive
+from z3c.rml import attr, directive
 from z3c.rml import stylesheet
 
 from shoobx.rml2odt import flowable
@@ -254,6 +254,24 @@ class ListBase(flowable.Flowable):
         return style
 
 
+    def setStyleExtraProperties(self, existingStyleName):
+        mapper = {
+        'bulletType': 'numformat'
+        }
+        if len(self.element.attrib) <= 1: return
+        manager = attr.getManager(self)
+        declaredStyles = manager.document.automaticstyles.childNodes
+        for style in declaredStyles:
+            attributes = style.attributes
+            for key in attributes:
+                if attributes[key] == existingStyleName:
+                    for key in self.element.attrib:
+                        if key != 'style':
+                            value = self.element.attrib[key]
+                            style.childNodes[0].setAttribute(mapper[key], value)
+
+
+
     def determineStyle(self):
         # Checks if the list was supplied an already declared style
         existingStyleName = self.element.attrib.get('style', None)
@@ -266,6 +284,7 @@ class ListBase(flowable.Flowable):
             # XXX: Find a way to check if provided styleNames have already 
             # been initialized
             ListBase.createdStylesDict[self.styleID] = existingStyleName
+            self.setStyleExtraProperties(existingStyleName)
 
 
     def process(self):

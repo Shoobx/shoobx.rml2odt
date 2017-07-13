@@ -79,25 +79,41 @@ def registerParagraphStyle(doc, name, rmlStyle):
         'margintop', pt(rmlStyle.spaceBefore))
     paraProps.setAttribute(
         'marginbottom', pt(rmlStyle.spaceAfter))
-    # paraProps.setAttribute(
-        # 'pagenumber', pt(rmlStyle.pageNumber))
     paraProps.setAttribute(
-        'borderlinewidth', pt(rmlStyle.borderWidth))
+        'pagenumber', pt(rmlStyle.pageNumber))
     paraProps.setAttribute(
-        'borderlinewidthtop', pt(rmlStyle.borderWidth))
+        'padding', str(rmlStyle.borderPadding))
     paraProps.setAttribute(
-        'borderlinewidthbottom', pt(rmlStyle.borderWidth))
+        'paddingtop', str(rmlStyle.borderPadding))
+    paraProps.setAttribute(
+        'paddingbottom', str(rmlStyle.borderPadding))
+    paraProps.setAttribute(
+        'paddingleft', str(rmlStyle.borderPadding))
+    paraProps.setAttribute(
+        'border', str(rmlStyle.borderPadding))
+    paraProps.setAttribute(
+        'bordertop', str(rmlStyle.borderPadding))
+    paraProps.setAttribute(
+        'borderbottom', str(rmlStyle.borderPadding))
+    paraProps.setAttribute(
+        'borderleft', str(rmlStyle.leftIndent))
+    paraProps.setAttribute(
+        'borderright', str(rmlStyle.rightIndent))
+    paraProps.setAttribute(
+        'borderlinewidth', str(rmlStyle.borderWidth))
+    paraProps.setAttribute(
+        'borderlinewidthtop', str(rmlStyle.borderWidth))
+    paraProps.setAttribute(
+        'borderlinewidthbottom', str(rmlStyle.borderWidth))
+    paraProps.setAttribute(
+        'borderlinewidthleft', str(rmlStyle.borderWidth))
+    paraProps.setAttribute(
+        'borderlinewidthright', str(rmlStyle.borderWidth))
 
-    # if rmlStyle.padding:
-    #     paraProps.setAttribute(
-    #         'paddingtop', 'paddingbottom', 'paddingleft', 'paddingright')
-    # if rmlStyle.border is not None:
-    #     paraProps.setAttribute(
-    #         'bordertop', 'borderbottom', 'borderleft', 'borderright')
-
-    # if rmlStyle.backColor is not None:
-    #     paraProps.setAttribute('backgroundcolor', '#'+rmlStyle.backColor.hexval()[2:])
-    
+    if rmlStyle.backColor is not None:
+        paraProps.setAttribute('backgroundcolor', '#'+rmlStyle.backColor.hexval()[2:])
+    if rmlStyle.borderColor is not None:
+        paraProps.setAttribute('backgroundcolor', '#'+rmlStyle.borderColor.hexval()[2:])
  
 
     # Text Properties
@@ -123,7 +139,7 @@ def registerParagraphStyle(doc, name, rmlStyle):
         textProps.setAttribute('backgroundcolor', '#'+rmlStyle.backColor.hexval()[2:])
     
 
-def registerListStyle(doc, attributes, style, name):
+def registerListStyle(doc, attributes, rmlStyle, name):
 
     name = attributes.get('name', 'undefined')
     bulletType = attributes.get('start', 'diamond')
@@ -147,18 +163,23 @@ def registerListStyle(doc, attributes, style, name):
     odtStyle = odf.text.ListStyle(name=name)
     listProps = odf.style.ListLevelProperties()
     listProps.setAttribute('spacebefore', '0.15in')
-    listProps.setAttribute('width', name)
-    listProps.setAttribute('height', name)
+    listProps.setAttribute('width', '0,15in')
+    listProps.setAttribute('height', '0.15in')
     listProps.setAttribute('minlabelwidth', '0.25in')
     listProps.setAttribute('minlabeldistance','0.15in')
-    
+    listProps.setAttribute('textalign', rmlStyle.leftIndent)
+    listProps.setAttribute('textalign', rmlStyle.rightIndent)
+    #listProps.setAttribute('verticalpos', rmlStyle.bulletOffsetY)
 
-    # if rmlStyle.bulletFontName is not None:
-    #     doc.fontfacedecls.addElement(
-    #         odf.style.FontFace(
-    #             name=rmlStyle.bulletFontName,
-    #             fontfamily=rmlStyle.bulletFontName))
-    #     listProps.setAttribute('fontname', rmlStyle.bulletFontName)
+
+    
+  
+    if rmlStyle.bulletFontName is not None:
+        doc.fontfacedecls.addElement(
+            odf.style.FontFace(
+                name=rmlStyle.bulletFontName,
+                fontfamily=rmlStyle.bulletFontName))
+        listProps.setAttribute('fontname', rmlStyle.bulletFontName)
     
     
 

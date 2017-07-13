@@ -79,8 +79,6 @@ def registerParagraphStyle(doc, name, rmlStyle):
     paraProps.setAttribute(
         'marginbottom', pt(rmlStyle.spaceAfter))
     paraProps.setAttribute(
-        'pagenumber', pt(rmlStyle.pageNumber))
-    paraProps.setAttribute(
         'padding', str(rmlStyle.borderPadding))
     paraProps.setAttribute(
         'paddingtop', str(rmlStyle.borderPadding))

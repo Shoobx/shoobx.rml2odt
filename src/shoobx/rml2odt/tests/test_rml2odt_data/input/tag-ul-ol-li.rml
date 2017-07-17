@@ -17,19 +17,19 @@
     <listStyle
         name="MyList"
         bulletFontSize="50pt"
-        textalign='right'
+        bulletAlign='center'
         bulletFontName="Chalkduster"
         bulletColor="green"
-        start="circle"
+        start="diamond"
         />
     <listStyle
         name="MyEnum"
         bulletFontName="Times-Roman"
         bulletFontSize="8pt"
-        bulletAlign="right"
+        bulletAlign="center"
         bulletFormat="(%s)"
         bulletType="a"
-        start="darrowhead"
+        
         />
     <listStyle
         name="CustomBulletTextList"

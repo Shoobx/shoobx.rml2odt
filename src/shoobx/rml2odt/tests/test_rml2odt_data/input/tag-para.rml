@@ -57,7 +57,7 @@
     <paraStyle name="LegendSmall" parent="Normal" fontName="Garamond-Bold" fontSize="8pt" alignment="justify"/>
 
 
-    <listStyle name="Simple" bulletFontName="Helvetica" bulletFontSize="6pt" bulletType="bullet" bulletOffsetY="-5pt" bulletDedent="12" leftIndent="24" start="circle"/>
+    <listStyle name="Simple" bulletFontName="Helvetica" bulletFontSize="6pt" bulletType="bullet" bulletOffsetY="-5pt" bulletDedent="12" leftIndent="24" start="1"/>
 
     <listStyle name="Whereases" bulletFontName="Arial" bulletFontSize="12pt" bulletType="bullet" bulletDedent="80" leftIndent="80" start="WHEREAS:"/>
     <listStyle name="MyList" parent= "Normal" bulletFontName="Arial" bulletFontSize="12pt" bulletType="bullet" bulletDedent="80" leftIndent="80" start="RESOLVED:"/>
@@ -68,7 +68,7 @@
     <listStyle name="Resolutions" bulletFontName="Garamond-Bold" bulletFontSize="12pt" bulletType="bullet" bulletDedent="80" leftIndent="80" start="RESOLVED:"/>
     <paraStyle name="ResolutionIndent" parent="Normal" leftIndent="80pt"/>
     <paraStyle name="PageBreak" parent="Normal" fontName="Helvetica" fontSize="12" leading="14" pageBreakBefore="1" />
-
+    <paraStyle name="BodPa" borderWidth="5" borderPadding="5 10 30 50" backColor="yellow" borderColor="orange" alignment="justify"/>
 
    
   </stylesheet>
@@ -81,11 +81,11 @@
       <para>Link to ReportLab Web Site.</para>
     </link>
 
-    <ul style="MyList" >
-      <li style="UnorderedList" >
+    <ul>
+      <li>
         <para> unordered 1 </para>
       </li>
-      <li style="UnorderedList" >
+      <li>
         <para> unordered 2 </para>
       </li>
     </ul>
@@ -112,7 +112,7 @@
  
     <spacer length="4in" />
 
-    <ol style='Simple' >
+    <ol>
       <li><para>Another number 1</para></li>
     </ol>
 

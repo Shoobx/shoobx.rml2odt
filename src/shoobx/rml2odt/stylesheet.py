@@ -93,19 +93,19 @@ def registerParagraphStyle(doc, name, rmlStyle):
     paraProps.setAttribute(
         'borderbottom', str(rmlStyle.borderPadding))
     paraProps.setAttribute(
-        'borderleft', str(rmlStyle.leftIndent))
+        'borderleft', str(rmlStyle.borderPadding))
     paraProps.setAttribute(
-        'borderright', str(rmlStyle.rightIndent))
+        'borderright', str(rmlStyle.borderPadding))
     paraProps.setAttribute(
         'borderlinewidth', str(rmlStyle.borderWidth))
     paraProps.setAttribute(
         'borderlinewidthtop', str(rmlStyle.borderWidth))
     paraProps.setAttribute(
-        'borderlinewidthbottom', str(rmlStyle.borderWidth))
+        'borderlinewidthbottom',str(rmlStyle.borderWidth))
     paraProps.setAttribute(
-        'borderlinewidthleft', str(rmlStyle.borderWidth))
+        'borderlinewidthleft',str(rmlStyle.borderWidth))
     paraProps.setAttribute(
-        'borderlinewidthright', str(rmlStyle.borderWidth))
+        'borderlinewidthright',str(rmlStyle.borderWidth))
 
     if rmlStyle.backColor is not None:
         paraProps.setAttribute('backgroundcolor', '#'+rmlStyle.backColor.hexval()[2:])
@@ -150,27 +150,30 @@ def registerListStyle(doc, attributes, rmlStyle, name):
     bulletFormat = attributes.get('bulletFormat', None)
     bulletOffsetY = attributes.get('bulletOffsetY', '0pt')
     bulletDedent = attributes.get('bulletDedent', '50pt')
-    fontsize = attributes.get('bulletFontSize', '14pt')
     numType = attributes.get('bulletType', None)
    
     bulletDict = {
-     'circle':u'\u2022',
+     'bulletchar':u'\u2022',
+     'circle':u'\u25cf',
      'square':u'\u25AA',
      'diamond':u'\u2B29',
-     'darrowhead':u'\u2304'
-     }
+     'darrowhead':u'\u2304',
+     'rarrowhead':u'\u27a4'
+    }
+\
+    # import pdb;pdb.set_trace()
+    x = reportlab.lib.styles.ListStyle.defaults
 
     # Declare properties of the list style
     odtStyle = odf.text.ListStyle(name=name)
     listProps = odf.style.ListLevelProperties()
 
-    # listProps.setAttribute('width', '0,15in')
-    # listProps.setAttribute('height', '0.15in')
+    listProps.setAttribute('width', None)
+    listProps.setAttribute('height', None)
     listProps.setAttribute('minlabelwidth', '0.25in')
     listProps.setAttribute('minlabeldistance','0.15in')
-    listProps.setAttribute('textalign', rmlStyle.leftIndent)
-    listProps.setAttribute('textalign', rmlStyle.rightIndent)
-    #listProps.setAttribute('verticalpos', rmlStyle.bulletOffsetY)
+    listProps.setAttribute('textalign', x.get('bulletAlign'))
+
     # XXX: May use this later if need be
     # listProps.setAttribute('spacebefore', '0.15in')
 

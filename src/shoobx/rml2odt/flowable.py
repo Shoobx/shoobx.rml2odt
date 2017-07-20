@@ -549,6 +549,7 @@ IComplexSubParagraphDirective.setTaggedValue(
     (occurence.ZeroOrMore('i', rml_flowable.IItalic),
      occurence.ZeroOrMore('b', rml_flowable.IBold),
      occurence.ZeroOrMore('u', rml_flowable.IUnderLine),
+     occurence.ZeroOrMore('pageNumber', rml_flowable.IPageNumber)
      occurence.ZeroOrMore('strike', IStrike),
      occurence.ZeroOrMore('strong', rml_flowable.IBold),
      occurence.ZeroOrMore('font', IFont),
@@ -732,8 +733,6 @@ class Link(Flowable):
 class pageNumber(Flowable):
     signature = rml_flowable.IPageNumber
 
-
-
     def process(self):
         manager = attr.getManager(self)
         pageNumberStyleName = manager.getNextSyleName("PageNumber")
@@ -782,9 +781,11 @@ class nextPage(Flowable):
         self.contents.addElement(self.para)
 
 
+
 class ConditionalPageBreak(Flowable):
     signature = rml_flowable.IConditionalPageBreak
     klass = reportlab.platypus.CondPageBreak
+
 
 
 class HorizontalRow(Flowable):

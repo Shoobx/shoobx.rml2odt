@@ -81,7 +81,34 @@ def registerParagraphStyle(doc, name, rmlStyle):
         'marginbottom', pt(rmlStyle.spaceAfter))
     paraProps.setAttribute(
         'pagenumber', 'current')
-
+    paraProps.setAttribute(
+        'padding', str(rmlStyle.borderPadding))
+    paraProps.setAttribute(
+        'paddingtop', str(rmlStyle.borderPadding))
+    paraProps.setAttribute(
+        'paddingbottom', str(rmlStyle.borderPadding))
+    paraProps.setAttribute(
+        'paddingleft', str(rmlStyle.borderPadding))
+    paraProps.setAttribute(
+        'border', str(rmlStyle.borderPadding))
+    paraProps.setAttribute(
+        'bordertop', str(rmlStyle.borderPadding))
+    paraProps.setAttribute(
+        'borderbottom', str(rmlStyle.borderPadding))
+    paraProps.setAttribute(
+        'borderleft', str(rmlStyle.leftIndent))
+    paraProps.setAttribute(
+        'borderright', str(rmlStyle.rightIndent))
+    paraProps.setAttribute(
+        'borderlinewidth', str(rmlStyle.borderWidth))
+    paraProps.setAttribute(
+        'borderlinewidthtop', str(rmlStyle.borderWidth))
+    paraProps.setAttribute(
+        'borderlinewidthbottom', str(rmlStyle.borderWidth))
+    paraProps.setAttribute(
+        'borderlinewidthleft', str(rmlStyle.borderWidth))
+    paraProps.setAttribute(
+        'borderlinewidthright', str(rmlStyle.borderWidth))
 
     if rmlStyle.backColor is not None:
         paraProps.setAttribute('backgroundcolor', '#' + rmlStyle.backColor.hexval()[2:])

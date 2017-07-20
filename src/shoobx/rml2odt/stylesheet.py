@@ -78,40 +78,34 @@ def registerParagraphStyle(doc, name, rmlStyle):
         'margintop', pt(rmlStyle.spaceBefore))
     paraProps.setAttribute(
         'marginbottom', pt(rmlStyle.spaceAfter))
-    paraProps.setAttribute(
-        'padding', str(rmlStyle.borderPadding))
-    paraProps.setAttribute(
-        'paddingtop', str(rmlStyle.borderPadding))
-    paraProps.setAttribute(
-        'paddingbottom', str(rmlStyle.borderPadding))
-    paraProps.setAttribute(
-        'paddingleft', str(rmlStyle.borderPadding))
-    paraProps.setAttribute(
-        'border', str(rmlStyle.borderPadding))
-    paraProps.setAttribute(
-        'bordertop', str(rmlStyle.borderPadding))
-    paraProps.setAttribute(
-        'borderbottom', str(rmlStyle.borderPadding))
-    paraProps.setAttribute(
-        'borderleft', str(rmlStyle.borderPadding))
-    paraProps.setAttribute(
-        'borderright', str(rmlStyle.borderPadding))
-    paraProps.setAttribute(
-        'borderlinewidth', str(rmlStyle.borderWidth))
-    paraProps.setAttribute(
-        'borderlinewidthtop', str(rmlStyle.borderWidth))
-    paraProps.setAttribute(
-        'borderlinewidthbottom',str(rmlStyle.borderWidth))
-    paraProps.setAttribute(
-        'borderlinewidthleft',str(rmlStyle.borderWidth))
-    paraProps.setAttribute(
-        'borderlinewidthright',str(rmlStyle.borderWidth))
+
+
 
     if rmlStyle.backColor is not None:
         paraProps.setAttribute('backgroundcolor', '#'+rmlStyle.backColor.hexval()[2:])
-    if rmlStyle.borderColor is not None:
-        paraProps.setAttribute('backgroundcolor', '#'+rmlStyle.borderColor.hexval()[2:])
- 
+
+
+    if rmlStyle.borderPadding is not None:
+        paraProps.setAttribute('padding', rmlStyle.borderPadding)
+        paraProps.setAttribute('paddingtop', rmlStyle.borderPadding)
+        paraProps.setAttribute('paddingbottom', rmlStyle.borderPadding)
+        paraProps.setAttribute('paddingleft', rmlStyle.borderPadding)
+        paraProps.setAttribute('paddingright', rmlStyle.borderPadding)
+        paraProps.setAttribute('border', rmlStyle.borderPadding)
+        paraProps.setAttribute('bordertop', rmlStyle.borderPadding)
+        paraProps.setAttribute('borderbottom', rmlStyle.borderPadding)
+        paraProps.setAttribute('borderleft', rmlStyle.borderPadding)
+        paraProps.setAttribute('borderright', rmlStyle.borderPadding)
+
+
+    if rmlStyle.borderWidth is not None:
+        paraProps.setAttribute('borderlinewidth', rmlStyle.borderWidth)
+        # paraProps.setAttribute('borderlinewidthtop', rmlStyle.borderWidth)
+        # paraProps.setAttribute('borderlinewidthbottom', rmlStyle.borderWidth)
+        # paraProps.setAttribute('borderlinewidthleft', rmlStyle.borderWidth)
+        # paraProps.setAttribute('borderlinewidthright', rmlStyle.borderWidth)
+
+
     # Text Properties
     textProps = odf.style.TextProperties()
     odtStyle.addElement(textProps)
@@ -120,15 +114,14 @@ def registerParagraphStyle(doc, name, rmlStyle):
         flag = rmlStyle.fontName.find('-')
         if flag == -1:
             fontName = rmlStyle.fontName
-        else: 
+        else:
             fontName = rmlStyle.fontName[:flag]
             transform = rmlStyle.fontName[flag+1:]
             if transform == 'Italic':
-                #import pdb; pdb.set_trace()
                 textProps.setAttribute('fontstyle', 'italic')
             elif transform == 'Bold':
                 textProps.setAttribute('fontweight', 'bold')
-            
+
         doc.fontfacedecls.addElement(
             odf.style.FontFace(
                 name=fontName,
@@ -142,7 +135,7 @@ def registerParagraphStyle(doc, name, rmlStyle):
         textProps.setAttribute('color', '#'+rmlStyle.textColor.hexval()[2:])
     if rmlStyle.backColor is not None:
         textProps.setAttribute('backgroundcolor', '#'+rmlStyle.backColor.hexval()[2:])
-    
+
 
 def registerListStyle(doc, attributes, rmlStyle, name):
     name = attributes.get('name', 'undefined')
@@ -160,7 +153,7 @@ def registerListStyle(doc, attributes, rmlStyle, name):
      'darrowhead':u'\u2304',
      'rarrowhead':u'\u27a4'
     }
-\
+
     # import pdb;pdb.set_trace()
     x = reportlab.lib.styles.ListStyle.defaults
 
@@ -173,9 +166,7 @@ def registerListStyle(doc, attributes, rmlStyle, name):
     listProps.setAttribute('minlabelwidth', '0.25in')
     listProps.setAttribute('minlabeldistance','0.15in')
     listProps.setAttribute('textalign', x.get('bulletAlign'))
-
-    # XXX: May use this later if need be
-    # listProps.setAttribute('spacebefore', '0.15in')
+    listProps.setAttribute('spacebefore', '0.15in')
 
     
   
@@ -410,7 +401,7 @@ class BlockTableStyle(directive.RMLDirective):
         'blockColBackground': BlockColBackground,
         # 'blockValign': BlockValign,
         # 'blockSpan': BlockSpan,
-        # 'lineStyle': LineStyle,
+        #lineStyle': LineStyle,
         }
 
     def process(self):

@@ -47,7 +47,6 @@ class Initialize(directive.RMLDirective):
 
 
 def registerParagraphStyle(doc, name, rmlStyle):
-
     if 'style.' in name:
         name = name[6:]
 
@@ -78,6 +77,7 @@ def registerParagraphStyle(doc, name, rmlStyle):
         'margintop', pt(rmlStyle.spaceBefore))
     paraProps.setAttribute(
         'marginbottom', pt(rmlStyle.spaceAfter))
+
 
 
 
@@ -134,7 +134,9 @@ def registerParagraphStyle(doc, name, rmlStyle):
     if rmlStyle.textColor is not None:
         textProps.setAttribute('color', '#'+rmlStyle.textColor.hexval()[2:])
     if rmlStyle.backColor is not None:
-        textProps.setAttribute('backgroundcolor', '#'+rmlStyle.backColor.hexval()[2:])
+        textProps.setAttribute(
+            'backgroundcolor', '#'+rmlStyle.backColor.hexval()[2:])
+    
 
 
 def registerListStyle(doc, attributes, rmlStyle, name):
@@ -153,8 +155,7 @@ def registerListStyle(doc, attributes, rmlStyle, name):
      'darrowhead':u'\u2304',
      'rarrowhead':u'\u27a4'
     }
-
-    # import pdb;pdb.set_trace()
+    
     x = reportlab.lib.styles.ListStyle.defaults
 
     # Declare properties of the list style
@@ -168,8 +169,6 @@ def registerListStyle(doc, attributes, rmlStyle, name):
     listProps.setAttribute('textalign', x.get('bulletAlign'))
     listProps.setAttribute('spacebefore', '0.15in')
 
-    
-  
     if rmlStyle.bulletFontName is not None:
         doc.fontfacedecls.addElement(
             odf.style.FontFace(
@@ -232,12 +231,16 @@ class TableStyleCommand(directive.RMLDirective):
         # implement them using the correct property 'type'
         for key in attributes:
             if key == "colorName" and isinstance(self, BlockTextColor):
-                value = '#' + reportlab.lib.colors.toColor(attributes[key]).hexval()[2:]
-                self.parent.tableProps.setAttribute('backgroundcolor', [value]+['text'])
+                value = '#' + reportlab.lib.colors.toColor(
+                    attributes[key]).hexval()[2:]
+                self.parent.tableProps.setAttribute(
+                    'backgroundcolor', [value]+['text'])
 
             elif key == 'colorName' and not isinstance(self, BlockTextColor):
-                value = '#' + reportlab.lib.colors.toColor(attributes[key]).hexval()[2:]
-                self.parent.cellProps.setAttribute('backgroundcolor', [value]+['back'])
+                value = '#' + reportlab.lib.colors.toColor(
+                    attributes[key]).hexval()[2:]
+                self.parent.cellProps.setAttribute(
+                    'backgroundcolor', [value]+['back'])
 
             elif key == 'colorNames':
                 tempVal = attributes[key].split(" ")
@@ -260,7 +263,8 @@ class TableStyleCommand(directive.RMLDirective):
 
 
             if key in TableStyleCommand.colProps:
-                self.parent.colProps.setAttribute(TableStyleCommand.colProps[key], value)
+                self.parent.colProps.setAttribute(
+                    TableStyleCommand.colProps[key], value)
 
             elif key in TableStyleCommand.textProps:
                 if key == 'name':
@@ -269,16 +273,20 @@ class TableStyleCommand(directive.RMLDirective):
                         odf.style.FontFace(
                             name=value,
                             fontfamily=value))
-                self.parent.textProps.setAttribute(TableStyleCommand.textProps[key], value)
+                self.parent.textProps.setAttribute(
+                    TableStyleCommand.textProps[key], value)
 
             elif key in TableStyleCommand.cellProps:
-                self.parent.cellProps.setAttribute(TableStyleCommand.cellProps[key], value)
+                self.parent.cellProps.setAttribute(
+                    TableStyleCommand.cellProps[key], value)
 
             elif key in TableStyleCommand.paraProps:
-                self.parent.paraProps.setAttribute(TableStyleCommand.paraProps[key], value)
+                self.parent.paraProps.setAttribute(
+                    TableStyleCommand.paraProps[key], value)
 
             elif key in TableStyleCommand.tableProps:
-                self.parent.tableProps.setAttribute(TableStyleCommand.tableProps[key], value)
+                self.parent.tableProps.setAttribute(
+                    TableStyleCommand.tableProps[key], value)
 
             elif key in TableStyleCommand.rowProps:
                 # TableColProperties do not support background colors at all
@@ -286,9 +294,11 @@ class TableStyleCommand(directive.RMLDirective):
                 # rows and cols colors. Appending either 'row' or 'col' is used 
                 # to distinguish between alternating colored rows or cols
                 if isinstance(self, BlockColBackground):
-                    self.parent.rowProps.setAttribute(TableStyleCommand.rowProps[key], value+['col'])
+                    self.parent.rowProps.setAttribute(
+                        TableStyleCommand.rowProps[key], value+['col'])
                 elif isinstance(self, BlockRowBackground):
-                    self.parent.rowProps.setAttribute(TableStyleCommand.rowProps[key], value+['row'])
+                    self.parent.rowProps.setAttribute(
+                        TableStyleCommand.rowProps[key], value+['row'])
             else:
                 pass
 
@@ -366,6 +376,7 @@ class BlockColBackground(TableStyleCommand):
 class BlockValign(TableStyleCommand):
     signature = rml_stylesheet.IBlockValign
     name = 'VALIGN'
+    TableStyleCommand.cellProps['value'] = 'verticalalign'
 
 
 class BlockSpan(TableStyleCommand):
@@ -399,7 +410,7 @@ class BlockTableStyle(directive.RMLDirective):
         'blockBackground': BlockBackground,
         'blockRowBackground': BlockRowBackground,
         'blockColBackground': BlockColBackground,
-        # 'blockValign': BlockValign,
+        'blockValign': BlockValign,
         # 'blockSpan': BlockSpan,
         #lineStyle': LineStyle,
         }
@@ -443,7 +454,6 @@ class ListStyle(directive.RMLDirective):
         attributeDict = self.element.attrib
         document=self.parent.parent.document
         registerListStyle(document, attributeDict, style, name)
-
 
 
 class Stylesheet(directive.RMLDirective):

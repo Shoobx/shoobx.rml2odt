@@ -15,12 +15,14 @@
 """
 import lxml.etree
 import odf.table
-from z3c.rml import attr, directive
-from z3c.rml import flowable as rml_flowable
+import re
 import zope.interface
 
 from shoobx.rml2odt import flowable, stylesheet
 from shoobx.rml2odt.interfaces import IContentContainer
+from z3c.rml import attr, directive
+from z3c.rml import flowable as rml_flowable
+
 
 
 @zope.interface.implementer(IContentContainer)
@@ -36,11 +38,14 @@ class TableCell(flowable.Flow):
             any([sub.tag in flowable.Flow.factories
                  for sub in self.element])):
             return
+
         # Create a <para> element.
         para = lxml.etree.Element('para', style=self.cellContentStyleName)
+
         # Transfer text.
         para.text = self.element.text
         self.element.text = None
+
         # Transfer children.
         for sub in tuple(self.element):
             para.append(sub)
@@ -48,118 +53,116 @@ class TableCell(flowable.Flow):
         # Add paragraph to table cell.
         self.element.append(para)
 
-
     def searchStyle(self, tableStyleName):
         manager = attr.getManager(self)
-        declaredStyles = manager.document.automaticstyles.childNodes
-        for style in declaredStyles:
-            attributes = style.attributes
-            for key in attributes:
-                if attributes[key] == tableStyleName:
-                    return style
-        return None
-
+        try:
+            style = manager.document.getStyleByName(unicode(tableStyleName))
+            return style
+        except:
+            return None
 
     def processStyle(self):
         rows = len(self.parent.parent.element)
         cols = len(self.parent.parent.element[0])
         allowedCellProperties = ['backbackgroundcolor','paddingtop', 
         'paddingbottom', 'paddingleft', 'paddingright', 'padding', 
-        'textbackgroundcolor']
+        'textbackgroundcolor', 'verticalalign']
         allowedTableProperties = ['align']
         allowedColProperties = ['blockColBackground']
         allowedRowProperties = ['backgroundcolors']
         allowedTextProperties = ['fontname', 'fontsize']
         allowedParaProperties = ['leading']
 
-
         tableStyleName = self.parent.parent.element.attrib.get('style', None)
-        stylesCollection = dict()
-        if tableStyleName != None: 
+        if tableStyleName != None:
+            stylesCollection = dict()
             desiredStyle = self.searchStyle(tableStyleName)
             if desiredStyle != None:
                 children = desiredStyle.childNodes
 
                 for child in children: 
                     childAttrs = child.attributes
-                    simplifiedDict = dict([(x[1], childAttrs[x]) for x in childAttrs])
-                    for key in simplifiedDict:
-                        # The key 'backgroundcolor' is processed by cellProps 
-                        # (the TableCellProperties method) 
+                    attrDict = dict([(x[1], childAttrs[x]) for x in childAttrs])
+                    for key in attrDict:
+                        # 'backgroundcolor' is processed by cellProps 
                         # 'backgroundcolor' passed in by 'rowProperties' is 
                         # modified to 'backgroundcolors' for later distinction
                         if child.tagName == u'style:table-row-properties':
-                            stylesCollection[str(key)+'s'] = str(simplifiedDict[key])
+                            stylesCollection[str(key)+'s'] = str(attrDict[key])
+
                         elif key == u'background-color':
-                            tempVal = str(simplifiedDict[key])
+                            tempVal = str(attrDict[key])
                             identifier = tempVal[13:17]
                             stylesCollection[identifier+str(key)] = tempVal[2:9]
+
                         else:
-                            stylesCollection[str(key)] = str(simplifiedDict[key])
+                            stylesCollection[str(key)] = str(attrDict[key])
 
-        for key in stylesCollection:
-            value = stylesCollection[key]
-            key = key.replace('-', '')
+            for key in stylesCollection:
+                value = stylesCollection[key]
+                key = key.replace('-', '')
 
-            if key in allowedColProperties:
-                pass
+                # Column Properties
+                if key in allowedColProperties:
+                    pass
 
-            elif key in allowedCellProperties:
-                if key == 'textbackgroundcolor':
-                    self.textProps.setAttribute('color', value)
-                elif key == 'backbackgroundcolor':
-                    self.cellProps.setAttribute('backgroundcolor', value)
-                else:
-                    self.cellProps.setAttribute(key, value)
+                # Cell Properties
+                elif key in allowedCellProperties:
+                    if key == 'textbackgroundcolor':
+                        self.textProps.setAttribute('color', value)
+                    elif key == 'backbackgroundcolor':
+                        self.cellProps.setAttribute('backgroundcolor', value)
+                    else:
+                        self.cellProps.setAttribute(key, value)
 
+                # Table Properties
+                elif key in allowedTableProperties:
+                    if key == 'align':
+                        self.paraProps.setAttribute('textalign', value)
+                    else:
+                        # XXX: come back to this
+                        self.paraProps.setAttribute(key, value)
 
-            elif key in allowedTableProperties:
-                if key == 'align':
-                    self.paraProps.setAttribute('textalign', value)
-                else:
-                    # XXX: come back to this
+                # Paragraph Properties
+                elif key in allowedParaProperties:
                     self.paraProps.setAttribute(key, value)
 
-            elif key in allowedParaProperties:
-                self.paraProps.setAttribute(key, value)
+                # Text Properties
+                elif key in allowedTextProperties:
+                    self.textProps.setAttribute(key, value)
 
-            elif key in allowedTextProperties:
-                self.textProps.setAttribute(key, value)
+                # Row Properties
+                elif key in allowedRowProperties:
+                    if key=='backgroundcolors':
+                        # Alternating rows
+                        color1, color2 = value[2:9], value[13:20]
+                        regex = '[0-9]+'
+                        cellNo = int(re.findall(regex, self.cellStyleName)[0])
 
+                        # Checks if this applies to alternating row colors
+                        if 'row' in value:
+                            if ((cellNo-1)//cols)%2 == 0:
+                                self.cellProps.setAttribute(key[:-1], color1)
+                            else:
+                                self.cellProps.setAttribute(key[:-1], color2)
 
-            elif key in allowedRowProperties:
-                if key=='backgroundcolors':
-                    # Alternating rows
-                    color1, color2 = value[2:9], value[13:20]
-                    # Checks if this applies to alternating row colors
-                    if 'row' in value:
-                        if ((int(self.cellStyleName.replace('TableCell', ''))-1)//
-                                                                cols)%2 == 0:
-                            self.cellProps.setAttribute(key[:-1], color1)
-                        else:
-                            self.cellProps.setAttribute(key[:-1], color2)
-
-                    # Checks if this applies to alternating columns
-                    elif 'col' in value:
-                        if ((int(self.cellStyleName.replace('TableCell', ''))-1)%
-                                                                cols)%2 == 0:
-                            self.cellProps.setAttribute(key[:-1], color1)
-                        else:
-                            self.cellProps.setAttribute(key[:-1], color2)
-
+                        # Checks if this applies to alternating columns
+                        elif 'col' in value:
+                            if ((cellNo-1)%cols)%2 == 0:
+                                self.cellProps.setAttribute(key[:-1], color1)
+                            else:
+                                self.cellProps.setAttribute(key[:-1], color2)
 
         self.cellStyle.addElement(self.cellProps)
         self.contentStyle.addElement(self.textProps)
         self.contentStyle.addElement(self.paraProps)
 
-
-
-
     def process(self):
         manager = attr.getManager(self)
 
-        # Cell Stuff
+        # Cell creation and styling
         self.cellProps  = odf.style.TableCellProperties()
+        self.cellProps.setAttribute('shrinktofit', True)
         self.cellStyleName = manager.getNextSyleName('TableCell')
         self.cellStyle = odf.style.Style(
             name=self.cellStyleName, 
@@ -168,28 +171,26 @@ class TableCell(flowable.Flow):
             stylename=self.cellStyleName,
             valuetype='string')
 
-        # Cell Text Stuff
+        # Cell Text styling
         self.cellContentStyleName = manager.getNextSyleName('CellContent')
         self.contentStyle = odf.style.Style(
             name=self.cellContentStyleName, 
             family='paragraph')
 
-        # Has textalign, justifysingleword
+        # XXX: Has textalign, justifysingleword
         self.paraProps = odf.style.ParagraphProperties()
-        # Has color (text color)
+        # XXX: Has color (text color)
         self.textProps = odf.style.TextProperties()
-        # self.contentStyle.addElement(self.paraProps)
+        self.contentStyle.addElement(self.paraProps)
 
         self._convertSimpleContent()
         self.processStyle()
-
         self.parent.row.addElement(self.cell)
         self.contents = self.cell
         super(TableCell, self).process()
 
         manager.document.automaticstyles.addElement(self.cellStyle)
         manager.document.automaticstyles.addElement(self.contentStyle)
-
 
 
 class TableBulkData(directive.RMLDirective):
@@ -207,8 +208,7 @@ class TableBulkData(directive.RMLDirective):
 				newCell.text = rowData.split(',')[cell]
 				newRow.append(newCell)
 			self.parent.element.append(newRow)
-		# Removes bulkData object so that infinite recursion loop does not
-		# occur when parent is processed.
+		# Removes bulkData object so that recursion loop does not occur
 		self.parent.element.remove(self.element)
 		self.parent.process()
 			
@@ -219,8 +219,7 @@ class TableRow(directive.RMLDirective):
     count = 0
 
     def styleRow(self):
-    	rowHeights = self.parent.getAttributeValues(
-            select=['rowHeights'], valuesOnly=True)[0]
+        rowHeights = self.parent.element.attrib['rowHeights'].split(' ')
     	# XXX: Finish this to use for conversion of rowHeights
     	# rh = self.parent.element.attrib['rowHeights'].split(" ")
     	rowHeight = rowHeights[TableRow.count]
@@ -231,6 +230,8 @@ class TableRow(directive.RMLDirective):
     	rowProps = odf.style.TableRowProperties()
     	style.addElement(rowProps)
     	rowProps.setAttribute('rowheight', rowHeight)
+        rowProps.setAttribute('useoptimalrowheight', True)
+        self.element.attrib['rowHeight'] = unicode(rowHeight)
     	TableRow.count+=1
 
 
@@ -244,8 +245,6 @@ class TableRow(directive.RMLDirective):
 class BlockTable(flowable.Flowable):
     signature = rml_flowable.IBlockTable
     factories = {
-    # XXX: Took out blockTableStyle from these factories 
-    # because it is processed in Stylesheet.py
         'tr': TableRow,
         'bulkData': TableBulkData,
     }
@@ -255,9 +254,12 @@ class BlockTable(flowable.Flowable):
         rows = len(self.element)
         # Creates the colWidths and rowHeights if they do not already exist
         try:
-        	self.element.attrib['rowHeights']
+            tempHeights = self.element.attrib['rowHeights'].split(',')
+            if tempHeights[0].isdigit():
+                temp = ' '.join([x +'mm' for x in tempHeights])
+                self.element.attrib['rowHeights'] = temp
         except:
-        	self.element.attrib['rowHeights'] = "12cm "* rows
+        	self.element.attrib['rowHeights'] = "10mm "* rows
 
         try:
         	self.element.attrib['colWidths']
@@ -265,8 +267,10 @@ class BlockTable(flowable.Flowable):
         	base_width = str(100/cols) + '% '
         	self.element.attrib['colWidths'] = base_width * cols
 
+
         colWidths = self.getAttributeValues(
             select=['colWidths'], valuesOnly=True)[0]
+
         if colWidths and len(colWidths) != len(self.element[0]):
         	raise ValueError('colWidths` entries do not match column count.')
 
@@ -288,31 +292,33 @@ class BlockTable(flowable.Flowable):
             self.table.addElement(odf.table.TableColumn(stylename=styleName))
 
 
-    def preliminaryBulkTables(self):
+    def convertBulkData(self):
         # Checks if bulktable in tag and dynamically adds colWidths and 
         # rowHeights to the parent (blockTable)
         element = self.element.getchildren()[0]
         if element.tag != 'bulkData':
-            self.addColumns()
-    	else:
-    		contents = element.text
-    		numOfCols = contents.strip().split('\n')
-    		rowHeights = "12cm "*len(numOfCols)
-    		numOfCols = max([len(x.split(',')) for x in numOfCols])
-    		base_width = 100/numOfCols
-    		colWidths = [str(base_width)+'%' for x in range(numOfCols)]
-    		colWidths = " ".join(colWidths)
-    		self.element.attrib['colWidths'] = colWidths
-    		self.element.attrib['rowHeights'] = rowHeights
+            return False
+        else:
+            contents = element.text
+            numOfCols = contents.strip().split('\n')
+            rowHeights = "10mm "*len(numOfCols)
+            numOfCols = max([len(x.split(',')) for x in numOfCols])
+            base_width = 100/numOfCols
+            colWidths = [str(base_width)+'%' for x in range(numOfCols)]
+            colWidths = " ".join(colWidths)
+            self.element.attrib['colWidths'] = colWidths
+            self.element.attrib['rowHeights'] = rowHeights
+            return True
 
 
     def process(self):
     	TableRow.count = 0
         # Naive way of determining the size of the table.
         rows = len(self.element)
+        manager = attr.getManager(self)
         if not rows:
             raise ValueError('Empty table')
-        manager = attr.getManager(self)
+
         try:
             styleName = self.element.attrib.get('style')
         except:
@@ -321,9 +327,12 @@ class BlockTable(flowable.Flowable):
             manager.document.automaticstyles.addElement(style)
             tableProps = odf.style.TableProperties(relwidth='100%')
             style.addElement(tableProps)
+
         self.table = odf.table.Table(stylename=styleName)
         self.contents.addElement(self.table)
-    	self.preliminaryBulkTables()
+    	flag = self.convertBulkData()
+        if not flag:
+            self.addColumns()
         self.processSubDirectives()
 
 

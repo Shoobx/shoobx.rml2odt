@@ -156,7 +156,7 @@
     <pageTemplate id="FirstPage">
       <frame id="main" x1="1.0in" y1="1.5in" width="6.5in" height="7.5in"/>
       <pageGraphics>
-    	<setFont name="Garamond" size="12pt"/>
+      <setFont name="Garamond" size="12pt"/>
         <drawCentredString x="4.25in" y="0.75in">
           <pageNumber/>
         </drawCentredString>
@@ -166,7 +166,7 @@
     <pageTemplate id="SmallMarginsPage">
       <frame id="main" x1="1.0in" y1="1.0in" width="6.5in" height="9.0in"/>
       <pageGraphics>
-    	<setFont name="Garamond" size="12pt"/>
+      <setFont name="Garamond" size="12pt"/>
         <drawCentredString x="4.25in" y="0.50in">
           <pageNumber/>
         </drawCentredString>
@@ -176,7 +176,7 @@
     <pageTemplate id="Main">
       <frame id="main" x1="1.0in" y1="1.5in" width="6.5in" height="8.0in"/>
       <pageGraphics>
-    	<setFont name="Garamond" size="12pt"/>
+      <setFont name="Garamond" size="12pt"/>
         <drawCentredString x="4.25in" y="0.75in">
           <pageNumber/>
         </drawCentredString>

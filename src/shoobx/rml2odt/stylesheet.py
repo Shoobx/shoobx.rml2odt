@@ -155,7 +155,7 @@ def registerListStyle(doc, attributes, rmlStyle, name):
      'darrowhead':u'\u2304',
      'rarrowhead':u'\u27a4'
     }
-    
+
     x = reportlab.lib.styles.ListStyle.defaults
 
     # Declare properties of the list style

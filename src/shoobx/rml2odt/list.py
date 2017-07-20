@@ -21,18 +21,19 @@ import reportlab.lib.styles
 import uuid
 import zope.interface
 import zope.schema
+
 from odf.style import FontFace, ListLevelProperties, ParagraphProperties
 from odf.style import Style, TextProperties
 from odf.text  import P, H, A, S, List, ListItem, ListStyle, ListLevelStyleBullet
 from odf.text  import ListLevelStyleNumber, ListLevelStyleBullet, Span
+from shoobx.rml2odt import flowable
+from shoobx.rml2odt.interfaces import IContentContainer
 from z3c.rml import list as rml_list
 from z3c.rml import stylesheet  as rml_stylesheet
 from z3c.rml import flowable as rml_flowable
 from z3c.rml import attr, directive
 from z3c.rml import stylesheet
 
-from shoobx.rml2odt import flowable
-from shoobx.rml2odt.interfaces import IContentContainer
 
 
 @zope.interface.implementer(IContentContainer)
@@ -40,15 +41,13 @@ class ListItem(flowable.Flow):
     signature = rml_flowable.IParagraph
     styleAttributes = zope.schema.getFieldNames(stylesheet.IMinimalListStyle)
     ListIDTracker = []
-    liStyleCount = 0
 
     def modifyStyle(self):
         if isinstance(self, UnorderedListItem) and self.element.attrib != {}:
-            ListItem.liStyleCount += 1
-            # Retrieve parent's list style
+            # Retrieve parent's list style name
             parentStyleName = ListBase.createdStylesDict[self.parent.styleID]
-            newStyleName = "Sh_Li%d"%ListItem.liStyleCount
-
+            manager = attr.getManager(self)
+            newStyleName = manager.getNextSyleName('Sh_Li')
             newStyle = ListStyle(name=newStyleName, consecutivenumbering=False)
             selectedBullet = self.element.attrib.get('value', 'disc')
             bul = ListLevelStyleBullet(
@@ -66,11 +65,9 @@ class ListItem(flowable.Flow):
             bul.addElement(prop)
             newStyle.addElement(bul)
 
-            # Add to styles repo
-            parent = self.parent
-            while parent.element.tag != 'document':
-                parent = parent.parent
-            parent.document.automaticstyles.addElement(newStyle)
+            # Add to automaticstyles collection
+            manager = attr.getManager(self)
+            manager.document.automaticstyles.addElement(newStyle)
             return newStyleName
         else:
             return None
@@ -88,7 +85,8 @@ class ListItem(flowable.Flow):
 
         # Keeps track of the list ID of every first <li> element
         # for subsequent <li> element lists to continue from
-        if self.parent.element.getchildren()[0] == self.element and isinstance(self, OrderedListItem): 
+        if (self.parent.element.getchildren()[0] == self.element 
+                and isinstance(self, OrderedListItem)): 
             ListItem.ListIDTracker.append(listID)
 
         # Creates a new list for each <li> element and continues from the 
@@ -108,7 +106,8 @@ class ListItem(flowable.Flow):
 
         # Removes the last list ID from the tracker list if the current <li>
         # element is the last element
-        if self.parent.element.getchildren()[-1] == self.element and isinstance(self, OrderedListItem):
+        if (self.parent.element.getchildren()[-1] == self.element 
+                and isinstance(self, OrderedListItem)):
             del(ListItem.ListIDTracker[-1])
 
         # Adds list to the document
@@ -149,7 +148,6 @@ class ListItem(flowable.Flow):
 
 class OrderedListItem(ListItem):
     signature = rml_list.IOrderedListItem
-    #
 
 
 class UnorderedListItem(ListItem):
@@ -165,7 +163,6 @@ class UnorderedListItem(ListItem):
 
 
 class createStyle(object):
-    styleCount = 0
 
     def applyAttributes(self, attributes):
         if self.tag == "ul":
@@ -190,7 +187,6 @@ class createStyle(object):
             bullet.addElement(prop)
             new_style.addElement(bullet)
 
-
         elif self.tag == "ol":
             new_style = ListStyle(name=self.name)
             numstyle = ListLevelStyleNumber(
@@ -206,34 +202,22 @@ class createStyle(object):
                 )
             numstyle.addElement(prop)
             new_style.addElement(numstyle)
-
         return new_style
 
-
-    def getStyle(self):
-        return self.new_style
-
-
-    def addToDocumentStyles(self, parent):
-        while parent.element.tag != 'document':
-            parent = parent.parent
-        parent.document.automaticstyles.addElement(self.new_style)
-
-
     def __init__(self, tag, listLevel, parent, attributes):
-        createStyle.styleCount += 1
-        self.name = "Sh%d"%createStyle.styleCount
+        self.parent = parent
+        manager = attr.getManager(self)
+        self.name = manager.getNextSyleName('Sh')
         # Tag is used later on for list specific processing
         self.tag = tag
         self.attributes = attributes
         # XXX: Correct list level
-        self.listLevel  = listLevel
-        self.parent = parent
+        self.listLevel = listLevel
         # May not be necessary unless fundamental override happens
         self.spacebefore = str(0.25*self.listLevel) + "in"
         self.new_style = createStyle.applyAttributes(self, self.attributes)
-        self.addToDocumentStyles(self.parent)
-
+        manager.document.automaticstyles.addElement(self.new_style)
+        
 
 class ListBase(flowable.Flowable):
     factories = {'li': ListItem}
@@ -253,8 +237,8 @@ class ListBase(flowable.Flowable):
                 setattr(style, name, value)
         return style
 
-
     def setStyleExtraProperties(self, existingStyleName):
+        # Used when a list already has a style but has extra inline properties
         mapper = {
         'bulletType': 'numformat'
         }
@@ -270,8 +254,6 @@ class ListBase(flowable.Flowable):
                             value = self.element.attrib[key]
                             style.childNodes[0].setAttribute(mapper[key], value)
 
-
-
     def determineStyle(self):
         # Checks if the list was supplied an already declared style
         existingStyleName = self.element.attrib.get('style', None)
@@ -285,7 +267,6 @@ class ListBase(flowable.Flowable):
             # been initialized
             ListBase.createdStylesDict[self.styleID] = existingStyleName
             self.setStyleExtraProperties(existingStyleName)
-
 
     def process(self):
         # Keeps track of the root list (in the case of nested lists)

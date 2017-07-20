@@ -19,10 +19,13 @@ import lxml
 import reportlab.platypus.flowables
 import odf.style
 import odf.text
+import odf.draw
 import reportlab.lib.styles
 import re
 import zope.interface
+
 from reportlab.lib import styles, utils
+from reportlab.graphics.barcode.qr import QrCodeWidget
 from z3c.rml import directive, occurence
 from z3c.rml import flowable as rml_flowable
 from z3c.rml import template as rml_template
@@ -57,7 +60,7 @@ def pygments2xpre(s, language="python"):
 
     h = HtmlFormatter()
     # XXX: Does not work in Python 2, since pygments creates non-unicode
-    # outpur snippets.
+    # output snippets.
     #from io import StringIO
     from six import StringIO
     out = StringIO()
@@ -86,15 +89,119 @@ class Flowable(directive.RMLDirective):
         args = dict(self.getAttributeValues(attrMapping=self.attrMapping))
 
 
+class Image(Flowable):
+    signature = rml_flowable.IImage
+    klass = reportlab.platypus.flowables.Image
+    attrMapping = {'src': 'filename', 'align': 'hAlign'}
+
+    def getDimensions(self):
+        attributes = self.element.attrib
+        tempFrameWidth = attributes['width'] 
+        tempFrameHeight = attributes['height']
+        tempRowHeight = self.parent.parent.element.attrib['rowHeight']
+        regex = '[0-9]+'
+
+        if not tempFrameHeight.isdigit():
+            tempFrameHeight = int(re.findall(regex, tempFrameHeight)[0])
+        else:
+            tempFrameHeight = int(tempFrameHeight)
+        if tempFrameHeight > 10:
+            tempFrameHeight = tempFrameHeight/5
+
+        if not tempFrameWidth.isdigit():
+            tempFrameWidth = int(re.findall(regex, tempFrameWidth)[0])
+        else:
+            tempFrameWidth = int(tempFrameWidth) 
+        if tempFrameWidth > 10:
+            tempFrameWidth = tempFrameWidth/5
+
+        if not tempRowHeight.isdigit():
+            tempRowHeight = int(re.findall(regex, tempRowHeight)[0])
+        else:
+            tempRowHeight = int(tempRowHeight)
+        if tempRowHeight > 10:
+            tempRowHeight = tempRowHeight/5
+
+        frameHeight = min(tempFrameHeight, tempRowHeight)
+        ratio = float(frameHeight) / tempFrameHeight
+
+        frameWidth = tempFrameWidth * ratio
+
+        finalFrameHeight = str(frameHeight) + 'mm'
+        finalFrameWidth = str(frameWidth) + 'mm'
+        return finalFrameWidth, finalFrameHeight
+
+
+    def process(self):
+        attributes = self.element.attrib
+        breakPoint = attributes['src'].find(',')
+        imageString = attributes['src'][breakPoint + 1:]
+        metaData = attributes['src'][:breakPoint]
+        fileType = metaData[metaData.find('/') + 1 : metaData.find(';')]
+
+        manager = attr.getManager(self)
+        frameName = manager.getNextSyleName('ImageFrame')
+        frameWidth, frameHeight = self.getDimensions()
+        
+        self.binaryImage = odf.office.BinaryData()
+        self.binaryImage.addText(imageString)
+
+        self.image = odf.draw.Image(
+            type = 'simple',
+            show = 'embed',
+            actuate = 'onLoad')
+        self.frame = odf.draw.Frame(
+            id = frameName,
+            width=frameWidth,
+            height=frameHeight,
+            anchortype= 'paragraph',
+            # relwidth = 'scale'
+            )
+        self.image.appendChild(self.binaryImage)
+        if self.parent.element.tag != 'td':
+            self.frame.appendChild(self.image)
+            self.contents.addElement(self.frame)
+        else:
+            manager = attr.getManager(self)
+            tempP = odf.text.P()
+            frameID = manager.getNextSyleName('fr')
+            frame = odf.draw.Frame(
+            id = frameID,
+            width=frameWidth,
+            height=frameHeight,
+            anchortype= 'frame',
+            relwidth='scale',
+            relheight='scale',
+            zindex ='0'
+            )
+            textbox = odf.draw.TextBox()
+            tempP2 = odf.text.P()
+            frame2ID = manager.getNextSyleName('fri')
+            frame2 = odf.draw.Frame(
+            id = frame2ID,
+            width=frameWidth,
+            height=frameHeight,
+            anchortype= 'paragraph',
+            relwidth='scale',
+            relheight='scale',
+            zindex='1'
+            )
+            frame2.appendChild(self.image)
+            tempP2.appendChild(frame2)
+            textbox.appendChild(tempP2)
+            frame.appendChild(textbox)
+            tempP.appendChild(frame)
+            self.contents.addElement(tempP)
+        
+
 class Spacer(Flowable):
     signature = rml_flowable.ISpacer
     klass = reportlab.platypus.Spacer
     attrMapping = {'length': 'height'}
-    spacerCount = 0
 
     def process(self):
-        Spacer.spacerCount+=1
-        spacerStyleName = "Sp%d"%Spacer.spacerCount
+        manager = attr.getManager(self)
+        spacerStyleName = manager.getNextSyleName('Sp')
         spacer = odf.style.Style(name=spacerStyleName, family='paragraph')
         prop = odf.style.ParagraphProperties()
         length = self.element.attrib.get('length', "0.5in")
@@ -121,6 +228,20 @@ class BarCodeFlowable(Flowable):
     klass = staticmethod(reportlab.graphics.barcode.createBarcodeDrawing)
     attrMapping = {'code': 'codeName'}
 
+    def process(self):
+        attributes = self.element.attrib
+        codeType = attributes.get('code', None)
+        if codeType == 'QR':
+            destination = attributes.get('value', 'https://wwww.shoobx.com')
+            qrCode = QrCodeWidget(destination)
+            bounds = qrCode.getBounds()
+            width = bounds[2] - bounds[0]
+            height = bounds[3] - bounds[1]
+            draw = reportlab.graphics.shapes.Drawing(360, 360, 
+                                    transform=[360./width,0,0,360./height,0,0])
+            draw.add(qrCode)
+            self.contents.addElement(draw)
+
 
 class SubParagraphDirective(directive.RMLDirective):
 
@@ -131,8 +252,10 @@ class SubParagraphDirective(directive.RMLDirective):
             para = para.parent
         return para
 
+
 class IComplexSubParagraphDirective(interfaces.IRMLDirectiveSignature):
     """A sub-paragraph directive that can contian further elements."""
+
 
 class ComplexSubParagraphDirective(SubParagraphDirective):
     """A sub-paragraph directive that can contian further elements."""
@@ -192,6 +315,7 @@ class Underline(ComplexSubParagraphDirective):
 class IStrike(IComplexSubParagraphDirective):
     """Renders the text inside as strike."""
 
+
 class Strike(ComplexSubParagraphDirective):
     signature = IStrike
 
@@ -217,6 +341,7 @@ class IFont(IComplexSubParagraphDirective):
         description=u'The color in which the text will appear.',
         required=False)
 
+
 class Font(ComplexSubParagraphDirective):
     signature = IFont
 
@@ -235,6 +360,7 @@ class ISuper(IComplexSubParagraphDirective):
     Note that a cusotm font size and position is not supported.
     """
 
+
 class Super(ComplexSubParagraphDirective):
     signature = ISuper
 
@@ -247,6 +373,7 @@ class ISub(IComplexSubParagraphDirective):
 
     Note that a cusotm font size and position is not supported.
     """
+
 
 class Sub(ComplexSubParagraphDirective):
     signature = ISub
@@ -446,7 +573,6 @@ class Paragraph(Flowable):
         self.processSubDirectives()
 
 
-
 class Preformatted(Paragraph):
     signature = rml_flowable.IPreformatted
     klass = reportlab.platypus.Preformatted
@@ -518,6 +644,7 @@ class Link(Flowable):
         flow = Flow(self.element, self.parent)
         flow.process()
 
+
 class nextPage(Flowable):
     signature = rml_flowable.INextPage
     klass = reportlab.platypus.PageBreak
@@ -525,7 +652,9 @@ class nextPage(Flowable):
     def process(self):
         manager = attr.getManager(self)
         pageBreakStyleName = manager.getNextSyleName("PageBreak")
-        pageBreakStyle = odf.style.Style(name=pageBreakStyleName, family='paragraph')
+        pageBreakStyle = odf.style.Style(
+            name=pageBreakStyleName, 
+            family='paragraph')
         prop = odf.style.ParagraphProperties()
         prop.setAttribute('breakbefore', 'page')
         pageBreakStyle.addElement(prop)
@@ -535,10 +664,9 @@ class nextPage(Flowable):
         self.contents.addElement(self.para)
 
 
-
-# class ConditionalPageBreak(Flowable):
-#     signature = rml_flowable.IConditionalPageBreak
-#     klass = reportlab.platypus.CondPageBreak
+class ConditionalPageBreak(Flowable):
+    signature = rml_flowable.IConditionalPageBreak
+    klass = reportlab.platypus.CondPageBreak
 
 
 class HorizontalRow(Flowable):
@@ -551,12 +679,13 @@ class HorizontalRow(Flowable):
         hr = odf.text.P(stylename='Horizontal Line')
         self.parent.contents.addElement(hr)
 
+
 class Flow(directive.RMLDirective):
     factories = {
         # Generic Flowables
         'spacer': Spacer,
         'illustration': Illustration,
-        'barCodeFlowable': BarCodeFlowable,
+        # 'barCodeFlowable': BarCodeFlowable,
         'pre': Preformatted,
         #'xpre': XPreformatted,
         # Paragraph-Like Flowables
@@ -574,6 +703,7 @@ class Flow(directive.RMLDirective):
         #Page-Level Flowables
         'nextPage': nextPage,
         # 'condPageBreak': ConditionalPageBreak
+        'img': Image
     }
 
     def __init__(self, *args, **kw):

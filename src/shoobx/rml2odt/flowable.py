@@ -20,12 +20,13 @@ import reportlab.platypus.flowables
 import odf.style
 import odf.text
 import odf.draw
+import pyqrcode
+import png
 import reportlab.lib.styles
 import re
 import zope.interface
 
 from reportlab.lib import styles, utils
-from reportlab.graphics.barcode.qr import QrCodeWidget
 from z3c.rml import directive, occurence
 from z3c.rml import flowable as rml_flowable
 from z3c.rml import template as rml_template
@@ -33,16 +34,6 @@ from shoobx.rml2odt import stylesheet as rml_stylesheet
 
 # from z3c.rml flowable.py file
 from z3c.rml import attr, directive, interfaces, platypus
-try:
-    import reportlab.graphics.barcode
-except ImportError:
-    # barcode package has not been installed
-    import types
-    import reportlab.graphics
-    reportlab.graphics.barcode = types.ModuleType('barcode')
-    reportlab.graphics.barcode.createBarcodeDrawing = None
-
-
 from shoobx.rml2odt.interfaces import IContentContainer
 
 
@@ -98,31 +89,36 @@ class Image(Flowable):
         attributes = self.element.attrib
         tempFrameWidth = attributes['width'] 
         tempFrameHeight = attributes['height']
-        tempRowHeight = self.parent.parent.element.attrib['rowHeight']
+        try:
+            tempRowHeight = self.parent.parent.element.attrib['rowHeight']
+        except:
+            tempRowHeight = '40mm'
+
         regex = '[0-9]+'
 
         if not tempFrameHeight.isdigit():
             tempFrameHeight = int(re.findall(regex, tempFrameHeight)[0])
         else:
             tempFrameHeight = int(tempFrameHeight)
-        if tempFrameHeight > 10:
-            tempFrameHeight = tempFrameHeight/5
+        if tempFrameHeight > 30:
+            tempFrameHeight = tempFrameHeight/4
 
         if not tempFrameWidth.isdigit():
             tempFrameWidth = int(re.findall(regex, tempFrameWidth)[0])
         else:
             tempFrameWidth = int(tempFrameWidth) 
-        if tempFrameWidth > 10:
-            tempFrameWidth = tempFrameWidth/5
+        if tempFrameWidth > 30:
+            tempFrameWidth = tempFrameWidth/4
 
         if not tempRowHeight.isdigit():
             tempRowHeight = int(re.findall(regex, tempRowHeight)[0])
         else:
             tempRowHeight = int(tempRowHeight)
-        if tempRowHeight > 10:
-            tempRowHeight = tempRowHeight/5
+        if tempRowHeight > 30:
+            tempRowHeight = tempRowHeight/4
 
-        frameHeight = min(tempFrameHeight, tempRowHeight)
+        # The 0.8 accounts for the padding
+        frameHeight = (min(tempFrameHeight, tempRowHeight)) * 0.8
         ratio = float(frameHeight) / tempFrameHeight
 
         frameWidth = tempFrameWidth * ratio
@@ -228,19 +224,114 @@ class BarCodeFlowable(Flowable):
     klass = staticmethod(reportlab.graphics.barcode.createBarcodeDrawing)
     attrMapping = {'code': 'codeName'}
 
+    def getDimensions(self):
+        attributes = self.element.attrib
+        tempFrameWidth = attributes['width'] 
+        tempFrameHeight = attributes['height']
+        try:
+            tempRowHeight = self.parent.parent.element.attrib['rowHeight']
+        except:
+            tempRowHeight = '20mm'
+
+        regex = '[0-9]+'
+
+        # IS this really necessary?
+        if not tempFrameHeight.isdigit():
+            tempFrameHeight = int(re.findall(regex, tempFrameHeight)[0])
+        else:
+            tempFrameHeight = int(tempFrameHeight)
+        if tempFrameHeight > 50:
+            tempFrameHeight = tempFrameHeight/5
+
+        if not tempFrameWidth.isdigit():
+            tempFrameWidth = int(re.findall(regex, tempFrameWidth)[0])
+        else:
+            tempFrameWidth = int(tempFrameWidth) 
+        if tempFrameWidth > 50:
+            tempFrameWidth = tempFrameWidth/5
+
+        if not tempRowHeight.isdigit():
+            tempRowHeight = int(re.findall(regex, tempRowHeight)[0])
+        else:
+            tempRowHeight = int(tempRowHeight)
+        if tempRowHeight > 50:
+            tempRowHeight = tempRowHeight/5
+
+        # 0.8 acounts for padding
+        frameHeight = (min(tempFrameHeight, tempRowHeight)) * 0.8
+        ratio = float(frameHeight) / tempFrameHeight
+
+        frameWidth = tempFrameWidth * ratio
+
+        finalFrameHeight = str(frameHeight) + 'mm'
+        finalFrameWidth = str(frameWidth) + 'mm'
+        return finalFrameWidth, finalFrameHeight
+
     def process(self):
         attributes = self.element.attrib
         codeType = attributes.get('code', None)
+        url = attributes.get('value', 'https://www.shoobx.com')
         if codeType == 'QR':
-            destination = attributes.get('value', 'https://wwww.shoobx.com')
-            qrCode = QrCodeWidget(destination)
-            bounds = qrCode.getBounds()
-            width = bounds[2] - bounds[0]
-            height = bounds[3] - bounds[1]
-            draw = reportlab.graphics.shapes.Drawing(360, 360, 
-                                    transform=[360./width,0,0,360./height,0,0])
-            draw.add(qrCode)
-            self.contents.addElement(draw)
+            qrCode = pyqrcode.create(url)
+            qrAscii = qrCode.png_as_base64_str(scale=5)
+            # newImage = lxml.etree.Element('img')
+            # newImage.set('height', attributes['height'])
+            # newImage.set('width', attributes['width'])
+            # newImage.set('src', 'data:image/png;base64,'+qrAscii)
+
+            manager = attr.getManager(self)
+            frameName = manager.getNextSyleName('BarcodeFrame')
+            frameWidth, frameHeight = self.getDimensions()
+            
+            self.binaryImage = odf.office.BinaryData()
+            self.binaryImage.addText(qrAscii)
+
+            self.image = odf.draw.Image(
+                type = 'simple',
+                show = 'embed',
+                actuate = 'onLoad')
+            self.frame = odf.draw.Frame(
+                id = frameName,
+                width=frameWidth,
+                height=frameHeight,
+                anchortype= 'paragraph',
+                # relwidth = 'scale'
+                )
+            self.image.appendChild(self.binaryImage)
+            if self.parent.element.tag != 'td':
+                self.frame.appendChild(self.image)
+                self.contents.addElement(self.frame)
+            else:
+                manager = attr.getManager(self)
+                tempP = odf.text.P()
+                frameID = manager.getNextSyleName('fr')
+                frame = odf.draw.Frame(
+                id = frameID,
+                width=frameWidth,
+                height=frameHeight,
+                anchortype= 'frame',
+                relwidth='scale',
+                relheight='scale',
+                zindex ='0'
+                )
+                textbox = odf.draw.TextBox()
+                tempP2 = odf.text.P()
+                frame2ID = manager.getNextSyleName('fri')
+                frame2 = odf.draw.Frame(
+                id = frame2ID,
+                width=frameWidth,
+                height=frameHeight,
+                anchortype= 'paragraph',
+                relwidth='scale',
+                relheight='scale',
+                zindex='1'
+                )
+                frame2.appendChild(self.image)
+                tempP2.appendChild(frame2)
+                textbox.appendChild(tempP2)
+                frame.appendChild(textbox)
+                tempP.appendChild(frame)
+                self.contents.addElement(tempP)
 
 
 class SubParagraphDirective(directive.RMLDirective):
@@ -528,7 +619,7 @@ class Paragraph(Flowable):
         styleName = manager.getNextSyleName('T')
         style = odf.style.Style(name=styleName, family='text')
         manager.document.styles.addElement(style)
-        span.setAttribute('stylename', styleName)
+        # span.setAttribute('stylename', styleName)
         textProps = odf.style.TextProperties()
         style.addElement(textProps)
         if self.italic:
@@ -564,11 +655,18 @@ class Paragraph(Flowable):
         style = self.element.attrib.get('style', self.defaultStyle)
         self.odtParagraph.setAttribute('stylename', style)
 
+        # if self.parent.element.tag == 'td':
+        #     import pdb; pdb.set_trace()
+
         # Append new paragraph.
         self.contents.addElement(self.odtParagraph)
 
         if self.element.text:
             self.addSpan(self.element.text)
+
+        for child in self.element.getchildren():
+            if child.tag == 'span':
+                self.addSpan(child.text)
 
         self.processSubDirectives()
 
@@ -685,7 +783,7 @@ class Flow(directive.RMLDirective):
         # Generic Flowables
         'spacer': Spacer,
         'illustration': Illustration,
-        # 'barCodeFlowable': BarCodeFlowable,
+        'barCodeFlowable': BarCodeFlowable,
         'pre': Preformatted,
         #'xpre': XPreformatted,
         # Paragraph-Like Flowables

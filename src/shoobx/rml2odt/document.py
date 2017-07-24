@@ -116,20 +116,13 @@ class Document(directive.RMLDirective):
         """Process document"""
         # Initialize the ODT Document.
         self.document = OpenDocumentText()
-
         self.registerDefaultStyles()
-
         # Process common sub-directives
         self.processSubDirectives(select=('docinit'))
 
         # Handle Flowable-based documents.
         if self.element.find('template') is not None:
-            # self.processSubDirectives(select=('template', 'story', 'pageTemplate', 'styleSheet', 'pageGraphics'))
             self.processSubDirectives(select=('stylesheet'))
-            # self.processSubDirectives(select=('template'))
-            # self.processSubDirectives(select=('story'))
-            #self.processSubDirectives(select=('template', 'story', 'pageTemplate', 'pageGraphics'))
-            # self.processSubDirectives(select=('story','template', 'frame'))
             self.processSubDirectives(select=('story'))
 
 

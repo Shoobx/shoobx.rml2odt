@@ -69,6 +69,7 @@
     <paraStyle name="ResolutionIndent" parent="Normal" leftIndent="80pt"/>
     <paraStyle name="PageBreak" parent="Normal" fontName="Helvetica" fontSize="12" leading="14" pageBreakBefore="1" />
     <paraStyle name="BodPa" borderWidth="5" borderPadding="5 10 30" backColor="yellow" alignment="justify"/>
+     <listStyle name="Articles" bulletFontName="Garamond-Bold" bulletFontSize="12pt" bulletType="O" bulletFormat="%s:" bulletDedent="80" leftIndent="80"/>
 
    
   </stylesheet>

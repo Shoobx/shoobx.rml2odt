@@ -655,9 +655,6 @@ class Paragraph(Flowable):
         style = self.element.attrib.get('style', self.defaultStyle)
         self.odtParagraph.setAttribute('stylename', style)
 
-        # if self.parent.element.tag == 'td':
-        #     import pdb; pdb.set_trace()
-
         # Append new paragraph.
         self.contents.addElement(self.odtParagraph)
 
@@ -666,6 +663,7 @@ class Paragraph(Flowable):
 
         for child in self.element.getchildren():
             if child.tag == 'span':
+                # import pdb; pdb.set_trace()
                 self.addSpan(child.text)
 
         self.processSubDirectives()

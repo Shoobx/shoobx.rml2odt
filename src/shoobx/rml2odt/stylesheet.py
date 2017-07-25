@@ -81,27 +81,23 @@ def registerParagraphStyle(doc, name, rmlStyle):
     paraProps.setAttribute(
         'marginbottom', pt(rmlStyle.spaceAfter))
 
+
     if rmlStyle.backColor is not None:
         paraProps.setAttribute('backgroundcolor', '#' + rmlStyle.backColor.hexval()[2:])
 
-    if rmlStyle.borderPadding is not None:
-        paraProps.setAttribute('padding', rmlStyle.borderPadding)
-        paraProps.setAttribute('paddingtop', rmlStyle.borderPadding)
-        paraProps.setAttribute('paddingbottom', rmlStyle.borderPadding)
-        paraProps.setAttribute('paddingleft', rmlStyle.borderPadding)
-        paraProps.setAttribute('paddingright', rmlStyle.borderPadding)
-        paraProps.setAttribute('border', rmlStyle.borderPadding)
-        paraProps.setAttribute('bordertop', rmlStyle.borderPadding)
-        paraProps.setAttribute('borderbottom', rmlStyle.borderPadding)
-        paraProps.setAttribute('borderleft', rmlStyle.borderPadding)
-        paraProps.setAttribute('borderright', rmlStyle.borderPadding)
+    if rmlStyle.borderPadding:
+        paraProps.setAttribute('padding', "5mm 10mm 30mm")
+        # paraProps.setAttribute('paddingtop', rmlStyle.borderPadding)
+        # paraProps.setAttribute('paddingbottom', rmlStyle.borderPadding)
+        # paraProps.setAttribute('paddingleft', rmlStyle.borderPadding)
+        # paraProps.setAttribute('paddingright', rmlStyle.borderPadding)
 
-    if rmlStyle.borderWidth is not None:
-        paraProps.setAttribute('borderlinewidth', rmlStyle.borderWidth)
-        # paraProps.setAttribute('borderlinewidthtop', rmlStyle.borderWidth)
-        # paraProps.setAttribute('borderlinewidthbottom', rmlStyle.borderWidth)
-        # paraProps.setAttribute('borderlinewidthleft', rmlStyle.borderWidth)
-        # paraProps.setAttribute('borderlinewidthright', rmlStyle.borderWidth)
+
+    if rmlStyle.borderWidth:
+        paraProps.setAttribute('borderlinewidth',"0.5mm 0.25mm 1mm")
+        # paraProps.setAttribute('borderlinewidth', '{}mm {}mm {}mm')
+        paraProps.setAttribute('border',"1.75mm double #00800a")
+
 
     # Text Properties
     textProps = odf.style.TextProperties()
@@ -132,6 +128,8 @@ def registerParagraphStyle(doc, name, rmlStyle):
     if rmlStyle.backColor is not None:
         textProps.setAttribute(
             'backgroundcolor', '#' + rmlStyle.backColor.hexval()[2:])
+
+
 
 
 def registerListStyle(doc, attributes, rmlStyle, name):
@@ -193,15 +191,42 @@ def registerListStyle(doc, attributes, rmlStyle, name):
         odtStyle.addElement(bullet)
 
 
-
-    if  bulletType != None:
-        if bulletType == '(O)':
-            listProps.setAttribute('bulletType', test)
-
+    # if bulletType is not None:
+    #     if bulletType == 'O':
+    #         listing =odf.text.ListLevelStyleNumber(
+    #             level = '1',
+    #             stylename='Standard',
+    #             numformat= '?')
+    #
+    #         listing.addElement(listProps)
+    #         odtStyle.addElement(listing)
+    #
+    #
+    #
+    # if bulletType != None:
+    #
+    #     if bulletType=='O':
+    #
+    #         for value in 'bulletType':
+    #
+    #             num = getattr(bulletType, value)
+    #
+    #             num = Number2Words(value)
+    #             listing = odf.text.ListLevelStyleBullet(
+    #                     level='1',
+    #                     stylename='Standard',
+    #                     bulletchar=num, )
+    #
+    #             listing.addElement(listProps)
+    #             odtStyle.addElement(listing)
 
 
 
     doc.automaticstyles.addElement(odtStyle)
+
+
+
+
 
 
 class ParagraphStyle(directive.RMLDirective):

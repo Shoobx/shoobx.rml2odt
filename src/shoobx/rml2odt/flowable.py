@@ -734,31 +734,9 @@ class pageNumber(Flowable):
     signature = rml_flowable.IPageNumber
 
     def process(self):
-        manager = attr.getManager(self)
-        pageNumberStyleName = manager.getNextSyleName("PageNumber")
-        pageNumberStyle = odf.style.Style(
-            name = pageNumberStyleName, 
-            family= 'paragraph')
-        prop = odf.style.ParagraphProperties()
-        prop.setAttribute('textalign', 'start')
-        prop.setAttribute('justifysingleword', 'false')
-        pageNumberStyle.addElement(prop)
-        manager.document.automaticstyles.addElement(pageNumberStyle)
-        import pdb; pdb.set_trace()
-        node = self.appendChild(
-            self.document.createElement("text:page-number")
-            )
-        node.setAttribute("text:select-page", "current")
-
-        # self.para = odf.text.P()
-        # self.para.addText('Page')
-        # self.para.appendChild(pagenumber)
-        # import pdb; pdb.set_trace()
-        # prop1 = odf.style.ParagraphProperties()
-        # prop1.setAttribute('selectpage', 'current')
-        # self.para.addElement(prop1)
-        # self.para.setAttribute('stylename', pageNumberStyleName)
-        # self.contents.addElement(self.para)
+        self.para = odf.text.P()
+        self.para.appendChild(odf.text.PageNumber())
+        self.contents.addElement(self.para)
 
 
 class nextPage(Flowable):
@@ -779,7 +757,6 @@ class nextPage(Flowable):
         self.para = odf.text.P()
         self.para.setAttribute('stylename', pageBreakStyleName)
         self.contents.addElement(self.para)
-
 
 
 class ConditionalPageBreak(Flowable):

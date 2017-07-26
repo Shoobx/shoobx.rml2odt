@@ -67,13 +67,17 @@
     <listStyle name="Whereases" bulletFontName="Garamond-Bold" bulletFontSize="12pt" bulletType="bullet" bulletDedent="80" leftIndent="80" start="WHEREAS:"/>
     <listStyle name="Resolutions" bulletFontName="Garamond-Bold" bulletFontSize="12pt" bulletType="bullet" bulletDedent="80" leftIndent="80" start="RESOLVED:"/>
     <paraStyle name="ResolutionIndent" parent="Normal" leftIndent="80pt"/>
+
     <paraStyle name="PageBreak" parent="Normal" fontName="Helvetica" fontSize="12" leading="14" pageBreakBefore="1" />
     <paraStyle name="BodPa" borderWidth="5" borderPadding="5 10 30" backColor="yellow" alignment="justify"/>
+
      <listStyle name="Articles" bulletFontName="Garamond-Bold" bulletFontSize="12pt" bulletType="O" bulletFormat="%s:" bulletDedent="80" leftIndent="80"/>
-   
+
+     <listStyle name="Articles" bulletFontName="Garamond-Bold" bulletFontSize="12pt" bulletType="O" bulletFormat="%s:" bulletDedent="80" leftIndent="80"/>
+
+<!--     <paraStyle name="PageBreak" parent="Normal" fontName="Helvetica" fontSize="12" leading="14" pageBreakBefore="1" /> -->
+
   </stylesheet>
-
-
 
   <story>
     <title>Shoobx Template 1a</title>
@@ -97,6 +101,7 @@
     <h4 >Testing Heading 4</h4>
     <h5 >Testing Heading 5</h5>
     <h6 >Testing Heading 6</h6>
+
     <pageNumber/> 
      <!-- <para> Page <pageNumber /> </para> -->
     <nextPage/>

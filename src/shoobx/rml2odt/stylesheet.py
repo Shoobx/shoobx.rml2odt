@@ -14,14 +14,13 @@
 """Style Related Element Processing
 """
 import copy
+
 import odf.style
 import odf.text
 import reportlab.lib.styles
 import reportlab.lib.enums
 import reportlab.platypus
-from utils.num2text import Number2Words
 
-test = Number2Words()
 
 
 from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT, TA_JUSTIFY
@@ -80,13 +79,22 @@ def registerParagraphStyle(doc, name, rmlStyle):
         'margintop', pt(rmlStyle.spaceBefore))
     paraProps.setAttribute(
         'marginbottom', pt(rmlStyle.spaceAfter))
+    paraProps.setAttribute(
+        'pagenumber', 'current')
 
 
     if rmlStyle.backColor is not None:
         paraProps.setAttribute('backgroundcolor', '#' + rmlStyle.backColor.hexval()[2:])
 
-    if rmlStyle.borderPadding:
-        paraProps.setAttribute('padding', "5mm 10mm 30mm")
+    if rmlStyle.borderPadding is not None:
+        # if rmlStyle.name == "BodPa":
+        #     import pdb; pdb.set_trace()
+        paraProps.setAttribute('padding', '{}mm {}mm {}mm'.format(rmlStyle.borderPadding,
+                                                                  rmlStyle.borderPadding, rmlStyle.borderPadding))
+
+
+        # in case of need for specification if not 'padding' takes care of all the following
+
         # paraProps.setAttribute('paddingtop', rmlStyle.borderPadding)
         # paraProps.setAttribute('paddingbottom', rmlStyle.borderPadding)
         # paraProps.setAttribute('paddingleft', rmlStyle.borderPadding)
@@ -94,9 +102,13 @@ def registerParagraphStyle(doc, name, rmlStyle):
 
 
     if rmlStyle.borderWidth:
-        paraProps.setAttribute('borderlinewidth',"0.5mm 0.25mm 1mm")
-        # paraProps.setAttribute('borderlinewidth', '{}mm {}mm {}mm')
-        paraProps.setAttribute('border',"1.75mm double #00800a")
+        import pdb;pdb.set_trace()
+        paraProps.setAttribute('border', '{}mm'.format(rmlStyle.borderWidth) + 'double #00800a')
+
+
+        # paraProps.setAttribute('borderlinewidth', str(rmlStyle.borderWidth))
+
+
 
 
     # Text Properties
@@ -134,7 +146,7 @@ def registerParagraphStyle(doc, name, rmlStyle):
 
 def registerListStyle(doc, attributes, rmlStyle, name):
     name = attributes.get('name', 'undefined')
-    bulletType = attributes.get('start', 'O')
+    bulletType = attributes.get('start', None)
     bulletFormat = attributes.get('bulletFormat', None)
     bulletOffsetY = attributes.get('bulletOffsetY', '0pt')
     bulletDedent = attributes.get('bulletDedent', '50pt')
@@ -190,35 +202,6 @@ def registerListStyle(doc, attributes, rmlStyle, name):
         bullet.addElement(listProps)
         odtStyle.addElement(bullet)
 
-
-    # if bulletType is not None:
-    #     if bulletType == 'O':
-    #         listing =odf.text.ListLevelStyleNumber(
-    #             level = '1',
-    #             stylename='Standard',
-    #             numformat= '?')
-    #
-    #         listing.addElement(listProps)
-    #         odtStyle.addElement(listing)
-    #
-    #
-    #
-    # if bulletType != None:
-    #
-    #     if bulletType=='O':
-    #
-    #         for value in 'bulletType':
-    #
-    #             num = getattr(bulletType, value)
-    #
-    #             num = Number2Words(value)
-    #             listing = odf.text.ListLevelStyleBullet(
-    #                     level='1',
-    #                     stylename='Standard',
-    #                     bulletchar=num, )
-    #
-    #             listing.addElement(listProps)
-    #             odtStyle.addElement(listing)
 
 
 

@@ -109,12 +109,8 @@ def registerParagraphStyle(doc, name, rmlStyle):
         'borderlinewidthleft', str(rmlStyle.borderWidth))
     paraProps.setAttribute(
         'borderlinewidthright', str(rmlStyle.borderWidth))
-<<<<<<< HEAD
-=======
->>>>>>> update
->>>>>>> 8f21408... PageNumber Implemented
->>>>>>> PageNumber Implemented
 
+    
     if rmlStyle.backColor is not None:
         paraProps.setAttribute('backgroundcolor', '#' + rmlStyle.backColor.hexval()[2:])
 

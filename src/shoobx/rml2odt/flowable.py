@@ -549,7 +549,7 @@ IComplexSubParagraphDirective.setTaggedValue(
     (occurence.ZeroOrMore('i', rml_flowable.IItalic),
      occurence.ZeroOrMore('b', rml_flowable.IBold),
      occurence.ZeroOrMore('u', rml_flowable.IUnderLine),
-     occurence.ZeroOrMore('pageNumber', rml_flowable.IPageNumber)
+     occurence.ZeroOrMore('pageNumber', rml_flowable.IPageNumber),
      occurence.ZeroOrMore('strike', IStrike),
      occurence.ZeroOrMore('strong', rml_flowable.IBold),
      occurence.ZeroOrMore('font', IFont),

@@ -1,0 +1,395 @@
+<document xmlns:app="http://namespaces.shoobx.com/application" xmlns:preview="http://namespaces.shoobx.com/preview" filename="certificate-of-incorporation.pdf" title=" Certificate of Incorporation" subject="Legal Document" author="Shoobx, Inc." creator="Shoobx, Inc.">
+
+  <docinit>
+    <registerTTFont faceName="Garamond" fileName="[shoobx.app]/resources/Garamond/AGaramondPro-Regular.ttf"/>
+    <registerTTFont faceName="Garamond-Italic" fileName="[shoobx.app]/resources/Garamond/AGaramondPro-Italic.ttf"/>
+    <registerTTFont faceName="Garamond-Bold" fileName="[shoobx.app]/resources/Garamond/AGaramondPro-Bold.ttf"/>
+    <registerTTFont faceName="Garamond-BoldItalic" fileName="[shoobx.app]/resources/Garamond/AGaramondPro-BoldItalic.ttf"/>
+    <registerTTFont faceName="Source-Sans-Light" fileName="[shoobx.app]/../frontend/fonts/SourceSansPro-Light.ttf"/>
+    <registerTTFont faceName="Source-Sans-Regular" fileName="[shoobx.app]/../frontend/fonts/SourceSansPro-Regular.ttf"/>
+    <registerTTFont faceName="Source-Sans-Semibold" fileName="[shoobx.app]/../frontend/fonts/SourceSansPro-Semibold.ttf"/>
+    <registerTTFont faceName="Shoobx" fileName="[shoobx.app]/../frontend/fonts/shoobx.ttf"/>
+    <registerFontFamily name="Garamond" normal="Garamond" bold="Garamond-Bold" italic="Garamond-Italic" boldItalic="Garamond-BoldItalic"/>
+
+    <color id="TableHeaderBackgroundColor" value="#EEEEEE"/>
+    <color id="Gray" value="#CFD9D9"/>
+    <color id="Gray" value="#566165"/>
+
+    
+  </docinit>
+
+  <stylesheet>
+    <paraStyle name="Normal" parent="style.Normal" fontName="Garamond" fontSize="12pt" leading="14pt" alignment="justify" spaceAfter="12pt"/>
+
+    <paraStyle name="Small" parent="style.Normal" fontName="Garamond" fontSize="10pt" leading="12pt" alignment="justify" spaceAfter="8pt"/>
+
+    <paraStyle name="Indent" parent="Normal" leftIndent="0.75in"/>
+
+    <paraStyle name="Right" parent="Normal" alignment="right"/>
+
+    <paraStyle name="Left" parent="Normal" alignment="left" fontSize="12pt"/>
+
+    <paraStyle name="Center" parent="Normal" alignment="center" fontSize="12pt"/>
+
+    <paraStyle name="HalfSpaceAfter" parent="Normal" spaceAfter="6pt"/>
+
+    <paraStyle name="QuarterSpaceAfter" parent="Normal" spaceAfter="3pt"/>
+
+    <paraStyle name="NoSpaceAfter" parent="Normal" spaceAfter="0pt"/>
+
+    <paraStyle name="BlankMessage" parent="Normal" fontName="Garamond-Italic" alignment="center"/>
+
+    <!-- Used by Signature -->
+    <paraStyle name="code" fontName="Courier" fontSize="10pt"/>
+    <paraStyle name="signature-byword"/>
+    <paraStyle name="code uuid" fontName="Courier" fontSize="10pt"/>
+    <paraStyle name="sig-small-text" fontSize="7pt" leading="9pt" fontName="Source-Sans-Regular" textColor="Gray"/>
+    <paraStyle name="sig-small-logo" fontSize="28pt" leading="9pt" fontName="Shoobx" textColor="Gray"/>
+
+    <paraStyle name="style.Heading1" parent="style.Heading1" fontName="Garamond-Bold" fontSize="14pt" leading="16pt" alignment="center" spaceAfter="14pt" keepWithNext="true"/>
+
+    <paraStyle name="style.Heading2" parent="style.Heading2" fontName="Garamond-BoldItalic" fontSize="12pt"/>
+
+    <paraStyle name="style.Heading3" parent="style.Heading3" fontName="Garamond-BoldItalic" fontSize="10pt"/>
+
+    <paraStyle name="style.Heading4" parent="style.Heading4" fontName="Garamond-BoldItalic" fontSize="8pt"/>
+
+    <paraStyle name="style.Heading5" parent="style.Heading5" fontName="Garamond-Bold" fontSize="8pt"/>
+
+    <paraStyle name="style.Heading6" parent="style.Heading6" fontName="Garamond-Bold" fontSize="7pt"/>
+
+    <paraStyle name="ExhibitTitle" parent="style.Heading1" fontName="Garamond-Bold" fontSize="12pt" alignment="center"/>
+
+    <paraStyle name="SectionTitle" parent="Normal" fontName="Garamond-Bold" fontSize="12pt" keepWithNext="true"/>
+
+   <listStyle name="SectionEnum" bulletFontName="Garamond" bulletFontSize="12pt" bulletFormat="(%s)"/>
+
+   <listStyle name="SubSectionEnum" bulletFontName="Garamond" bulletFontSize="12pt" bulletFormat="(%s)" bulletType="a"/>
+
+   <listStyle name="RomanEnum" bulletFontName="Garamond" bulletFontSize="12pt" bulletFormat="(%s)" bulletType="i" rightIndent="60pt" leftIndent="24pt"/>
+
+   <paraStyle name="MultiHeading" parent="Normal" fontName="Garamond-Bold" fontSize="12pt" keepWithNext="true" alignment="Center"/>
+   <paraStyle name="ArticleTitle" parent="Normal" fontName="Garamond-Bold" fontSize="12pt" keepWithNext="true"/>
+   <paraStyle name="ArticleEnum" parent="Normal" fontName="Garamond-Bold" fontSize="12pt" keepWithNext="true" alignment="Center" spaceBefore="24pt"/>
+   <paraStyle name="ArticleHeading" parent="Normal" fontName="Garamond-Bold" fontSize="12pt" keepWithNext="true" alignment="Center"/>
+    <paraStyle name="Legend" parent="Normal" fontName="Garamond-Bold" fontSize="12pt" alignment="justify"/>
+    <paraStyle name="LegendSmall" parent="Normal" fontName="Garamond-Bold" fontSize="8pt" alignment="justify"/>
+
+    <listStyle name="Simple" bulletFontName="Helvetica" bulletFontSize="6pt" bulletType="bullet" bulletOffsetY="-5pt" bulletDedent="12" leftIndent="24" start="circle"/>
+
+    <listStyle name="Whereases" bulletFontName="Garamond-Bold" bulletFontSize="12pt" bulletType="bullet" bulletDedent="80" leftIndent="80" start="WHEREAS:"/>
+    <listStyle name="Resolutions" bulletFontName="Garamond-Bold" bulletFontSize="12pt" bulletType="bullet" bulletDedent="80" leftIndent="80" start="RESOLVED:"/>
+   <paraStyle name="ResolutionIndent" parent="Normal" leftIndent="80pt"/>
+
+    <listStyle name="Articles" bulletFontName="Garamond-Bold" bulletFontSize="12pt" bulletType="O" bulletFormat="%s:" bulletDedent="80" leftIndent="80"/>
+
+    <blockTableStyle id="SimpleTable">
+      <blockFont start="0,0" stop="-1,-1" name="Garamond" size="12pt"/>
+      <blockLeftPadding start="0,0" stop="-1,-1" length="0"/>
+      <blockRightPadding start="0,0" stop="-1,-1" length="0"/>
+      <blockTopPadding start="0,0" stop="-1,-1" length="0"/>
+      <blockValign start="0,0" stop="-1,-1" value="top"/>
+    </blockTableStyle>
+
+    <blockTableStyle id="TableMiddle">
+      <blockFont start="0,0" stop="-1,-1" name="Garamond" size="12pt"/>
+      <blockLeftPadding start="0,0" stop="-1,-1" length="0"/>
+      <blockTopPadding start="0,0" stop="-1,-1" length="0"/>
+      <blockValign value="MIDDLE"/>
+      <blockBottomPadding length=".3cm"/>
+    </blockTableStyle>
+
+    <blockTableStyle id="SignatureTable">
+      <blockFont start="0,0" stop="-1,-1" name="Garamond" size="12pt"/>
+      <blockLeftPadding start="0,0" stop="-1,-1" length="0"/>
+      <blockRightPadding start="0,0" stop="-1,-1" length="0"/>
+      <blockTopPadding start="0,0" stop="-1,-1" length="0"/>
+      <blockValign start="0,0" stop="-1,-1" value="top"/>
+    </blockTableStyle>
+
+    <blockTableStyle id="SignaturesTable">
+       <blockLeftPadding length="0"/>
+       <blockRightPadding length="0"/>
+       <blockTopPadding length="0"/>
+       <blockBottomPadding length="0"/>
+       <blockValign value="bottom"/>
+       <blockRightPadding length="5" start="0,0" stop="0,-1"/>
+    </blockTableStyle>
+
+    <blockTableStyle id="sig-main">
+       <lineStyle kind="LINEABOVE" colorName="SbGrayLight" start="0,0" stop="-1,0" thicknes="5"/>
+       <lineStyle kind="LINEBELOW" colorName="SbGrayLight" start="0,-1" stop="-1,-1" thicknes="5"/>
+       <blockSpan start="0,0" stop="1,0"/>
+       <blockSpan start="0,1" stop="1,1"/>
+       <blockSpan start="1,2" stop="2,2"/>
+       <blockSpan start="2,0" stop="2,1"/>
+       <blockLeftPadding length="0"/>
+       <blockRightPadding length="0"/>
+       <blockTopPadding length="0"/>
+       <blockBottomPadding length="0"/>
+    </blockTableStyle>
+
+    <blockTableStyle id="GridTable">
+      <blockFont start="0,0" stop="-1,-1" name="Garamond" size="12pt" leading="14pt"/>
+      <blockLeftPadding start="0,0" stop="-1,-1" length="3pt"/>
+      <blockTopPadding start="0,0" stop="-1,-1" length="3pt"/>
+      <lineStyle start="0,0" stop="-1,-1" kind="GRID" colorName="Black" thickness="0.7"/>
+      <blockAlignment start="0,0" stop="-1,-1" value="left"/>
+      <blockValign start="0,0" stop="-1,-1" value="top"/>
+    </blockTableStyle>
+
+    <blockTableStyle id="GridTableWithHeader">
+      <blockFont start="0,0" stop="-1,0" name="Garamond-Bold" size="12pt"/>
+      <blockFont start="0,1" stop="-1,-1" name="Garamond" size="12pt"/>
+      <blockBackground start="0,0" stop="-1,0" colorName="Gray"/>
+      <blockLeftPadding start="0,0" stop="-1,-1" length="3pt"/>
+      <blockTopPadding start="0,0" stop="-1,-1" length="3pt"/>
+      <lineStyle start="0,0" stop="-1,-1" kind="GRID" colorName="Black" thickness="0.7"/>
+      <blockValign start="0,0" stop="-1,-1" value="top"/>
+    </blockTableStyle>
+
+    
+  </stylesheet>
+
+  <template pagesize="(8.5in, 11in)" rotation="0" leftMargin="1in" rightMargin="1in" topMargin="1in" bottomMargin="1in" showBoundary="false" allowSplitting="true">
+
+    <pageTemplate id="FirstPage">
+      <frame id="main" x1="1.0in" y1="1.5in" width="6.5in" height="7.5in"/>
+      <pageGraphics>
+      <setFont name="Garamond" size="12pt"/>
+        <drawCentredString x="4.25in" y="0.75in">
+          <pageNumber/>
+        </drawCentredString>
+      </pageGraphics>
+    </pageTemplate>
+
+    <pageTemplate id="SmallMarginsPage">
+      <frame id="main" x1="1.0in" y1="1.0in" width="6.5in" height="9.0in"/>
+      <pageGraphics>
+      <setFont name="Garamond" size="12pt"/>
+        <drawCentredString x="4.25in" y="0.50in">
+          <pageNumber/>
+        </drawCentredString>
+      </pageGraphics>
+    </pageTemplate>
+
+    <pageTemplate id="Main">
+      <frame id="main" x1="1.0in" y1="1.5in" width="6.5in" height="8.0in"/>
+      <pageGraphics>
+      <setFont name="Garamond" size="12pt"/>
+        <drawCentredString x="4.25in" y="0.75in">
+          <pageNumber/>
+        </drawCentredString>
+      </pageGraphics>
+    </pageTemplate>
+
+    <pageTemplate id="FirstPage-minus-page-numbers">
+      <frame id="main" x1="1.0in" y1="1.5in" width="6.5in" height="7.5in"/>
+    </pageTemplate>
+
+    <pageTemplate id="SmallMarginsPage-minus-page-numbers">
+      <frame id="main" x1="1.0in" y1="1.0in" width="6.5in" height="9.0in"/>
+    </pageTemplate>
+
+    <pageTemplate id="Main-minus-page-numbers">
+      <frame id="main" x1="1.0in" y1="1.5in" width="6.5in" height="8.0in"/>
+    </pageTemplate>
+
+    <pageTemplate id="Signatures">
+      <frame id="main" x1="0.5in" y1="0.5in" width="7.5in" height="9.5in"/>
+    </pageTemplate>
+
+    <pageTemplate id="Exhibit">
+      <frame id="main" x1="0.5in" y1="0.5in" width="7.5in" height="9.5in"/>
+    </pageTemplate>
+
+    
+
+  </template>
+
+  
+
+  <story firstPageTemplate="FirstPage"><outlineAdd level="0"> Of Incorporation</outlineAdd>
+    <setNextTemplate name="Main"/>
+
+    
+
+  
+  
+  
+
+  
+
+  
+
+  <h1>
+    CERTIFICATE OF INCORPORATION<br/>
+    OF<br/>
+    ACME, INC
+  </h1>
+
+  <spacer length=".5cm"/>
+
+  <ol style="Articles">
+    <li>
+      
+        
+        <para>
+          The name of this corporation shall
+          be: <b>Acme, Inc</b>
+        </para>
+      
+    </li>
+    <li>
+      
+        
+        
+        <para style="QuarterSpaceAfter">
+          Its registered office in the State of Delaware is to be located
+          at:
+        </para>
+        <para>
+          
+            2345 Six Street,
+            
+              Suite 400,
+            
+            in the City of Wilmington,
+            County of New Castle,
+            19801,
+            and its registered agent at such address is:
+            RegAgent.
+          
+          
+        </para>
+      
+    </li>
+    <li>
+      
+        <para style="QuarterSpaceAfter">
+          The purpose or purposes of the corporation shall be:
+        </para>
+        <para>
+          To carry on any and all business and to engage in any lawful act or
+          activity for which corporations may be organized under the General
+          Corporation Law of Delaware.
+        </para>
+      
+    </li>
+    <li>
+      <outlineAdd level="1">Common Stock</outlineAdd>
+        
+        
+        
+        <para style="QuarterSpaceAfter">
+          The total number of shares of stock which this corporation is
+          authorized to issue is:
+        </para>
+        <para>
+          One Hundred Thousand (100,000) shares of Common Stock, par value
+          $0.0001 per share.
+        </para>
+      
+    </li>
+    <li>
+      <outlineAdd level="1">Sole Incorporator Information</outlineAdd>
+        
+        
+        <para style="QuarterSpaceAfter">
+          The name and mailing address of the sole incorporator is as follows:
+        </para>
+        
+    </li>
+    <li>
+      <outlineAdd level="1">Board Control of Bylaws</outlineAdd>
+        <para>
+          In furtherance and not in limitation of the powers conferred by the
+          laws of the State of Delaware, the Board of Directors is expressly
+          authorized to adopt, amend or repeal the by-laws of the corporation.
+        </para>
+      
+    </li>
+    <li>
+      <outlineAdd level="1">Board Voting</outlineAdd>
+        <para>
+          Elections of directors need not be by written ballot unless the
+          by-laws of the corporation shall so provide.
+        </para>
+      
+    </li>
+    <li>
+      <outlineAdd level="1">Director Rights and Protection</outlineAdd>
+        <para>
+          A director of the corporation shall not be personally liable to
+          the corporation or its stockholders for monetary damages for
+          breach of fiduciary duty as a director, except for liability (i)
+          for any breach of the director&#8217;s duty of loyalty to the
+          corporation or its stockholders, (ii) for acts or omissions not in
+          good faith or which involve intentional misconduct or a knowing
+          violation of law, (iii) under Section 174 of the Delaware General
+          Corporation Law, or (iv) for any transaction from which the
+          director derived any improper personal benefit.  If the Delaware
+          General Corporation Law is amended after the effective date of
+          this Certificate of Incorporation to authorize corporate action
+          further eliminating or limiting the personal liability of
+          directors, then the liability of a director of the corporation
+          shall be eliminated or limited to the fullest extent permitted by
+          the General Corporation Law of the State of Delaware.  No
+          amendment, modification or repeal of this Article EIGHTH shall
+          adversely affect the rights and protection afforded to a director
+          of the corporation under this Article EIGHTH for acts or omissions
+          occurring prior to such amendment, modification or repeal.
+        </para>
+      
+    </li>
+    <li>
+      <outlineAdd level="1">Right to Amend</outlineAdd>
+        <para>
+          The corporation reserves the right at any time, and from time to
+          time, to amend, alter, change or repeal any provision contained in
+          this Certificate of Incorporation, and to add or insert other
+          provisions authorized by the laws of the State of Delaware at the
+          time in force, in the manner now or hereafter prescribed by law;
+          and all rights, preferences and privileges of whatsoever nature
+          conferred upon stockholders, directors or any other persons
+          whomsoever by and pursuant to this Certificate of Incorporation in
+          its present form or as hereafter amended are granted subject to
+          the rights reserved in this Article NINTH.
+        </para>
+      
+    </li>
+    <li>
+      <outlineAdd level="1">Creditor or Stockholder Arrangement</outlineAdd>
+        <para>
+          Whenever a compromise or arrangement is proposed between this
+          corporation and its creditors or any class of them and/or between
+          this corporation and its stockholders or any class of them, any
+          court of equitable jurisdiction within the State of Delaware may,
+          on the application in a summary way of this corporation or of any
+          creditor or stockholder thereof or on the application of any
+          receiver or receivers appointed for this corporation under the
+          provisions of Section 291 of Title 8 of the Delaware Code or on
+          the application of trustees in dissolution or of any receiver or
+          receivers appointed for this corporation under the provisions of
+          Section 279 of Title 8 of the Delaware Code order a meeting of the
+          creditors or class of creditors, and/or of the stockholders or
+          class of stockholders of this corporation, as the case may be, to
+          be summoned in such manner as the said court directs.  If a
+          majority in number representing three-fourths in value of the
+          creditors or class of creditors, and/or of the stockholders or
+          class of stockholders of this corporation, as the case may be,
+          agree to any compromise or arrangement and to any reorganization
+          of this corporation as consequence of such compromise or
+          arrangement, the said compromise or arrangement and the said
+          reorganization shall, if sanctioned by the court to which the said
+          application has been made, be binding on all the creditors or
+          class of creditors, and/or on all the stockholders or class of
+          stockholders, of this corporation, as the case may be, and also on
+          this corporation.
+        </para>
+      
+    </li>
+  </ol>
+ 
+  </story>
+</document>

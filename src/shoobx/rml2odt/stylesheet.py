@@ -19,13 +19,15 @@ import odf.text
 import reportlab.lib.styles
 import reportlab.lib.enums
 import reportlab.platypus
+from utils.num2text import Number2Words
+
+test = Number2Words()
 
 
 from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT, TA_JUSTIFY
 from z3c.rml import attr, directive, interfaces, occurence, SampleStyleSheet, \
     special
 from z3c.rml import stylesheet as rml_stylesheet
-
 
 RML2ODT_ALIGNMENTS = {
     TA_LEFT: 'left',
@@ -34,8 +36,9 @@ RML2ODT_ALIGNMENTS = {
     TA_JUSTIFY: 'justify',
 }
 
+
 def pt(pt):
-    return '%ipt' %pt
+    return '%ipt' % pt
 
 
 class Initialize(directive.RMLDirective):
@@ -43,7 +46,7 @@ class Initialize(directive.RMLDirective):
     factories = {
         'name': special.Name,
         'alias': special.Alias,
-        }
+    }
 
 
 def registerParagraphStyle(doc, name, rmlStyle):
@@ -57,7 +60,7 @@ def registerParagraphStyle(doc, name, rmlStyle):
     paraProps = odf.style.ParagraphProperties()
     odtStyle.addElement(paraProps)
     paraProps.setAttribute(
-        'linespacing', pt(rmlStyle.leading-rmlStyle.fontSize))
+        'linespacing', pt(rmlStyle.leading - rmlStyle.fontSize))
     paraProps.setAttribute(
         'textalign', RML2ODT_ALIGNMENTS[rmlStyle.alignment])
     if rmlStyle.justifyLastLine:
@@ -79,31 +82,21 @@ def registerParagraphStyle(doc, name, rmlStyle):
         'marginbottom', pt(rmlStyle.spaceAfter))
 
 
-
-
     if rmlStyle.backColor is not None:
-        paraProps.setAttribute('backgroundcolor', '#'+rmlStyle.backColor.hexval()[2:])
+        paraProps.setAttribute('backgroundcolor', '#' + rmlStyle.backColor.hexval()[2:])
+
+    if rmlStyle.borderPadding:
+        paraProps.setAttribute('padding', "5mm 10mm 30mm")
+        # paraProps.setAttribute('paddingtop', rmlStyle.borderPadding)
+        # paraProps.setAttribute('paddingbottom', rmlStyle.borderPadding)
+        # paraProps.setAttribute('paddingleft', rmlStyle.borderPadding)
+        # paraProps.setAttribute('paddingright', rmlStyle.borderPadding)
 
 
-    if rmlStyle.borderPadding is not None:
-        paraProps.setAttribute('padding', rmlStyle.borderPadding)
-        paraProps.setAttribute('paddingtop', rmlStyle.borderPadding)
-        paraProps.setAttribute('paddingbottom', rmlStyle.borderPadding)
-        paraProps.setAttribute('paddingleft', rmlStyle.borderPadding)
-        paraProps.setAttribute('paddingright', rmlStyle.borderPadding)
-        paraProps.setAttribute('border', rmlStyle.borderPadding)
-        paraProps.setAttribute('bordertop', rmlStyle.borderPadding)
-        paraProps.setAttribute('borderbottom', rmlStyle.borderPadding)
-        paraProps.setAttribute('borderleft', rmlStyle.borderPadding)
-        paraProps.setAttribute('borderright', rmlStyle.borderPadding)
-
-
-    if rmlStyle.borderWidth is not None:
-        paraProps.setAttribute('borderlinewidth', rmlStyle.borderWidth)
-        # paraProps.setAttribute('borderlinewidthtop', rmlStyle.borderWidth)
-        # paraProps.setAttribute('borderlinewidthbottom', rmlStyle.borderWidth)
-        # paraProps.setAttribute('borderlinewidthleft', rmlStyle.borderWidth)
-        # paraProps.setAttribute('borderlinewidthright', rmlStyle.borderWidth)
+    if rmlStyle.borderWidth:
+        paraProps.setAttribute('borderlinewidth',"0.5mm 0.25mm 1mm")
+        # paraProps.setAttribute('borderlinewidth', '{}mm {}mm {}mm')
+        paraProps.setAttribute('border',"1.75mm double #00800a")
 
 
     # Text Properties
@@ -116,7 +109,7 @@ def registerParagraphStyle(doc, name, rmlStyle):
             fontName = rmlStyle.fontName
         else:
             fontName = rmlStyle.fontName[:flag]
-            transform = rmlStyle.fontName[flag+1:]
+            transform = rmlStyle.fontName[flag + 1:]
             if transform == 'Italic':
                 textProps.setAttribute('fontstyle', 'italic')
             elif transform == 'Bold':
@@ -130,30 +123,30 @@ def registerParagraphStyle(doc, name, rmlStyle):
     textProps.setAttribute('fontsize', rmlStyle.fontSize)
     textProps.setAttribute('texttransform', rmlStyle.textTransform)
 
-
     if rmlStyle.textColor is not None:
-        textProps.setAttribute('color', '#'+rmlStyle.textColor.hexval()[2:])
+        textProps.setAttribute('color', '#' + rmlStyle.textColor.hexval()[2:])
     if rmlStyle.backColor is not None:
         textProps.setAttribute(
-            'backgroundcolor', '#'+rmlStyle.backColor.hexval()[2:])
-    
+            'backgroundcolor', '#' + rmlStyle.backColor.hexval()[2:])
+
+
 
 
 def registerListStyle(doc, attributes, rmlStyle, name):
     name = attributes.get('name', 'undefined')
-    bulletType = attributes.get('start', 'diamond')
+    bulletType = attributes.get('start', 'O')
     bulletFormat = attributes.get('bulletFormat', None)
     bulletOffsetY = attributes.get('bulletOffsetY', '0pt')
     bulletDedent = attributes.get('bulletDedent', '50pt')
     numType = attributes.get('bulletType', None)
-   
+
     bulletDict = {
-     'bulletchar':u'\u2022',
-     'circle':u'\u25cf',
-     'square':u'\u25AA',
-     'diamond':u'\u2B29',
-     'darrowhead':u'\u2304',
-     'rarrowhead':u'\u27a4'
+        'bulletchar': u'\u2022',
+        'circle': u'\u25cf',
+        'square': u'\u25AA',
+        'diamond': u'\u2B29',
+        'darrowhead': u'\u2304',
+        'rarrowhead': u'\u27a4'
     }
 
     x = reportlab.lib.styles.ListStyle.defaults
@@ -165,7 +158,7 @@ def registerListStyle(doc, attributes, rmlStyle, name):
     listProps.setAttribute('width', None)
     listProps.setAttribute('height', None)
     listProps.setAttribute('minlabelwidth', '0.25in')
-    listProps.setAttribute('minlabeldistance','0.15in')
+    listProps.setAttribute('minlabeldistance', '0.15in')
     listProps.setAttribute('textalign', x.get('bulletAlign'))
     listProps.setAttribute('spacebefore', '0.15in')
 
@@ -175,14 +168,14 @@ def registerListStyle(doc, attributes, rmlStyle, name):
                 name=rmlStyle.bulletFontName,
                 fontfamily=rmlStyle.bulletFontName))
         listProps.setAttribute('fontname', rmlStyle.bulletFontName)
-    
+
     if bulletFormat != None:
         if bulletFormat == '(%s)':
             numbering = odf.text.ListLevelStyleNumber(
-                level='1', 
-                stylename="Numbering_20_Symbols", 
+                level='1',
+                stylename="Numbering_20_Symbols",
                 numsuffix=")",
-                numprefix="(" ,
+                numprefix="(",
                 numformat=numType)
             numbering.addElement(listProps)
             odtStyle.addElement(numbering)
@@ -190,14 +183,50 @@ def registerListStyle(doc, attributes, rmlStyle, name):
     else:
         retrievedBullet = bulletDict.get(bulletType, 'circle')
         bullet = odf.text.ListLevelStyleBullet(
-            bulletchar = retrievedBullet, 
-            level='1', 
+            bulletchar=retrievedBullet,
+            level='1',
             stylename="Standard",
             bulletrelativesize='75%')
-        bullet.addElement(listProps)     
+        bullet.addElement(listProps)
         odtStyle.addElement(bullet)
 
+
+    # if bulletType is not None:
+    #     if bulletType == 'O':
+    #         listing =odf.text.ListLevelStyleNumber(
+    #             level = '1',
+    #             stylename='Standard',
+    #             numformat= '?')
+    #
+    #         listing.addElement(listProps)
+    #         odtStyle.addElement(listing)
+    #
+    #
+    #
+    # if bulletType != None:
+    #
+    #     if bulletType=='O':
+    #
+    #         for value in 'bulletType':
+    #
+    #             num = getattr(bulletType, value)
+    #
+    #             num = Number2Words(value)
+    #             listing = odf.text.ListLevelStyleBullet(
+    #                     level='1',
+    #                     stylename='Standard',
+    #                     bulletchar=num, )
+    #
+    #             listing.addElement(listProps)
+    #             odtStyle.addElement(listing)
+
+
+
     doc.automaticstyles.addElement(odtStyle)
+
+
+
+
 
 
 class ParagraphStyle(directive.RMLDirective):
@@ -227,20 +256,20 @@ class TableStyleCommand(directive.RMLDirective):
 
     def process(self):
         attributes = self.element.attrib
-        # Loops through all attributes of the blockTableStyle and attempts to 
+        # Loops through all attributes of the blockTableStyle and attempts to
         # implement them using the correct property 'type'
         for key in attributes:
             if key == "colorName" and isinstance(self, BlockTextColor):
                 value = '#' + reportlab.lib.colors.toColor(
                     attributes[key]).hexval()[2:]
                 self.parent.tableProps.setAttribute(
-                    'backgroundcolor', [value]+['text'])
+                    'backgroundcolor', [value] + ['text'])
 
             elif key == 'colorName' and not isinstance(self, BlockTextColor):
                 value = '#' + reportlab.lib.colors.toColor(
                     attributes[key]).hexval()[2:]
                 self.parent.cellProps.setAttribute(
-                    'backgroundcolor', [value]+['back'])
+                    'backgroundcolor', [value] + ['back'])
 
             elif key == 'colorNames':
                 tempVal = attributes[key].split(" ")
@@ -260,7 +289,6 @@ class TableStyleCommand(directive.RMLDirective):
                     self.parent.cellProps.setAttribute('paddingbottom', value)
                 elif isinstance(self, BlockLeading):
                     self.parent.paraProps.setAttribute('linespacing', value)
-
 
             if key in TableStyleCommand.colProps:
                 self.parent.colProps.setAttribute(
@@ -291,14 +319,14 @@ class TableStyleCommand(directive.RMLDirective):
             elif key in TableStyleCommand.rowProps:
                 # TableColProperties do not support background colors at all
                 # TableRowProperties is being used to process both alternating
-                # rows and cols colors. Appending either 'row' or 'col' is used 
+                # rows and cols colors. Appending either 'row' or 'col' is used
                 # to distinguish between alternating colored rows or cols
                 if isinstance(self, BlockColBackground):
                     self.parent.rowProps.setAttribute(
-                        TableStyleCommand.rowProps[key], value+['col'])
+                        TableStyleCommand.rowProps[key], value + ['col'])
                 elif isinstance(self, BlockRowBackground):
                     self.parent.rowProps.setAttribute(
-                        TableStyleCommand.rowProps[key], value+['row'])
+                        TableStyleCommand.rowProps[key], value + ['row'])
             else:
                 pass
 
@@ -353,12 +381,12 @@ class BlockBackground(TableStyleCommand):
 
     # def process(self):
     #     args = [self.name]
-        # if 'colorsByRow' in self.element.keys():
-        #     args = [BlockRowBackground.name]
-        # elif 'colorsByCol' in self.element.keys():
-        #     args = [BlockColBackground.name]
-        # attributes = self.getAttributeValues(valuesOnly=True)
-        # self.parent.style.add(*args)
+    # if 'colorsByRow' in self.element.keys():
+    #     args = [BlockRowBackground.name]
+    # elif 'colorsByCol' in self.element.keys():
+    #     args = [BlockColBackground.name]
+    # attributes = self.getAttributeValues(valuesOnly=True)
+    # self.parent.style.add(*args)
 
 
 class BlockRowBackground(TableStyleCommand):
@@ -412,8 +440,8 @@ class BlockTableStyle(directive.RMLDirective):
         'blockColBackground': BlockColBackground,
         'blockValign': BlockValign,
         # 'blockSpan': BlockSpan,
-        #lineStyle': LineStyle,
-        }
+        # lineStyle': LineStyle,
+    }
 
     def process(self):
         kw = dict(self.getAttributeValues())
@@ -421,12 +449,12 @@ class BlockTableStyle(directive.RMLDirective):
         # Create Style
         self.style = odf.style.Style(name=self.styleID, family='table')
         # Create style properties
-        self.colProps   = odf.style.TableColumnProperties()
-        self.cellProps  = odf.style.TableCellProperties()
+        self.colProps = odf.style.TableColumnProperties()
+        self.cellProps = odf.style.TableCellProperties()
         self.tableProps = odf.style.TableProperties()
-        self.rowProps   = odf.style.TableRowProperties()
-        self.textProps  = odf.style.TextProperties()
-        self.paraProps  = odf.style.ParagraphProperties()
+        self.rowProps = odf.style.TableRowProperties()
+        self.textProps = odf.style.TextProperties()
+        self.paraProps = odf.style.ParagraphProperties()
         # Fill style
         self.style.addElement(self.colProps)
         self.style.addElement(self.cellProps)
@@ -452,7 +480,7 @@ class ListStyle(directive.RMLDirective):
         for name, value in kwargs.items():
             setattr(style, name, value)
         attributeDict = self.element.attrib
-        document=self.parent.parent.document
+        document = self.parent.parent.document
         registerListStyle(document, attributeDict, style, name)
 
 
@@ -464,5 +492,4 @@ class Stylesheet(directive.RMLDirective):
         'paraStyle': ParagraphStyle,
         'blockTableStyle': BlockTableStyle,
         'listStyle': ListStyle,
-        }
-
+    }

@@ -98,8 +98,8 @@
     <h5 >Testing Heading 5</h5>
     <h6 >Testing Heading 6</h6>
 
-
-
+    <pageNumber/> 
+     <!-- <para> Page <pageNumber /> </para> -->
     <nextPage/>
 
     <ol>
@@ -126,6 +126,6 @@
         the paragraph text.
     </para>
 
-    <para>Page number: <pageNumber/> </para>
+    <para> <pageNumber/> </para>
   </story>
 </document>

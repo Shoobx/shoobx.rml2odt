@@ -392,17 +392,6 @@ class Break(SubParagraphDirective):
             self.paragraph.addSpan(self.element.tail)
 
 
-class PageNumber(SubParagraphDirective):
-    signature = rml_flowable.IPageNumber
-
-    def process(self):
-        span = self.paragraph.addSpan()
-        # XXX: TO BE DONE!!!
-
-        if self.element.tail:
-            self.paragraph.addSpan(self.element.tail)
-
-
 class IAnchor(IComplexSubParagraphDirective):
     """Adds an anchor link into the paragraph."""
 
@@ -459,7 +448,7 @@ ComplexSubParagraphDirective.factories = {
     'sub': Sub,
     'a': Anchor,
     'br': Break,
-    'pageNumber': PageNumber,
+    # 'pageNumber': pageNumber,
     # Unsupported tags:
     # 'greek': Greek,
 }
@@ -645,6 +634,39 @@ class Link(Flowable):
         flow.process()
 
 
+class pageNumber(Flowable):
+    signature = rml_flowable.IPageNumber
+
+
+
+    def process(self):
+        manager = attr.getManager(self)
+        pageNumberStyleName = manager.getNextSyleName("PageNumber")
+        pageNumberStyle = odf.style.Style(
+            name = pageNumberStyleName, 
+            family= 'paragraph')
+        prop = odf.style.ParagraphProperties()
+        prop.setAttribute('textalign', 'start')
+        prop.setAttribute('justifysingleword', 'false')
+        pageNumberStyle.addElement(prop)
+        manager.document.automaticstyles.addElement(pageNumberStyle)
+        import pdb; pdb.set_trace()
+        node = self.appendChild(
+            self.document.createElement("text:page-number")
+            )
+        node.setAttribute("text:select-page", "current")
+
+        # self.para = odf.text.P()
+        # self.para.addText('Page')
+        # self.para.appendChild(pagenumber)
+        # import pdb; pdb.set_trace()
+        # prop1 = odf.style.ParagraphProperties()
+        # prop1.setAttribute('selectpage', 'current')
+        # self.para.addElement(prop1)
+        # self.para.setAttribute('stylename', pageNumberStyleName)
+        # self.contents.addElement(self.para)
+
+
 class nextPage(Flowable):
     signature = rml_flowable.INextPage
     klass = reportlab.platypus.PageBreak
@@ -654,7 +676,8 @@ class nextPage(Flowable):
         pageBreakStyleName = manager.getNextSyleName("PageBreak")
         pageBreakStyle = odf.style.Style(
             name=pageBreakStyleName, 
-            family='paragraph')
+            family='paragraph',
+            parentstylename='Footer')
         prop = odf.style.ParagraphProperties()
         prop.setAttribute('breakbefore', 'page')
         pageBreakStyle.addElement(prop)
@@ -702,6 +725,7 @@ class Flow(directive.RMLDirective):
         'link': Link,
         #Page-Level Flowables
         'nextPage': nextPage,
+        'pageNumber': pageNumber,
         # 'condPageBreak': ConditionalPageBreak
         'img': Image
     }
@@ -710,4 +734,6 @@ class Flow(directive.RMLDirective):
         super(Flow, self).__init__(*args, **kw)
 
     def process(self):
+        if self.element.tag == 'story':
+            self.parent.document.body.childNodes[0].setAttribute('usesoftpagebreaks', 'true')
         self.processSubDirectives()

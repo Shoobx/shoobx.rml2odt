@@ -102,7 +102,7 @@ def registerParagraphStyle(doc, name, rmlStyle):
 
 
     if rmlStyle.borderWidth:
-        import pdb;pdb.set_trace()
+        
         paraProps.setAttribute('border', '{}mm'.format(rmlStyle.borderWidth) + 'double #00800a')
 
 

@@ -30,10 +30,9 @@
       <file leaf-file-name="stylesheet.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/shoobx/rml2odt/stylesheet.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="605">
-              <caret line="93" column="0" lean-forward="true" selection-start-line="93" selection-start-column="0" selection-end-line="93" selection-end-column="0" />
+            <state relative-caret-position="-544">
+              <caret line="23" column="0" lean-forward="true" selection-start-line="23" selection-start-column="0" selection-end-line="23" selection-end-column="0" />
               <folding>
-                <element signature="e#655#666#0" expanded="true" />
                 <element signature="e#1021#1120#0" expanded="false" />
                 <element signature="e#1139#1157#0" expanded="false" />
                 <element signature="e#1206#1330#0" expanded="false" />
@@ -64,7 +63,7 @@
         <entry file="file://$PROJECT_DIR$/shoobx/rml2odt/tests/test_rml2odt_data/input/tag-ul-ol-li.rml">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="242">
-              <caret line="21" column="27" lean-forward="true" selection-start-line="21" selection-start-column="27" selection-end-line="21" selection-end-column="27" />
+              <caret line="21" column="27" lean-forward="false" selection-start-line="21" selection-start-column="27" selection-end-line="21" selection-end-column="27" />
               <folding />
             </state>
           </provider>
@@ -83,8 +82,8 @@
       <file leaf-file-name="list.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/shoobx/rml2odt/list.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="305">
-              <caret line="52" column="39" lean-forward="true" selection-start-line="52" selection-start-column="39" selection-end-line="52" selection-end-column="39" />
+            <state relative-caret-position="499">
+              <caret line="93" column="45" lean-forward="true" selection-start-line="93" selection-start-column="45" selection-end-line="93" selection-end-column="45" />
               <folding />
             </state>
           </provider>
@@ -125,6 +124,7 @@
         <option value="$PROJECT_DIR$/shoobx/rml2odt/num2text.py" />
         <option value="$PROJECT_DIR$/shoobx/rml2odt/tests/test_rml2odt_data/input/tag-ul-ol-li.rml" />
         <option value="$PROJECT_DIR$/shoobx/rml2odt/stylesheet.py" />
+        <option value="$PROJECT_DIR$/shoobx/rml2odt/list.py" />
       </list>
     </option>
   </component>
@@ -355,6 +355,7 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="FullScreen" value="true" />
+    <property name="settings.editor.selected.configurable" value="preferences.lookFeel" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
@@ -632,6 +633,13 @@
           <option name="timeStamp" value="5" />
         </line-breakpoint>
       </breakpoints>
+      <default-breakpoints>
+        <breakpoint type="python-exception">
+          <properties notifyOnTerminate="true" exception="BaseException">
+            <option name="notifyOnTerminate" value="true" />
+          </properties>
+        </breakpoint>
+      </default-breakpoints>
       <option name="time" value="7" />
     </breakpoint-manager>
     <watches-manager />
@@ -754,7 +762,7 @@
     <entry file="file://$PROJECT_DIR$/shoobx/rml2odt/tests/test_rml2odt_data/input/tag-ul-ol-li.rml">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="242">
-          <caret line="21" column="27" lean-forward="true" selection-start-line="21" selection-start-column="27" selection-end-line="21" selection-end-column="27" />
+          <caret line="21" column="27" lean-forward="false" selection-start-line="21" selection-start-column="27" selection-end-line="21" selection-end-column="27" />
           <folding />
         </state>
       </provider>
@@ -771,10 +779,9 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/shoobx/rml2odt/stylesheet.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="605">
-          <caret line="93" column="0" lean-forward="true" selection-start-line="93" selection-start-column="0" selection-end-line="93" selection-end-column="0" />
+        <state relative-caret-position="-544">
+          <caret line="23" column="0" lean-forward="true" selection-start-line="23" selection-start-column="0" selection-end-line="23" selection-end-column="0" />
           <folding>
-            <element signature="e#655#666#0" expanded="true" />
             <element signature="e#1021#1120#0" expanded="false" />
             <element signature="e#1139#1157#0" expanded="false" />
             <element signature="e#1206#1330#0" expanded="false" />
@@ -802,8 +809,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/shoobx/rml2odt/list.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="305">
-          <caret line="52" column="39" lean-forward="true" selection-start-line="52" selection-start-column="39" selection-end-line="52" selection-end-column="39" />
+        <state relative-caret-position="499">
+          <caret line="93" column="45" lean-forward="true" selection-start-line="93" selection-start-column="45" selection-end-line="93" selection-end-column="45" />
           <folding />
         </state>
       </provider>

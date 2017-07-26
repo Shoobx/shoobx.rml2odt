@@ -80,9 +80,9 @@ class ListItem(flowable.Flow):
                 newStyle = ListStyle(name=newStyleName)
                 numStyle = ListLevelStyleNumber(
                     stylename="Numbering_20_Symbols", 
-                    numprefix= units_ordinal[index].upper() + '(',
-                    numformat = 'None',
-                    numsuffix="):",
+                    numprefix= units_ordinal[index].upper(),
+                    numformat = '',
+                    numsuffix=":",
                     level=str(self.parent.level), 
                 )
                 prop = ListLevelProperties(

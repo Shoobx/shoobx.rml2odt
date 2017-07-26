@@ -652,7 +652,6 @@ class Paragraph(Flowable):
 
         for child in self.element.getchildren():
             if child.tag == 'span':
-                # import pdb; pdb.set_trace()
                 self.addSpan(child.text)
 
         self.processSubDirectives()

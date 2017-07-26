@@ -66,11 +66,34 @@ class ListItem(flowable.Flow):
             newStyle.addElement(bul)
 
             # Add to automaticstyles collection
-            manager = attr.getManager(self)
             manager.document.automaticstyles.addElement(newStyle)
             return newStyleName
-        else:
-            return None
+        elif isinstance(self, OrderedListItem):
+            if self.parent.element.attrib.get('style', None) == 'Articles':
+                units_ordinal = ['zeroth', 'first', 'second', 'third', 'fourth', 'fifth', 'sixth',
+                'seventh', 'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth', 'thirteenth', 
+                'fourteenth', 'fifteenth', 'sixteenth', 'seventeenth','eighteenth', 'nineteenth']
+                manager = attr.getManager(self)
+                newStyleName = manager.getNextSyleName('Articles')
+                regex = '[0-9]+'
+                index = int(re.findall(regex, newStyleName)[0])
+                newStyle = ListStyle(name=newStyleName)
+                numStyle = ListLevelStyleNumber(
+                    stylename="Numbering_20_Symbols", 
+                    numprefix= units_ordinal[index].upper() + '(',
+                    numformat = 'None',
+                    numsuffix="):",
+                    level=str(self.parent.level), 
+                )
+                prop = ListLevelProperties(
+                    spacebefore=str(0.25*self.parent.level) + "in", 
+                    minlabelwidth="0.25in", 
+                    fontname=self.element.attrib.get('bulletFontName', 'Arial')
+                )
+                numStyle.addElement(prop)
+                newStyle.addElement(numStyle)
+                manager.document.automaticstyles.addElement(newStyle)
+                return newStyleName
 
 
     def createList(self):

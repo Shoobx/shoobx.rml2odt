@@ -23,7 +23,7 @@ from shoobx.rml2odt.interfaces import IContentContainer
 from z3c.rml import attr, directive
 from z3c.rml import flowable as rml_flowable
 
-
+DEFAULT_TABLE_UNIT = 'mm'
 
 @zope.interface.implementer(IContentContainer)
 class TableCell(flowable.Flow):
@@ -222,7 +222,7 @@ class TableRow(directive.RMLDirective):
         rowHeights = self.parent.element.attrib['rowHeights'].split(' ')
     	# XXX: Finish this to use for conversion of rowHeights
     	# rh = self.parent.element.attrib['rowHeights'].split(" ")
-    	rowHeight = rowHeights[TableRow.count]
+    	rowHeight = rowHeights[TableRow.count] + DEFAULT_TABLE_UNIT
     	manager = attr.getManager(self)
     	self.styleName = manager.getNextSyleName('TableRow')
     	style = odf.style.Style(name=self.styleName, family='table-row')
@@ -230,6 +230,7 @@ class TableRow(directive.RMLDirective):
     	rowProps = odf.style.TableRowProperties()
     	style.addElement(rowProps)
     	rowProps.setAttribute('rowheight', rowHeight)
+        # ??
         rowProps.setAttribute('useoptimalrowheight', True)
         self.element.attrib['rowHeight'] = unicode(rowHeight)
     	TableRow.count+=1
@@ -256,10 +257,10 @@ class BlockTable(flowable.Flowable):
         try:
             tempHeights = self.element.attrib['rowHeights'].split(',')
             if tempHeights[0].isdigit():
-                temp = ' '.join([x +'mm' for x in tempHeights])
+                temp = ' '.join([x + DEFAULT_TABLE_UNIT for x in tempHeights])
                 self.element.attrib['rowHeights'] = temp
         except:
-        	self.element.attrib['rowHeights'] = "10mm "* rows
+        	self.element.attrib['rowHeights'] = "30%s "%DEFAULT_TABLE_UNIT * rows
 
         try:
         	self.element.attrib['colWidths']
@@ -301,8 +302,11 @@ class BlockTable(flowable.Flowable):
         else:
             contents = element.text
             numOfCols = contents.strip().split('\n')
-            rowHeights = "10mm "*len(numOfCols)
+            rowHeights = "30%s "%DEFAULT_TABLE_UNIT *len(numOfCols)
+
+            # This may be a problem !!
             numOfCols = max([len(x.split(',')) for x in numOfCols])
+
             base_width = 100/numOfCols
             colWidths = [str(base_width)+'%' for x in range(numOfCols)]
             colWidths = " ".join(colWidths)
@@ -329,6 +333,8 @@ class BlockTable(flowable.Flowable):
             style.addElement(tableProps)
 
         self.table = odf.table.Table(stylename=styleName)
+        if isinstance(self.parent, TableCell):
+            self.table.setAttribute('issubtable', 'true')
         self.contents.addElement(self.table)
     	flag = self.convertBulkData()
         if not flag:

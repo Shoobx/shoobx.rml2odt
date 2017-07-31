@@ -36,6 +36,7 @@ from shoobx.rml2odt import stylesheet as rml_stylesheet
 from z3c.rml import attr, directive, interfaces, platypus
 from shoobx.rml2odt.interfaces import IContentContainer
 
+DEFAULT_IMAGE_UNIT = 'pt'
 
 def pygments2xpre(s, language="python"):
     "Return markup suitable for XPreformatted"
@@ -92,7 +93,7 @@ class Image(Flowable):
         try:
             tempRowHeight = self.parent.parent.element.attrib['rowHeight']
         except:
-            tempRowHeight = '40mm'
+            tempRowHeight = tempFrameHeight
 
         regex = '[0-9]+'
 
@@ -100,22 +101,16 @@ class Image(Flowable):
             tempFrameHeight = int(re.findall(regex, tempFrameHeight)[0])
         else:
             tempFrameHeight = int(tempFrameHeight)
-        if tempFrameHeight > 30:
-            tempFrameHeight = tempFrameHeight/4
 
         if not tempFrameWidth.isdigit():
             tempFrameWidth = int(re.findall(regex, tempFrameWidth)[0])
         else:
             tempFrameWidth = int(tempFrameWidth) 
-        if tempFrameWidth > 30:
-            tempFrameWidth = tempFrameWidth/4
 
         if not tempRowHeight.isdigit():
             tempRowHeight = int(re.findall(regex, tempRowHeight)[0])
         else:
             tempRowHeight = int(tempRowHeight)
-        if tempRowHeight > 30:
-            tempRowHeight = tempRowHeight/4
 
         # The 0.8 accounts for the padding
         frameHeight = (min(tempFrameHeight, tempRowHeight)) * 0.8
@@ -123,8 +118,8 @@ class Image(Flowable):
 
         frameWidth = tempFrameWidth * ratio
 
-        finalFrameHeight = str(frameHeight) + 'mm'
-        finalFrameWidth = str(frameWidth) + 'mm'
+        finalFrameHeight = str(frameHeight) 
+        finalFrameWidth = str(frameWidth) 
         return finalFrameWidth, finalFrameHeight
 
 
@@ -148,9 +143,9 @@ class Image(Flowable):
             actuate = 'onLoad')
         self.frame = odf.draw.Frame(
             id = frameName,
-            width=frameWidth,
-            height=frameHeight,
-            anchortype= 'paragraph',
+            width=frameWidth+DEFAULT_IMAGE_UNIT,
+            height=frameHeight+DEFAULT_IMAGE_UNIT,
+            anchortype= 'as-char',
             # relwidth = 'scale'
             )
         self.image.appendChild(self.binaryImage)
@@ -163,11 +158,9 @@ class Image(Flowable):
             frameID = manager.getNextSyleName('fr')
             frame = odf.draw.Frame(
             id = frameID,
-            width=frameWidth,
-            height=frameHeight,
-            anchortype= 'frame',
-            relwidth='scale',
-            relheight='scale',
+            width=frameWidth + DEFAULT_IMAGE_UNIT,
+            height=frameHeight + DEFAULT_IMAGE_UNIT,
+            anchortype= 'as-char',
             zindex ='0'
             )
             textbox = odf.draw.TextBox()
@@ -175,11 +168,9 @@ class Image(Flowable):
             frame2ID = manager.getNextSyleName('fri')
             frame2 = odf.draw.Frame(
             id = frame2ID,
-            width=frameWidth,
-            height=frameHeight,
-            anchortype= 'paragraph',
-            relwidth='scale',
-            relheight='scale',
+            width=str((float(frameWidth) * 0.8)) + DEFAULT_IMAGE_UNIT,
+            height=str((float(frameHeight) *0.8)) + DEFAULT_IMAGE_UNIT,
+            anchortype= 'char',
             zindex='1'
             )
             frame2.appendChild(self.image)
@@ -231,7 +222,7 @@ class BarCodeFlowable(Flowable):
         try:
             tempRowHeight = self.parent.parent.element.attrib['rowHeight']
         except:
-            tempRowHeight = '20mm'
+            tempRowHeight = tempFrameHeight
 
         regex = '[0-9]+'
 
@@ -240,22 +231,16 @@ class BarCodeFlowable(Flowable):
             tempFrameHeight = int(re.findall(regex, tempFrameHeight)[0])
         else:
             tempFrameHeight = int(tempFrameHeight)
-        if tempFrameHeight > 50:
-            tempFrameHeight = tempFrameHeight/5
 
         if not tempFrameWidth.isdigit():
             tempFrameWidth = int(re.findall(regex, tempFrameWidth)[0])
         else:
             tempFrameWidth = int(tempFrameWidth) 
-        if tempFrameWidth > 50:
-            tempFrameWidth = tempFrameWidth/5
 
         if not tempRowHeight.isdigit():
             tempRowHeight = int(re.findall(regex, tempRowHeight)[0])
         else:
             tempRowHeight = int(tempRowHeight)
-        if tempRowHeight > 50:
-            tempRowHeight = tempRowHeight/5
 
         # 0.8 acounts for padding
         frameHeight = (min(tempFrameHeight, tempRowHeight)) * 0.8
@@ -263,8 +248,8 @@ class BarCodeFlowable(Flowable):
 
         frameWidth = tempFrameWidth * ratio
 
-        finalFrameHeight = str(frameHeight) + 'mm'
-        finalFrameWidth = str(frameWidth) + 'mm'
+        finalFrameHeight = str(frameHeight) 
+        finalFrameWidth = str(frameWidth) 
         return finalFrameWidth, finalFrameHeight
 
     def process(self):
@@ -274,17 +259,14 @@ class BarCodeFlowable(Flowable):
         if codeType == 'QR':
             qrCode = pyqrcode.create(url)
             qrAscii = qrCode.png_as_base64_str(scale=5)
-            # newImage = lxml.etree.Element('img')
-            # newImage.set('height', attributes['height'])
-            # newImage.set('width', attributes['width'])
-            # newImage.set('src', 'data:image/png;base64,'+qrAscii)
-
             manager = attr.getManager(self)
             frameName = manager.getNextSyleName('BarcodeFrame')
             frameWidth, frameHeight = self.getDimensions()
             
             self.binaryImage = odf.office.BinaryData()
             self.binaryImage.addText(qrAscii)
+            self.parent.parent.parent.parent.parent.parent.table.setAttribute('name', 'TTT')
+            self.parent.parent.parent.table.setAttribute('name', 'Test')
 
             self.image = odf.draw.Image(
                 type = 'simple',
@@ -292,9 +274,10 @@ class BarCodeFlowable(Flowable):
                 actuate = 'onLoad')
             self.frame = odf.draw.Frame(
                 id = frameName,
-                width=frameWidth,
-                height=frameHeight,
-                anchortype= 'paragraph',
+                width=frameWidth+DEFAULT_IMAGE_UNIT,
+                height=frameHeight+DEFAULT_IMAGE_UNIT,
+                anchortype= 'as-char',
+                endcelladdress = 'TTT.Test.B2'
                 # relwidth = 'scale'
                 )
             self.image.appendChild(self.binaryImage)
@@ -307,9 +290,9 @@ class BarCodeFlowable(Flowable):
                 frameID = manager.getNextSyleName('fr')
                 frame = odf.draw.Frame(
                 id = frameID,
-                width=frameWidth,
-                height=frameHeight,
-                anchortype= 'frame',
+                width=frameWidth+DEFAULT_IMAGE_UNIT,
+                height=frameHeight+DEFAULT_IMAGE_UNIT,
+                anchortype= 'as-char',
                 relwidth='scale',
                 relheight='scale',
                 zindex ='0'
@@ -319,9 +302,9 @@ class BarCodeFlowable(Flowable):
                 frame2ID = manager.getNextSyleName('fri')
                 frame2 = odf.draw.Frame(
                 id = frame2ID,
-                width=frameWidth,
-                height=frameHeight,
-                anchortype= 'paragraph',
+                width=frameWidth +DEFAULT_IMAGE_UNIT,
+                height=frameHeight + DEFAULT_IMAGE_UNIT,
+                anchortype= 'char',
                 relwidth='scale',
                 relheight='scale',
                 zindex='1'
@@ -609,7 +592,7 @@ class Paragraph(Flowable):
         styleName = manager.getNextSyleName('T')
         style = odf.style.Style(name=styleName, family='text')
         manager.document.styles.addElement(style)
-        # span.setAttribute('stylename', styleName)
+        span.setAttribute('stylename', styleName)
         textProps = odf.style.TextProperties()
         style.addElement(textProps)
         if self.italic:
@@ -779,14 +762,10 @@ class HorizontalRow(Flowable):
 class Flow(directive.RMLDirective):
     factories = {
         # Generic Flowables
-        'spacer': Spacer,
-        'illustration': Illustration,
-        'barCodeFlowable': BarCodeFlowable,
         'pre': Preformatted,
-        #'xpre': XPreformatted,
+
         # Paragraph-Like Flowables
         'para': Paragraph,
-        # Headers
         'h1': Heading1,
         'h2': Heading2,
         'h3': Heading3,
@@ -796,10 +775,16 @@ class Flow(directive.RMLDirective):
         'title': Title,
         'hr':HorizontalRow,
         'link': Link,
+
         #Page-Level Flowables
         'nextPage': nextPage,
         'pageNumber': pageNumber,
+        'spacer': Spacer,
         # 'condPageBreak': ConditionalPageBreak
+
+        # Graphic flowables
+        'illustration': Illustration,
+        'barCodeFlowable': BarCodeFlowable,
         'img': Image
     }
 

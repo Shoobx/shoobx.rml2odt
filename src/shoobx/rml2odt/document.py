@@ -16,6 +16,11 @@
 import zope.interface
 import reportlab
 from odf.opendocument import OpenDocumentText
+from odf.style import FontFace
+from odf.svg import FontFaceSrc
+import odf
+from odf.svg import FontFaceUri
+from odf.svg import DefinitionSrc
 from reportlab.lib import styles
 from z3c.rml import directive, canvas
 from z3c.rml import document as rml_document, interfaces as rml_interfaces
@@ -43,6 +48,38 @@ class ColorDefinition(directive.RMLDirective):
             setattr(reportlab.lib.colors, id, reportlab.lib.colors.HexColor(colorVal))
         
 
+class RegisterTTFont(directive.RMLDirective):
+    signature = rml_document.IRegisterTTFont
+
+    def process(self):
+        #Reverse first
+        # if rmlStyle.fontName is not None:
+        #     flag = rmlStyle.fontName.find('-')
+        #     if flag == -1:
+        #         fontName = rmlStyle.fontName
+        #     else:
+        #         fontName = rmlStyle.fontName[:flag]
+        #         transform = rmlStyle.fontName[flag + 1:]
+        #         if transform == 'Italic':
+        #             textProps.setAttribute('fontstyle', 'italic')
+        #         elif transform == 'Bold':
+        #             textProps.setAttribute('fontweight', 'bold')
+        attributes = self.element.attrib
+        fontName = attributes['faceName']
+        location = attributes['fileName']
+
+
+        
+
+        font = FontFace(name=fontName,fontfamily=fontName, fontfamilygeneric='modern', fontpitch='variable')
+        source = FontFaceSrc()
+        defSource = DefinitionSrc(href = location, actuate = 'onRequest')
+        urn = FontFaceUri(href = location, actuate = 'onRequest')
+        source.appendChild(urn)
+        # font.appendChild(source)
+        font.appendChild(defSource)
+        self.parent.parent.document.fontfacedecls.addElement(font)
+
 class DocInit(directive.RMLDirective):
     signature = rml_document.IDocInit
     factories = {
@@ -50,7 +87,7 @@ class DocInit(directive.RMLDirective):
         'color': ColorDefinition,
         # 'registerType1Face': RegisterType1Face,
         # 'registerFont': RegisterFont,
-        # 'registerTTFont': RegisterTTFont,
+        'registerTTFont': RegisterTTFont,
         # 'registerCidFont': RegisterCidFont,
         # 'registerFontFamily': RegisterFontFamily,
         # 'addMapping': AddMapping,

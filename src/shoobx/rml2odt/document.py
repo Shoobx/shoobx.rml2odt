@@ -26,6 +26,8 @@ from z3c.rml import directive, canvas
 from z3c.rml import document as rml_document, interfaces as rml_interfaces
 
 
+from reportlab.pdfbase import pdfmetrics, ttfonts, cidfonts
+
 from shoobx.rml2odt import template
 from shoobx.rml2odt import stylesheet
 
@@ -52,6 +54,13 @@ class RegisterTTFont(directive.RMLDirective):
     signature = rml_document.IRegisterTTFont
 
     def process(self):
+
+        # args = self.getAttributeValues(valuesOnly=True)
+        # font = ttfonts.TTFont(*args)
+        # pdfmetrics.registerFont(font)
+
+
+
         #Reverse first
         # if rmlStyle.fontName is not None:
         #     flag = rmlStyle.fontName.find('-')
@@ -68,16 +77,17 @@ class RegisterTTFont(directive.RMLDirective):
         fontName = attributes['faceName']
         location = attributes['fileName']
 
-
-        
-
         font = FontFace(name=fontName,fontfamily=fontName, fontfamilygeneric='modern', fontpitch='variable')
+
+        import os; cwd = os.getcwd()
+        path = cwd+"/src/shoobx/rml2odt/tests/test_rml2odt_data/input"+os.sep+location
         source = FontFaceSrc()
-        defSource = DefinitionSrc(href = location, actuate = 'onRequest')
-        urn = FontFaceUri(href = location, actuate = 'onRequest')
+        urn = FontFaceUri(href = path, actuate = 'onRequest', type='simple')
         source.appendChild(urn)
-        # font.appendChild(source)
-        font.appendChild(defSource)
+        defSource = DefinitionSrc(href = path, actuate = 'onRequest')
+        # import pdb; pdb.set_trace()
+        font.appendChild(source)
+        # font.appendChild(defSource)
         self.parent.parent.document.fontfacedecls.addElement(font)
 
 class DocInit(directive.RMLDirective):

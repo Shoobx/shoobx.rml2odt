@@ -81,46 +81,116 @@ class Flowable(directive.RMLDirective):
         args = dict(self.getAttributeValues(attrMapping=self.attrMapping))
 
 
+def inputImageIntoDoc(self):
+    self.frame = odf.draw.Frame(
+        id = self.frameName,
+        width = self.frameWidth+DEFAULT_IMAGE_UNIT,
+        height = self.frameHeight+DEFAULT_IMAGE_UNIT,
+        anchortype= 'as-char',
+        )
+    self.frame.appendChild(self.image)
+    self.contents.addElement(self.frame)
+
+def inputImageIntoCell(self):
+    manager = attr.getManager(self)
+    paraStyleName = manager.getNextSyleName('ImagePara')
+    paraStyle = odf.style.Style(
+        family = 'paragraph',
+        name = paraStyleName,
+        parentstylename = "Standard"
+        )
+    paraProps = odf.style.ParagraphProperties(
+        textalign = self.align,
+        justifysingleword = 'false'
+        )
+    paraStyle.appendChild(paraProps)
+    manager.document.automaticstyles.addElement(paraStyle)
+    para = odf.text.P(stylename = paraStyleName)
+
+    firstFrameID = manager.getNextSyleName('Frame')
+    firstFrameStyleName = manager.getNextSyleName('FrameStyle')
+    firstFrameStyle = odf.style.Style(
+        family = "graphic",
+        name = firstFrameStyleName,
+        parentstylename = "Frame"
+        )
+    graphicsProperties = odf.style.GraphicProperties(
+        border="0.06pt",
+        padding = "0in",
+        shadow = "none",
+        verticalpos = "top",
+        verticalrel = "baseline"
+        )
+    firstFrameStyle.appendChild(graphicsProperties)
+    manager.document.automaticstyles.addElement(firstFrameStyle)
+    firstFrame = odf.draw.Frame(
+        name = firstFrameID,
+        stylename = firstFrameStyle,
+        width = self.frameWidth + DEFAULT_IMAGE_UNIT,
+        height = self.frameHeight + DEFAULT_IMAGE_UNIT,
+        anchortype = 'as-char',
+        zindex = '0'
+        )
+    textBox = odf.draw.TextBox()
+    para2 = odf.text.P()
+    secondFrameID = manager.getNextSyleName('InternalFrame')
+    secondFrame = odf.draw.Frame(
+        id = secondFrameID,
+        width = self.frameWidth + DEFAULT_IMAGE_UNIT,
+        height = self.frameHeight + DEFAULT_IMAGE_UNIT,
+        anchortype = 'char'
+    )
+    secondFrame.appendChild(self.image)
+    para2.appendChild(secondFrame)
+    textBox.appendChild(para2)
+    firstFrame.appendChild(textBox)
+    para.appendChild(firstFrame)
+    self.contents.setAttribute('numbercolumnsspanned', '2')
+    self.contents.addElement(para)
+
+
+def getImageDimensions(self):
+    attributes = self.element.attrib
+    tempFrameWidth = attributes['width'] 
+    tempFrameHeight = attributes['height']
+    try:
+        tempRowHeight = self.parent.parent.element.attrib['rowHeight']
+    except:
+        tempRowHeight = tempFrameHeight
+
+    regex = '[0-9]+'
+    if not tempFrameHeight.isdigit():
+        tempFrameHeight = int(re.findall(regex, tempFrameHeight)[0])
+    else:
+        tempFrameHeight = int(tempFrameHeight)
+
+    if not tempFrameWidth.isdigit():
+        tempFrameWidth = int(re.findall(regex, tempFrameWidth)[0])
+    else:
+        tempFrameWidth = int(tempFrameWidth) 
+
+    if not tempRowHeight.isdigit():
+        tempRowHeight = int(re.findall(regex, tempRowHeight)[0])
+    else:
+        tempRowHeight = int(tempRowHeight)
+
+    if tempRowHeight < 15: tempRowHeight *= 4
+
+    # The 0.8 accounts for the padding
+    frameHeight = (min(tempFrameHeight, tempRowHeight)) * 0.8
+    ratio = float(frameHeight) / tempFrameHeight
+
+    frameWidth = tempFrameWidth * ratio
+
+    finalFrameHeight = str(frameHeight) 
+    finalFrameWidth = str(frameWidth) 
+    return finalFrameWidth, finalFrameHeight
+
+
 class Image(Flowable):
     signature = rml_flowable.IImage
     klass = reportlab.platypus.flowables.Image
     attrMapping = {'src': 'filename', 'align': 'hAlign'}
-
-    def getDimensions(self):
-        attributes = self.element.attrib
-        tempFrameWidth = attributes['width'] 
-        tempFrameHeight = attributes['height']
-        try:
-            tempRowHeight = self.parent.parent.element.attrib['rowHeight']
-        except:
-            tempRowHeight = tempFrameHeight
-
-        regex = '[0-9]+'
-
-        if not tempFrameHeight.isdigit():
-            tempFrameHeight = int(re.findall(regex, tempFrameHeight)[0])
-        else:
-            tempFrameHeight = int(tempFrameHeight)
-
-        if not tempFrameWidth.isdigit():
-            tempFrameWidth = int(re.findall(regex, tempFrameWidth)[0])
-        else:
-            tempFrameWidth = int(tempFrameWidth) 
-
-        if not tempRowHeight.isdigit():
-            tempRowHeight = int(re.findall(regex, tempRowHeight)[0])
-        else:
-            tempRowHeight = int(tempRowHeight)
-
-        # The 0.8 accounts for the padding
-        frameHeight = (min(tempFrameHeight, tempRowHeight)) * 0.8
-        ratio = float(frameHeight) / tempFrameHeight
-
-        frameWidth = tempFrameWidth * ratio
-
-        finalFrameHeight = str(frameHeight) 
-        finalFrameWidth = str(frameWidth) 
-        return finalFrameWidth, finalFrameHeight
 
 
     def process(self):
@@ -129,11 +199,10 @@ class Image(Flowable):
         imageString = attributes['src'][breakPoint + 1:]
         metaData = attributes['src'][:breakPoint]
         fileType = metaData[metaData.find('/') + 1 : metaData.find(';')]
-
         manager = attr.getManager(self)
-        frameName = manager.getNextSyleName('ImageFrame')
-        frameWidth, frameHeight = self.getDimensions()
-        
+        self.align = attributes.get('align', 'left')
+        self.frameName = manager.getNextSyleName('ImageFrame')
+        self.frameWidth, self.frameHeight = getImageDimensions(self)
         self.binaryImage = odf.office.BinaryData()
         self.binaryImage.addText(imageString)
 
@@ -141,44 +210,42 @@ class Image(Flowable):
             type = 'simple',
             show = 'embed',
             actuate = 'onLoad')
-        self.frame = odf.draw.Frame(
-            id = frameName,
-            width=frameWidth+DEFAULT_IMAGE_UNIT,
-            height=frameHeight+DEFAULT_IMAGE_UNIT,
-            anchortype= 'as-char',
-            # relwidth = 'scale'
-            )
         self.image.appendChild(self.binaryImage)
+
         if self.parent.element.tag != 'td':
-            self.frame.appendChild(self.image)
-            self.contents.addElement(self.frame)
+            inputImageIntoDoc(self)
         else:
+            inputImageIntoCell(self)
+
+
+class BarCodeFlowable(Flowable):
+    signature = rml_flowable.IBarCodeFlowable
+    klass = staticmethod(reportlab.graphics.barcode.createBarcodeDrawing)
+    attrMapping = {'code': 'codeName'}
+
+    def process(self):
+        attributes = self.element.attrib
+        codeType = attributes.get('code', None)
+        url = attributes.get('value', 'https://www.shoobx.com')
+        if codeType == 'QR':
+            qrCode = pyqrcode.create(url)
+            qrAscii = qrCode.png_as_base64_str(scale=5)
             manager = attr.getManager(self)
-            tempP = odf.text.P()
-            frameID = manager.getNextSyleName('fr')
-            frame = odf.draw.Frame(
-            id = frameID,
-            width=frameWidth + DEFAULT_IMAGE_UNIT,
-            height=frameHeight + DEFAULT_IMAGE_UNIT,
-            anchortype= 'as-char',
-            zindex ='0'
-            )
-            textbox = odf.draw.TextBox()
-            tempP2 = odf.text.P()
-            frame2ID = manager.getNextSyleName('fri')
-            frame2 = odf.draw.Frame(
-            id = frame2ID,
-            width=str((float(frameWidth) * 0.8)) + DEFAULT_IMAGE_UNIT,
-            height=str((float(frameHeight) *0.8)) + DEFAULT_IMAGE_UNIT,
-            anchortype= 'char',
-            zindex='1'
-            )
-            frame2.appendChild(self.image)
-            tempP2.appendChild(frame2)
-            textbox.appendChild(tempP2)
-            frame.appendChild(textbox)
-            tempP.appendChild(frame)
-            self.contents.addElement(tempP)
+            self.align = attributes.get('alignment', 'right').lower()
+            self.frameName = manager.getNextSyleName('BarcodeFrame')
+            self.frameWidth, self.frameHeight = getImageDimensions(self)
+            self.binaryImage = odf.office.BinaryData()
+            self.binaryImage.addText(qrAscii)
+            self.image = odf.draw.Image(
+                type = 'simple',
+                show = 'embed',
+                actuate = 'onLoad')
+            self.image.appendChild(self.binaryImage)
+            
+            if self.parent.element.tag != 'td':
+                inputImageIntoDoc(self)
+            else:
+                inputImageIntoCell(self)
         
 
 class Spacer(Flowable):
@@ -208,113 +275,6 @@ class Illustration(Flowable):
 
     def process(self):
         args = dict(self.getAttributeValues())
-
-
-class BarCodeFlowable(Flowable):
-    signature = rml_flowable.IBarCodeFlowable
-    klass = staticmethod(reportlab.graphics.barcode.createBarcodeDrawing)
-    attrMapping = {'code': 'codeName'}
-
-    def getDimensions(self):
-        attributes = self.element.attrib
-        tempFrameWidth = attributes['width'] 
-        tempFrameHeight = attributes['height']
-        try:
-            tempRowHeight = self.parent.parent.element.attrib['rowHeight']
-        except:
-            tempRowHeight = tempFrameHeight
-
-        regex = '[0-9]+'
-
-        # IS this really necessary?
-        if not tempFrameHeight.isdigit():
-            tempFrameHeight = int(re.findall(regex, tempFrameHeight)[0])
-        else:
-            tempFrameHeight = int(tempFrameHeight)
-
-        if not tempFrameWidth.isdigit():
-            tempFrameWidth = int(re.findall(regex, tempFrameWidth)[0])
-        else:
-            tempFrameWidth = int(tempFrameWidth) 
-
-        if not tempRowHeight.isdigit():
-            tempRowHeight = int(re.findall(regex, tempRowHeight)[0])
-        else:
-            tempRowHeight = int(tempRowHeight)
-
-        # 0.8 acounts for padding
-        frameHeight = (min(tempFrameHeight, tempRowHeight)) * 0.8
-        ratio = float(frameHeight) / tempFrameHeight
-
-        frameWidth = tempFrameWidth * ratio
-
-        finalFrameHeight = str(frameHeight) 
-        finalFrameWidth = str(frameWidth) 
-        return finalFrameWidth, finalFrameHeight
-
-    def process(self):
-        attributes = self.element.attrib
-        codeType = attributes.get('code', None)
-        url = attributes.get('value', 'https://www.shoobx.com')
-        if codeType == 'QR':
-            qrCode = pyqrcode.create(url)
-            qrAscii = qrCode.png_as_base64_str(scale=5)
-            manager = attr.getManager(self)
-            frameName = manager.getNextSyleName('BarcodeFrame')
-            frameWidth, frameHeight = self.getDimensions()
-            
-            self.binaryImage = odf.office.BinaryData()
-            self.binaryImage.addText(qrAscii)
-            self.parent.parent.parent.parent.parent.parent.table.setAttribute('name', 'TTT')
-            self.parent.parent.parent.table.setAttribute('name', 'Test')
-
-            self.image = odf.draw.Image(
-                type = 'simple',
-                show = 'embed',
-                actuate = 'onLoad')
-            self.frame = odf.draw.Frame(
-                id = frameName,
-                width=frameWidth+DEFAULT_IMAGE_UNIT,
-                height=frameHeight+DEFAULT_IMAGE_UNIT,
-                anchortype= 'as-char',
-                endcelladdress = 'TTT.Test.B2'
-                # relwidth = 'scale'
-                )
-            self.image.appendChild(self.binaryImage)
-            if self.parent.element.tag != 'td':
-                self.frame.appendChild(self.image)
-                self.contents.addElement(self.frame)
-            else:
-                manager = attr.getManager(self)
-                tempP = odf.text.P()
-                frameID = manager.getNextSyleName('fr')
-                frame = odf.draw.Frame(
-                id = frameID,
-                width=frameWidth+DEFAULT_IMAGE_UNIT,
-                height=frameHeight+DEFAULT_IMAGE_UNIT,
-                anchortype= 'as-char',
-                relwidth='scale',
-                relheight='scale',
-                zindex ='0'
-                )
-                textbox = odf.draw.TextBox()
-                tempP2 = odf.text.P()
-                frame2ID = manager.getNextSyleName('fri')
-                frame2 = odf.draw.Frame(
-                id = frame2ID,
-                width=frameWidth +DEFAULT_IMAGE_UNIT,
-                height=frameHeight + DEFAULT_IMAGE_UNIT,
-                anchortype= 'char',
-                relwidth='scale',
-                relheight='scale',
-                zindex='1'
-                )
-                frame2.appendChild(self.image)
-                tempP2.appendChild(frame2)
-                textbox.appendChild(tempP2)
-                frame.appendChild(textbox)
-                tempP.appendChild(frame)
-                self.contents.addElement(tempP)
 
 
 class SubParagraphDirective(directive.RMLDirective):
@@ -636,6 +596,9 @@ class Paragraph(Flowable):
 
         for child in self.element.getchildren():
             if child.tag == 'span':
+                regex = '[a-zA-Z0-9_]{7}'
+                if re.findall(regex, child.text):
+                    self.contents.setAttribute('numbercolumnsspanned', '2')
                 self.addSpan(child.text)
 
         self.processSubDirectives()

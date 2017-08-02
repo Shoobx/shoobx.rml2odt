@@ -60,11 +60,11 @@ def registerParagraphStyle(doc, name, rmlStyle):
     odtStyle.addElement(paraProps)
     paraProps.setAttribute(
         'linespacing', pt(rmlStyle.leading - rmlStyle.fontSize))
-    paraProps.setAttribute(
-        'textalign', RML2ODT_ALIGNMENTS[rmlStyle.alignment])
-    if rmlStyle.justifyLastLine:
-        paraProps.setAttribute(
-            'textalignlast', 'justify')
+    # paraProps.setAttribute(
+    #     'textalign', RML2ODT_ALIGNMENTS[rmlStyle.alignment])
+    # if rmlStyle.justifyLastLine:
+    #     paraProps.setAttribute(
+    #         'textalignlast', 'justify')
     paraProps.setAttribute(
         'textindent', pt(rmlStyle.firstLineIndent))
     paraProps.setAttribute(
@@ -79,36 +79,7 @@ def registerParagraphStyle(doc, name, rmlStyle):
         'margintop', pt(rmlStyle.spaceBefore))
     paraProps.setAttribute(
         'marginbottom', pt(rmlStyle.spaceAfter))
-    paraProps.setAttribute(
-        'pagenumber', 'current')
-    paraProps.setAttribute(
-        'padding', str(rmlStyle.borderPadding))
-    paraProps.setAttribute(
-        'paddingtop', str(rmlStyle.borderPadding))
-    paraProps.setAttribute(
-        'paddingbottom', str(rmlStyle.borderPadding))
-    paraProps.setAttribute(
-        'paddingleft', str(rmlStyle.borderPadding))
-    paraProps.setAttribute(
-        'border', str(rmlStyle.borderPadding))
-    paraProps.setAttribute(
-        'bordertop', str(rmlStyle.borderPadding))
-    paraProps.setAttribute(
-        'borderbottom', str(rmlStyle.borderPadding))
-    paraProps.setAttribute(
-        'borderleft', str(rmlStyle.leftIndent))
-    paraProps.setAttribute(
-        'borderright', str(rmlStyle.rightIndent))
-    paraProps.setAttribute(
-        'borderlinewidth', str(rmlStyle.borderWidth))
-    paraProps.setAttribute(
-        'borderlinewidthtop', str(rmlStyle.borderWidth))
-    paraProps.setAttribute(
-        'borderlinewidthbottom', str(rmlStyle.borderWidth))
-    paraProps.setAttribute(
-        'borderlinewidthleft', str(rmlStyle.borderWidth))
-    paraProps.setAttribute(
-        'borderlinewidthright', str(rmlStyle.borderWidth))
+    
 
     
     if rmlStyle.backColor is not None:
@@ -120,23 +91,15 @@ def registerParagraphStyle(doc, name, rmlStyle):
         paraProps.setAttribute('padding', '{}mm {}mm {}mm'.format(rmlStyle.borderPadding,
                                                                   rmlStyle.borderPadding, rmlStyle.borderPadding))
 
-
         # in case of need for specification if not 'padding' takes care of all the following
-
         # paraProps.setAttribute('paddingtop', rmlStyle.borderPadding)
         # paraProps.setAttribute('paddingbottom', rmlStyle.borderPadding)
         # paraProps.setAttribute('paddingleft', rmlStyle.borderPadding)
         # paraProps.setAttribute('paddingright', rmlStyle.borderPadding)
 
-
     if rmlStyle.borderWidth:
-        
         paraProps.setAttribute('border', '{}mm'.format(rmlStyle.borderWidth) + 'double #00800a')
-
-
         # paraProps.setAttribute('borderlinewidth', str(rmlStyle.borderWidth))
-
-
 
 
     # Text Properties
@@ -168,8 +131,6 @@ def registerParagraphStyle(doc, name, rmlStyle):
     if rmlStyle.backColor is not None:
         textProps.setAttribute(
             'backgroundcolor', '#' + rmlStyle.backColor.hexval()[2:])
-
-
 
 
 def registerListStyle(doc, attributes, rmlStyle, name):
@@ -219,7 +180,6 @@ def registerListStyle(doc, attributes, rmlStyle, name):
                 numformat=numType)
             numbering.addElement(listProps)
             odtStyle.addElement(numbering)
-
     else:
         retrievedBullet = bulletDict.get(bulletType, 'circle')
         bullet = odf.text.ListLevelStyleBullet(
@@ -230,14 +190,7 @@ def registerListStyle(doc, attributes, rmlStyle, name):
         bullet.addElement(listProps)
         odtStyle.addElement(bullet)
 
-
-
-
     doc.automaticstyles.addElement(odtStyle)
-
-
-
-
 
 
 class ParagraphStyle(directive.RMLDirective):

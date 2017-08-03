@@ -54,25 +54,6 @@ class RegisterTTFont(directive.RMLDirective):
     signature = rml_document.IRegisterTTFont
 
     def process(self):
-
-        # args = self.getAttributeValues(valuesOnly=True)
-        # font = ttfonts.TTFont(*args)
-        # pdfmetrics.registerFont(font)
-
-
-
-        #Reverse first
-        # if rmlStyle.fontName is not None:
-        #     flag = rmlStyle.fontName.find('-')
-        #     if flag == -1:
-        #         fontName = rmlStyle.fontName
-        #     else:
-        #         fontName = rmlStyle.fontName[:flag]
-        #         transform = rmlStyle.fontName[flag + 1:]
-        #         if transform == 'Italic':
-        #             textProps.setAttribute('fontstyle', 'italic')
-        #         elif transform == 'Bold':
-        #             textProps.setAttribute('fontweight', 'bold')
         attributes = self.element.attrib
         fontName = attributes['faceName']
         location = attributes['fileName']
@@ -81,6 +62,7 @@ class RegisterTTFont(directive.RMLDirective):
 
         import os; cwd = os.getcwd()
         path = cwd+"/src/shoobx/rml2odt/tests/test_rml2odt_data/input"+os.sep+location
+
         source = FontFaceSrc()
         urn = FontFaceUri(href = path, actuate = 'onRequest', type='simple')
         source.appendChild(urn)
@@ -171,7 +153,5 @@ class Document(directive.RMLDirective):
         if self.element.find('template') is not None:
             self.processSubDirectives(select=('stylesheet'))
             self.processSubDirectives(select=('story'))
-
-
         # Save the output.
         self.document.save(outputFile)

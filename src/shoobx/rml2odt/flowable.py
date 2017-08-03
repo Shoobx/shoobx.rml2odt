@@ -21,6 +21,7 @@ import odf.style
 import odf.text
 import odf.draw
 import pyqrcode
+import copy
 import png
 import reportlab.lib.styles
 import re
@@ -146,6 +147,8 @@ def inputImageIntoCell(self):
     firstFrame.appendChild(textBox)
     para.appendChild(firstFrame)
     self.contents.setAttribute('numbercolumnsspanned', '2')
+    if isinstance(self, BarCodeFlowable):
+        self.contents.setAttribute('numberrowsspanned', '2')
     self.contents.addElement(para)
 
 
@@ -174,7 +177,8 @@ def getImageDimensions(self):
     else:
         tempRowHeight = int(tempRowHeight)
 
-    if tempRowHeight < 15: tempRowHeight *= 4
+    if tempRowHeight < 15: tempRowHeight *= 7
+    # if tempFrameHeight <50: tempFrameHeight *= 1.2
 
     # The 0.8 accounts for the padding
     frameHeight = (min(tempFrameHeight, tempRowHeight)) * 0.8
@@ -581,12 +585,49 @@ class Paragraph(Flowable):
             textProps.setAttribute('textposition', 'sub 58%')
         return span
 
+
+    def determineStyle(self):
+        try: 
+            styleName = self.element.attrib.pop('style')
+            if len(self.element.attrib) > 0:
+                manager = attr.getManager(self)
+                if styleName[-1].isdigit():
+                    newStyleName = manager.getNextSyleName(styleName+'.')
+                else:
+                    newStyleName = manager.getNextSyleName(styleName)
+
+                style = manager.document.getStyleByName(unicode(styleName))
+                newStyle = copy.deepcopy(style)
+                newStyle.setAttribute('name', newStyleName)
+                newStyle.setAttribute('displayname', newStyleName)
+
+                mapper = {'alignment':'textalign'}
+
+                for key in self.element.attrib:
+                    value = self.element.attrib[key]
+
+                    try:
+                        newStyle.childNodes[0].setAttribute(mapper[key], value)
+                    except:
+                        try:
+                            newStyle.childNodes[1].setAttribute(mapper[key], value)
+                        except:
+                            continue
+                manager.document.automaticstyles.addElement(newStyle)
+                return newStyleName
+            else:
+                self.element.attrib['style'] = styleName
+                return styleName
+        except:
+            return self.defaultStyle
+
+
     def process(self):
         self.odtParagraph = odf.text.P()
+        # 
+        styleName = self.determineStyle()
 
-        # This retrieves and applies the given style
-        style = self.element.attrib.get('style', self.defaultStyle)
-        self.odtParagraph.setAttribute('stylename', style)
+        self.odtParagraph.setAttribute('stylename', styleName)
 
         # Append new paragraph.
         self.contents.addElement(self.odtParagraph)

@@ -58,13 +58,17 @@ def registerParagraphStyle(doc, name, rmlStyle):
     # Paragraph Properties
     paraProps = odf.style.ParagraphProperties()
     odtStyle.addElement(paraProps)
-    paraProps.setAttribute(
-        'linespacing', pt(rmlStyle.leading - rmlStyle.fontSize))
-    # paraProps.setAttribute(
-    #     'textalign', RML2ODT_ALIGNMENTS[rmlStyle.alignment])
-    # if rmlStyle.justifyLastLine:
-    #     paraProps.setAttribute(
-    #         'textalignlast', 'justify')
+    if name == "sig-small-logo":
+        paraProps.setAttribute('lineheight', "0.14in")
+    else:
+        paraProps.setAttribute('linespacing', pt(rmlStyle.leading - rmlStyle.fontSize))
+    if name == "Small":
+        paraProps.setAttribute('textalign', 'left')
+    else:
+        paraProps.setAttribute('textalign', RML2ODT_ALIGNMENTS[rmlStyle.alignment])
+    if rmlStyle.justifyLastLine:
+        paraProps.setAttribute(
+            'textalignlast', 'justify')
     paraProps.setAttribute(
         'textindent', pt(rmlStyle.firstLineIndent))
     paraProps.setAttribute(
@@ -79,7 +83,6 @@ def registerParagraphStyle(doc, name, rmlStyle):
         'margintop', pt(rmlStyle.spaceBefore))
     paraProps.setAttribute(
         'marginbottom', pt(rmlStyle.spaceAfter))
-    
 
     
     if rmlStyle.backColor is not None:

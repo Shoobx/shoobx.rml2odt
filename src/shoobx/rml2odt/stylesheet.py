@@ -84,6 +84,7 @@ def registerParagraphStyle(doc, name, rmlStyle):
     paraProps.setAttribute(
         'marginbottom', pt(rmlStyle.spaceAfter))
 
+
     
     if rmlStyle.backColor is not None:
         paraProps.setAttribute('backgroundcolor', '#' + rmlStyle.backColor.hexval()[2:])

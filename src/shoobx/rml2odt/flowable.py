@@ -716,14 +716,36 @@ class Link(Flowable):
         flow = Flow(self.element, self.parent)
         flow.process()
 
-
 class pageNumber(Flowable):
     signature = rml_flowable.IPageNumber
 
     def process(self):
+        manager = attr.getManager(self)
+        pageNumberStyleName = manager.getNextSyleName("PageNumber")
+        pageNumberStyle = odf.style.Style(
+            name=pageNumberStyleName,
+            family='paragraph',
+            parentstylename='Footer')
+        prop = odf.style.ParagraphProperties()
+        prop.setAttribute('textalign', 'center')
+        pageNumberStyle.addElement(prop)
+        manager.document.automaticstyles.addElement(pageNumberStyle)
         self.para = odf.text.P()
+        self.para.addText("Page ")
         self.para.appendChild(odf.text.PageNumber())
+        self.para.setAttribute('stylename', pageNumberStyleName)
+        import pdb; pdb.set_trace()
         self.contents.addElement(self.para)
+
+
+# class pageNumber(Flowable):
+#     signature = rml_flowable.IPageNumber
+
+#     def process(self):
+#         self.para = odf.text.P()
+#         self.para.addText("Page ")
+#         self.para.appendChild(odf.text.PageNumber())
+#         self.contents.addElement(self.para)
 
 
 class nextPage(Flowable):

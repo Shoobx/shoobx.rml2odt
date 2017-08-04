@@ -1,5 +1,6 @@
 .coverage
 .tox
+.DS_Store
 LibreOffice*
 coverage.xml
 env

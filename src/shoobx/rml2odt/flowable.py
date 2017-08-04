@@ -637,7 +637,7 @@ class Paragraph(Flowable):
 
         for child in self.element.getchildren():
             if child.tag == 'span':
-                regex = '[a-zA-Z0-9_]{7}'
+                regex = '[a-zA-Z0-9_]{7}-[a-zA-Z0-9_]{3}'
                 if re.findall(regex, child.text):
                     self.contents.setAttribute('numbercolumnsspanned', '2')
                 self.addSpan(child.text)

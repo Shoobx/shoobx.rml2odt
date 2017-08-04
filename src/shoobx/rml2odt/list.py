@@ -78,6 +78,7 @@ class ListItem(flowable.Flow):
                 regex = '[0-9]+'
                 index = int(re.findall(regex, newStyleName)[0])
                 newStyle = ListStyle(name=newStyleName)
+
                 numStyle = ListLevelStyleNumber(
                     stylename="Numbering_20_Symbols", 
                     numprefix= units_ordinal[index].upper(),
@@ -86,8 +87,7 @@ class ListItem(flowable.Flow):
                     level=str(self.parent.level), 
                 )
                 prop = ListLevelProperties(
-                    spacebefore=str(0.25*self.parent.level) + "in", 
-                    minlabelwidth="0.25in", 
+                    minlabelwidth="1in", 
                     fontname=self.element.attrib.get('bulletFontName', 'Arial')
                 )
                 numStyle.addElement(prop)

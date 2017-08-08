@@ -734,7 +734,7 @@ class pageNumber(Flowable):
         self.para.addText("Page ")
         self.para.appendChild(odf.text.PageNumber())
         self.para.setAttribute('stylename', pageNumberStyleName)
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         self.contents.addElement(self.para)
 
 

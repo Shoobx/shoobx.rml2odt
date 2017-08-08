@@ -68,6 +68,7 @@ class ListItem(flowable.Flow):
             # Add to automaticstyles collection
             manager.document.automaticstyles.addElement(newStyle)
             return newStyleName
+            
         elif isinstance(self, OrderedListItem):
             if self.parent.element.attrib.get('style', None) == 'Articles':
                 units_ordinal = ['zeroth', 'first', 'second', 'third', 'fourth', 'fifth', 'sixth',
@@ -203,7 +204,6 @@ class createStyle(object):
                 )
             prop = ListLevelProperties(
                 spacebefore=self.spacebefore, 
-                # XXX: What does this acc do?
                 minlabelwidth="0.25in", 
                 fontname=attributes.get('bulletFontName', 'Arial')
                 )
@@ -234,7 +234,6 @@ class createStyle(object):
         # Tag is used later on for list specific processing
         self.tag = tag
         self.attributes = attributes
-        # XXX: Correct list level
         self.listLevel = listLevel
         # May not be necessary unless fundamental override happens
         self.spacebefore = str(0.25*self.listLevel) + "in"

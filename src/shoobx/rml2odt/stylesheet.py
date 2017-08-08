@@ -165,7 +165,6 @@ def registerListStyle(doc, attributes, rmlStyle, name):
     listProps.setAttribute('minlabelwidth', '0.25in')
     listProps.setAttribute('minlabeldistance', '0.15in')
     listProps.setAttribute('textalign', x.get('bulletAlign'))
-    listProps.setAttribute('spacebefore', '0.15in')
 
     if rmlStyle.bulletFontName is not None:
         doc.fontfacedecls.addElement(

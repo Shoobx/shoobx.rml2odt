@@ -95,6 +95,29 @@ class ListItem(flowable.Flow):
                 newStyle.addElement(numStyle)
                 manager.document.automaticstyles.addElement(newStyle)
                 return newStyleName
+                
+            elif self.parent.element.attrib.get('style', None) == 'TableList':
+                manager = attr.getManager(self)
+                newStyleName = manager.getNextSyleName('TableList')
+                newStyle = ListStyle(name=newStyleName)
+                numStyle = ListLevelStyleNumber(
+                    stylename="Numbering_20_Symbols", 
+                    numprefix= self.element.attrib.get('bulletText', 'None').upper(),
+                    numformat = '',
+                    numsuffix="",
+                    level=str(self.parent.level), 
+                )
+                prop = ListLevelProperties(
+                    spacebefore = "1.5in",
+                    minlabelwidth="2in", 
+                    fontname=self.element.attrib.get('bulletFontName', 'Arial')
+                )
+                numStyle.addElement(prop)
+                newStyle.addElement(numStyle)
+                manager.document.automaticstyles.addElement(newStyle)
+                return newStyleName
+            else:
+                return self.parent.element.attrib.get('style', None)
 
 
     def createList(self):
@@ -159,6 +182,72 @@ class ListItem(flowable.Flow):
         self.element.append(para)
 
 
+
+    def convertTableContentToList(self, tableContent):
+        # Create new OrderedList and give it a style
+        ol = lxml.etree.Element('ol')
+        ol.set('style', 'TableList')
+        # Create style for the paragraph being created 
+        manager = attr.getManager(self)
+        newParaStyleName = manager.getNextSyleName('TableListPara')
+        newParaStyle = odf.style.Style(name = newParaStyleName)
+        paraProps = odf.style.ParagraphProperties()
+        paraProps.setAttribute('textalign', 'left')
+        newParaStyle.appendChild(paraProps)
+        manager.document.automaticstyles.addElement(newParaStyle)
+
+        # Put contents of cell into the listitem elements
+        for row in tableContent:
+            bullet = row[0]
+            content = row[1]
+            olItem = lxml.etree.Element('li')
+            olItem.set('bulletText', bullet)
+            para = lxml.etree.Element('para')
+            para.set('style', newParaStyleName)
+            if '\n' in content:
+                regex = "([0-9A-Za-z\t .,]+)"
+                res = re.findall(regex, content)
+                for i in range (len(res)):
+                    if i == 0:
+                        para.text = res[i].strip()
+                    else:
+                        br = lxml.etree.Element('br')
+                        br.tail = res[i].strip()
+                        para.append(br)
+            else:
+                para.text = content.strip()
+            olItem.append(para)
+            ol.append(olItem)
+        # Add created list to the list of elements for processing
+        self.element.append(ol)
+
+
+
+    def extractTableContent(self):
+        # Isolate all tables which occur within list items
+        tables = [x for x in self.element.getchildren() if x.tag=="blockTable"]
+        for table in tables:
+            tableContent = []
+            self.element.remove(table)
+            rows = table.getchildren()
+            # Retrieve the data and store it in tableContent variable
+            for row in rows:
+                newLine = ""
+                cells = row.getchildren()
+                key = cells[0].text.strip() if cells[0].text.strip() != "" else ""
+                for cell in cells:
+                    for para in cell.getchildren():
+                        if para.text != None:
+                            newLine += para.text.strip() if para.text.strip() != "" else ""
+                        for br in para.getchildren():
+                            if br.tail != None:
+                                newLine += '\n'
+                                newLine += br.tail.strip() if br.tail.strip() != "" else ""
+                value = newLine
+                tableContent.append((key, value))
+            self.convertTableContentToList(tableContent)
+
+
     def process(self):
         self.styleID = str(uuid.uuid4())
         self._convertSimpleContent()
@@ -167,8 +256,16 @@ class ListItem(flowable.Flow):
         self.createList()
         self.parent.list.addElement(self.item)
         self.contents = self.item
-        super(ListItem, self).process()
-        
+        try:
+            super(ListItem, self).process()
+        except:
+            # Used to handle case where table appears in list item
+            self.extractTableContent()
+            paras = [x for x in self.element.getchildren() if x.tag=="para"]
+            for para in paras:
+                self.element.remove(para)
+            super(ListItem, self).process()
+
 
 class OrderedListItem(ListItem):
     signature = rml_list.IOrderedListItem

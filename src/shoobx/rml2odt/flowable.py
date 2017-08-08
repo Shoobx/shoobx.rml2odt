@@ -427,7 +427,8 @@ class Break(SubParagraphDirective):
         span = self.paragraph.odtParagraph.addElement(odf.text.LineBreak())
 
         if self.element.tail:
-            self.paragraph.addSpan(self.element.tail)
+            # XXX: ADDED .strip()
+            self.paragraph.addSpan(self.element.tail.strip())
 
 
 class IAnchor(IComplexSubParagraphDirective):
@@ -734,7 +735,6 @@ class pageNumber(Flowable):
         self.para.addText("Page ")
         self.para.appendChild(odf.text.PageNumber())
         self.para.setAttribute('stylename', pageNumberStyleName)
-        # import pdb; pdb.set_trace()
         self.contents.addElement(self.para)
 
 

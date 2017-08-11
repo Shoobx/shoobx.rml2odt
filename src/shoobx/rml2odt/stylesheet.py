@@ -14,14 +14,11 @@
 """Style Related Element Processing
 """
 import copy
-
 import odf.style
 import odf.text
 import reportlab.lib.styles
 import reportlab.lib.enums
 import reportlab.platypus
-
-
 
 from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT, TA_JUSTIFY
 from z3c.rml import attr, directive, interfaces, occurence, SampleStyleSheet, \
@@ -48,7 +45,7 @@ class Initialize(directive.RMLDirective):
     }
 
 
-def registerParagraphStyle(doc, name, rmlStyle):
+def RegisterParagraphStyle(doc, name, rmlStyle):
     if 'style.' in name:
         name = name[6:]
 
@@ -137,7 +134,7 @@ def registerParagraphStyle(doc, name, rmlStyle):
             'backgroundcolor', '#' + rmlStyle.backColor.hexval()[2:])
 
 
-def registerListStyle(doc, attributes, rmlStyle, name):
+def RegisterListStyle(doc, attributes, rmlStyle, name):
     name = attributes.get('name', 'undefined')
     bulletType = attributes.get('start', None)
     bulletFormat = attributes.get('bulletFormat', None)
@@ -209,7 +206,7 @@ class ParagraphStyle(directive.RMLDirective):
         for attrName, attrValue in kwargs.items():
             setattr(style, attrName, attrValue)
         document = self.parent.parent.document
-        registerParagraphStyle(document, name, style)
+        RegisterParagraphStyle(document, name, style)
 
 
 class TableStyleCommand(directive.RMLDirective):
@@ -448,7 +445,7 @@ class ListStyle(directive.RMLDirective):
             setattr(style, name, value)
         attributeDict = self.element.attrib
         document = self.parent.parent.document
-        registerListStyle(document, attributeDict, style, name)
+        RegisterListStyle(document, attributeDict, style, name)
 
 
 class Stylesheet(directive.RMLDirective):

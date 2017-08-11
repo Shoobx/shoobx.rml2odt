@@ -92,6 +92,7 @@ def inputImageIntoDoc(self):
     self.frame.appendChild(self.image)
     self.contents.addElement(self.frame)
 
+
 def inputImageIntoCell(self):
     manager = attr.getManager(self)
     paraStyleName = manager.getNextSyleName('ImagePara')
@@ -717,7 +718,8 @@ class Link(Flowable):
         flow = Flow(self.element, self.parent)
         flow.process()
 
-class pageNumber(Flowable):
+
+class PageNumber(Flowable):
     signature = rml_flowable.IPageNumber
 
     def process(self):
@@ -748,7 +750,7 @@ class pageNumber(Flowable):
 #         self.contents.addElement(self.para)
 
 
-class nextPage(Flowable):
+class NextPage(Flowable):
     signature = rml_flowable.INextPage
     klass = reportlab.platypus.PageBreak
     
@@ -771,7 +773,6 @@ class nextPage(Flowable):
 class ConditionalPageBreak(Flowable):
     signature = rml_flowable.IConditionalPageBreak
     klass = reportlab.platypus.CondPageBreak
-
 
 
 class HorizontalRow(Flowable):
@@ -803,8 +804,8 @@ class Flow(directive.RMLDirective):
         'link': Link,
 
         #Page-Level Flowables
-        'nextPage': nextPage,
-        'pageNumber': pageNumber,
+        'nextPage': NextPage,
+        'pageNumber': PageNumber,
         'spacer': Spacer,
         # 'condPageBreak': ConditionalPageBreak
 

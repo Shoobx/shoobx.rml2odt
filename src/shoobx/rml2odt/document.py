@@ -13,30 +13,27 @@
 ##############################################################################
 """RML ``document`` element
 """
-import zope.interface
-import reportlab
-from odf.opendocument import OpenDocumentText
-from odf.style import FontFace
-from odf.svg import FontFaceSrc
+
 import odf
 from odf.svg import FontFaceUri
 from odf.svg import DefinitionSrc
 from reportlab.lib import styles
+import reportlab
+import zope.interface
+
+from odf.opendocument import OpenDocumentText
+from odf.style import FontFace
+from odf.svg import FontFaceSrc
+from reportlab.pdfbase import pdfmetrics, ttfonts, cidfonts
 from z3c.rml import directive, canvas
 from z3c.rml import document as rml_document, interfaces as rml_interfaces
 
-
-from reportlab.pdfbase import pdfmetrics, ttfonts, cidfonts
-
-from shoobx.rml2odt import template
-from shoobx.rml2odt import stylesheet
-
 # Import modules, so their directives get registered.
-from shoobx.rml2odt import list, stylesheet, table
+from shoobx.rml2odt import list, stylesheet, table, template
 
 
 RMLSTYLE_HANDLERS = {
-    styles.ParagraphStyle: stylesheet.registerParagraphStyle
+    styles.ParagraphStyle: stylesheet.RegisterParagraphStyle
 }
 
 class ColorDefinition(directive.RMLDirective):
@@ -72,6 +69,7 @@ class RegisterTTFont(directive.RMLDirective):
         # font.appendChild(defSource)
         self.parent.parent.document.fontfacedecls.addElement(font)
 
+
 class DocInit(directive.RMLDirective):
     signature = rml_document.IDocInit
     factories = {
@@ -103,7 +101,6 @@ class DocInit(directive.RMLDirective):
         for name in self.viewerOptions:
             setattr(self.parent, name, kwargs.get(name))
         super(DocInit, self).process()
-
 
 
 @zope.interface.implementer(rml_interfaces.IManager)

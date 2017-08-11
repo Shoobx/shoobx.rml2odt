@@ -18,10 +18,11 @@ import odf.table
 import re
 import zope.interface
 
-from shoobx.rml2odt import flowable, stylesheet
-from shoobx.rml2odt.interfaces import IContentContainer
 from z3c.rml import attr, directive
 from z3c.rml import flowable as rml_flowable
+
+from shoobx.rml2odt import flowable, stylesheet
+from shoobx.rml2odt.interfaces import IContentContainer
 
 DEFAULT_TABLE_UNIT = 'mm'
 

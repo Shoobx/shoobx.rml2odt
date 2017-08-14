@@ -260,10 +260,13 @@ class ListItem(flowable.Flow):
             super(ListItem, self).process()
         except:
             # Used to handle case where table appears in list item
+            firstTable = [x for x in self.element.getchildren() if x.tag=="blockTable"][0]
+            firstTableIndex = self.element.getchildren().index(firstTable)
             self.extractTableContent()
-            paras = [x for x in self.element.getchildren() if x.tag=="para"]
-            for para in paras:
-                self.element.remove(para)
+            children = self.element.getchildren()
+            for i in range (len(children)):
+                if i < firstTableIndex:
+                    self.element.remove(children[i])
             super(ListItem, self).process()
 
 

@@ -619,6 +619,7 @@ class Paragraph(Flowable):
                 return newStyleName
             else:
                 self.element.attrib['style'] = styleName
+                # import pdb; pdb.set_trace()
                 return styleName
         except:
             return self.defaultStyle
@@ -626,14 +627,11 @@ class Paragraph(Flowable):
 
     def process(self):
         self.odtParagraph = odf.text.P()
-        # 
         styleName = self.determineStyle()
-
         self.odtParagraph.setAttribute('stylename', styleName)
 
         # Append new paragraph.
         self.contents.addElement(self.odtParagraph)
-
         if self.element.text:
             self.addSpan(self.element.text)
 

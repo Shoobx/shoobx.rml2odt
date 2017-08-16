@@ -196,6 +196,53 @@ def RegisterListStyle(doc, attributes, rmlStyle, name):
 class ParagraphStyle(directive.RMLDirective):
     signature = rml_stylesheet.IParagraphStyle
 
+    def adjustAttributeValues(self, style, parentName):
+        try:
+            parentElem = self.parent.parent.document.getStyleByName(unicode(parentName))
+            paraProps = [x for x in parentElem.childNodes if 'paragraph' in x.tagName][0]
+            textProps = [x for x in parentElem.childNodes if 'text' in x.tagName][0]
+            
+            textPropsMapper = {
+                'font-name': 'fontName',
+                'text-transform': 'textTransform',
+                'font-size': 'fontSize'
+            }
+            paraPropsMapper = {
+                # 'margin-right':'rightIndent',
+                # 'line-spacing':,
+                # 'margin-top':'spaceBefore',
+                # 'text-align':'alignment',
+                'orphans':'allowOrphans',
+                # 'margin-left':'leftIndent',
+                # 'margin-bottom':'spaceAfter',
+                'padding':'borderPadding',
+                # 'text-indent':'firstLineIndent',
+                'widows': 'allowWidows'
+            }
+
+            for attrib in textProps.attributes:
+                desiredAttribute = str(attrib[1])
+                value = textProps.attributes[attrib]
+                try: 
+                    value = float(value)
+                except:
+                    value = value
+                if desiredAttribute in textPropsMapper:
+                    setattr(style, textPropsMapper[desiredAttribute], value)
+
+            for attrib in paraProps.attributes:
+                desiredAttribute = str(attrib[1])
+                value = paraProps.attributes[attrib]
+                try: 
+                    value = float(value)
+                except:
+                    value = value
+                if desiredAttribute in paraPropsMapper:
+                    setattr(style, paraPropsMapper[desiredAttribute], value)
+            return style
+        except:
+            return style
+
     def process(self):
         kwargs = dict(self.getAttributeValues())
         parent = kwargs.pop(
@@ -203,9 +250,16 @@ class ParagraphStyle(directive.RMLDirective):
         name = kwargs.pop('name')
         style = copy.deepcopy(parent)
         style.name = name[6:] if name.startswith('style.') else name
-        for attrName, attrValue in kwargs.items():
-            setattr(style, attrName, attrValue)
+
         document = self.parent.parent.document
+        if name == 'Normal':
+            defaultNormalStyle = self.parent.parent.document.getStyleByName(u'Normal')
+            self.parent.parent.document.automaticstyles.removeChild(defaultNormalStyle)
+
+        style = self.adjustAttributeValues(style, parent.name)
+
+        for attrName, attrValue in kwargs.items():
+            setattr(style, attrName, attrValue)  
         RegisterParagraphStyle(document, name, style)
 
 

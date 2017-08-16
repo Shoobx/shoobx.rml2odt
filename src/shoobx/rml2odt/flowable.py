@@ -423,9 +423,21 @@ class Sub(ComplexSubParagraphDirective):
 
 class Break(SubParagraphDirective):
     signature = rml_flowable.IBreak
+    createdStyle = False
 
     def process(self):
         span = self.paragraph.odtParagraph.addElement(odf.text.LineBreak())
+        # import pdb; pdb.set_trace()
+        manager = attr.getManager(self)
+        if Break.createdStyle == False:
+            odtStyle = odf.style.Style(name='BreakJustify', family='paragraph')
+            manager.document.automaticstyles.addElement(odtStyle)
+            paraProps = odf.style.ParagraphProperties()
+            paraProps.setAttribute('textalign', 'center')
+            odtStyle.appendChild(paraProps)
+            Break.createdStyle == True
+
+        self.paragraph.odtParagraph.setAttribute('stylename', 'BreakJustify')
 
         if self.element.tail:
             # XXX: ADDED .strip()

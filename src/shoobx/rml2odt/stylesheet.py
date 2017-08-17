@@ -87,8 +87,7 @@ def RegisterParagraphStyle(doc, name, rmlStyle):
         paraProps.setAttribute('backgroundcolor', '#' + rmlStyle.backColor.hexval()[2:])
 
     if rmlStyle.borderPadding is not None:
-        # if rmlStyle.name == "BodPa":
-        #     import pdb; pdb.set_trace()
+
         paraProps.setAttribute('padding', '{}mm {}mm {}mm'.format(rmlStyle.borderPadding,
                                                                   rmlStyle.borderPadding, rmlStyle.borderPadding))
 

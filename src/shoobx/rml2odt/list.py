@@ -47,7 +47,7 @@ class ListItem(flowable.Flow):
             # Retrieve parent's list style name
             parentStyleName = ListBase.createdStylesDict[self.parent.styleID]
             manager = attr.getManager(self)
-            newStyleName = manager.getNextSyleName('Sh_Li')
+            newStyleName = manager.getNextStyleName('Sh_Li')
             newStyle = ListStyle(name=newStyleName, consecutivenumbering=False)
             selectedBullet = self.element.attrib.get('value', 'disc')
             bul = ListLevelStyleBullet(
@@ -75,7 +75,7 @@ class ListItem(flowable.Flow):
                 'seventh', 'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth', 'thirteenth', 
                 'fourteenth', 'fifteenth', 'sixteenth', 'seventeenth','eighteenth', 'nineteenth']
                 manager = attr.getManager(self)
-                newStyleName = manager.getNextSyleName('Articles')
+                newStyleName = manager.getNextStyleName('Articles')
                 regex = '[0-9]+'
                 index = int(re.findall(regex, newStyleName)[0])
                 newStyle = ListStyle(name=newStyleName)
@@ -98,7 +98,7 @@ class ListItem(flowable.Flow):
                 
             elif self.parent.element.attrib.get('style', None) == 'TableList':
                 manager = attr.getManager(self)
-                newStyleName = manager.getNextSyleName('TableList')
+                newStyleName = manager.getNextStyleName('TableList')
                 newStyle = ListStyle(name=newStyleName)
                 numStyle = ListLevelStyleNumber(
                     stylename="Numbering_20_Symbols", 
@@ -189,7 +189,7 @@ class ListItem(flowable.Flow):
         ol.set('style', 'TableList')
         # Create style for the paragraph being created 
         manager = attr.getManager(self)
-        newParaStyleName = manager.getNextSyleName('TableListPara')
+        newParaStyleName = manager.getNextStyleName('TableListPara')
         newParaStyle = odf.style.Style(name = newParaStyleName)
         paraProps = odf.style.ParagraphProperties()
         paraProps.setAttribute('textalign', 'left')
@@ -330,7 +330,7 @@ class createStyle(object):
     def __init__(self, tag, listLevel, parent, attributes):
         self.parent = parent
         manager = attr.getManager(self)
-        self.name = manager.getNextSyleName('Sh')
+        self.name = manager.getNextStyleName('Sh')
         # Tag is used later on for list specific processing
         self.tag = tag
         self.attributes = attributes

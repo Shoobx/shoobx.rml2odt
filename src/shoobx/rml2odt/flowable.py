@@ -95,7 +95,7 @@ def inputImageIntoDoc(self):
 
 def inputImageIntoCell(self):
     manager = attr.getManager(self)
-    paraStyleName = manager.getNextSyleName('ImagePara')
+    paraStyleName = manager.getNextStyleName('ImagePara')
     paraStyle = odf.style.Style(
         family = 'paragraph',
         name = paraStyleName,
@@ -109,8 +109,8 @@ def inputImageIntoCell(self):
     manager.document.automaticstyles.addElement(paraStyle)
     para = odf.text.P(stylename = paraStyleName)
 
-    firstFrameID = manager.getNextSyleName('Frame')
-    firstFrameStyleName = manager.getNextSyleName('FrameStyle')
+    firstFrameID = manager.getNextStyleName('Frame')
+    firstFrameStyleName = manager.getNextStyleName('FrameStyle')
     firstFrameStyle = odf.style.Style(
         family = "graphic",
         name = firstFrameStyleName,
@@ -135,7 +135,7 @@ def inputImageIntoCell(self):
         )
     textBox = odf.draw.TextBox()
     para2 = odf.text.P()
-    secondFrameID = manager.getNextSyleName('InternalFrame')
+    secondFrameID = manager.getNextStyleName('InternalFrame')
     secondFrame = odf.draw.Frame(
         id = secondFrameID,
         width = self.frameWidth + DEFAULT_IMAGE_UNIT,
@@ -206,7 +206,7 @@ class Image(Flowable):
         fileType = metaData[metaData.find('/') + 1 : metaData.find(';')]
         manager = attr.getManager(self)
         self.align = attributes.get('align', 'left')
-        self.frameName = manager.getNextSyleName('ImageFrame')
+        self.frameName = manager.getNextStyleName('ImageFrame')
         self.frameWidth, self.frameHeight = getImageDimensions(self)
         self.binaryImage = odf.office.BinaryData()
         self.binaryImage.addText(imageString)
@@ -237,7 +237,7 @@ class BarCodeFlowable(Flowable):
             qrAscii = qrCode.png_as_base64_str(scale=5)
             manager = attr.getManager(self)
             self.align = attributes.get('alignment', 'right').lower()
-            self.frameName = manager.getNextSyleName('BarcodeFrame')
+            self.frameName = manager.getNextStyleName('BarcodeFrame')
             self.frameWidth, self.frameHeight = getImageDimensions(self)
             self.binaryImage = odf.office.BinaryData()
             self.binaryImage.addText(qrAscii)
@@ -260,7 +260,7 @@ class Spacer(Flowable):
 
     def process(self):
         manager = attr.getManager(self)
-        spacerStyleName = manager.getNextSyleName('Sp')
+        spacerStyleName = manager.getNextStyleName('Sp')
         spacer = odf.style.Style(name=spacerStyleName, family='paragraph')
         prop = odf.style.ParagraphProperties()
         length = self.element.attrib.get('length', "0.5in")
@@ -567,7 +567,7 @@ class Paragraph(Flowable):
         span = odf.text.Span(text=text)
         self.odtParagraph.addElement(span)
         manager = attr.getManager(self)
-        styleName = manager.getNextSyleName('T')
+        styleName = manager.getNextStyleName('T')
         style = odf.style.Style(name=styleName, family='text')
         manager.document.styles.addElement(style)
         span.setAttribute('stylename', styleName)
@@ -606,9 +606,9 @@ class Paragraph(Flowable):
             if len(self.element.attrib) > 0:
                 manager = attr.getManager(self)
                 if styleName[-1].isdigit():
-                    newStyleName = manager.getNextSyleName(styleName+'.')
+                    newStyleName = manager.getNextStyleName(styleName+'.')
                 else:
-                    newStyleName = manager.getNextSyleName(styleName)
+                    newStyleName = manager.getNextStyleName(styleName)
 
                 style = manager.document.getStyleByName(unicode(styleName))
                 newStyle = copy.deepcopy(style)
@@ -734,7 +734,7 @@ class PageNumber(Flowable):
 
     def process(self):
         manager = attr.getManager(self)
-        pageNumberStyleName = manager.getNextSyleName("PageNumber")
+        pageNumberStyleName = manager.getNextStyleName("PageNumber")
         pageNumberStyle = odf.style.Style(
             name=pageNumberStyleName,
             family='paragraph',
@@ -766,7 +766,7 @@ class NextPage(Flowable):
     
     def process(self):
         manager = attr.getManager(self)
-        pageBreakStyleName = manager.getNextSyleName("PageBreak")
+        pageBreakStyleName = manager.getNextStyleName("PageBreak")
         pageBreakStyle = odf.style.Style(
             name=pageBreakStyleName, 
             family='paragraph',

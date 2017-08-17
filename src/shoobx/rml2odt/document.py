@@ -126,7 +126,7 @@ class Document(directive.RMLDirective):
         self.filename = '<unknown>'
         self.attributesCache = {}
 
-    def getNextSyleName(self, prefix):
+    def getNextStyleName(self, prefix):
         self.styleCounters.setdefault(prefix, 0)
         self.styleCounters[prefix] += 1
         return prefix + str(self.styleCounters[prefix])

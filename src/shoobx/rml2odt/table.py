@@ -164,7 +164,7 @@ class TableCell(flowable.Flow):
         # Cell creation and styling
         self.cellProps  = odf.style.TableCellProperties()
         self.cellProps.setAttribute('shrinktofit', True)
-        self.cellStyleName = manager.getNextSyleName('TableCell')
+        self.cellStyleName = manager.getNextStyleName('TableCell')
         self.cellStyle = odf.style.Style(
             name=self.cellStyleName, 
             family='table-cell')
@@ -173,7 +173,7 @@ class TableCell(flowable.Flow):
             valuetype='string')
 
         # Cell Text styling
-        self.cellContentStyleName = manager.getNextSyleName('CellContent')
+        self.cellContentStyleName = manager.getNextStyleName('CellContent')
         self.contentStyle = odf.style.Style(
             name=self.cellContentStyleName, 
             family='paragraph')
@@ -225,7 +225,7 @@ class TableRow(directive.RMLDirective):
     	# rh = self.parent.element.attrib['rowHeights'].split(" ")
     	rowHeight = rowHeights[TableRow.count] + DEFAULT_TABLE_UNIT
     	manager = attr.getManager(self)
-    	self.styleName = manager.getNextSyleName('TableRow')
+    	self.styleName = manager.getNextStyleName('TableRow')
     	style = odf.style.Style(name=self.styleName, family='table-row')
     	manager.document.automaticstyles.addElement(style)
     	rowProps = odf.style.TableRowProperties()
@@ -279,7 +279,7 @@ class BlockTable(flowable.Flowable):
         manager = attr.getManager(self)
         for idx in range(cols):
             # Create a style for each col.
-            styleName = manager.getNextSyleName('TableColumn')
+            styleName = manager.getNextStyleName('TableColumn')
             style = odf.style.Style(name=styleName, family='table-column')
             manager.document.automaticstyles.addElement(style)
             colProps = odf.style.TableColumnProperties()
@@ -327,7 +327,7 @@ class BlockTable(flowable.Flowable):
         try:
             styleName = self.element.attrib.get('style')
         except:
-            styleName = manager.getNextSyleName('Table')
+            styleName = manager.getNextStyleName('Table')
             style = odf.style.Style(name=styleName, family='table')
             manager.document.automaticstyles.addElement(style)
             tableProps = odf.style.TableProperties(relwidth='100%')

@@ -13,7 +13,6 @@ all: ve/bin/unoconv ve/bin/zope-testrunner env
 
 ve:
 	virtualenv -p $(PYTHON) ve
-	ve/bin/pip install --pre backports.tempfile
 	ve/bin/pip install -e .[test]
 
 ve/bin/zope-testrunner: | ve
@@ -25,7 +24,7 @@ ve/bin/unoconv: | ve
 env:
 	echo $(PYTHON_OFFICE_BIN) > env
 
-.PHONT: install-office
+.PHONY: install-office
 install-office: $(OFFICE_BIN)
 
 $(OFFICE_BIN):

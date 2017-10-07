@@ -76,6 +76,8 @@ setup (
     install_requires=[
         'lazy',
         'odfpy',
+        'pypng',
+        'PyQRCode',
         'setuptools',
         'six',
         'z3c.rml',

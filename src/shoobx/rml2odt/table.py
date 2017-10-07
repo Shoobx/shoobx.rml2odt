@@ -65,9 +65,9 @@ class TableCell(flowable.Flow):
     def processStyle(self):
         rows = len(self.parent.parent.element)
         cols = len(self.parent.parent.element[0])
-        allowedCellProperties = ['backbackgroundcolor','paddingtop', 
-        'paddingbottom', 'paddingleft', 'paddingright', 'padding', 
-        'textbackgroundcolor', 'verticalalign']
+        allowedCellProperties = ['backbackgroundcolor','paddingtop',
+                                 'paddingbottom', 'paddingleft', 'paddingright', 'padding',
+                                 'textbackgroundcolor', 'verticalalign']
         allowedTableProperties = ['align']
         allowedColProperties = ['blockColBackground']
         allowedRowProperties = ['backgroundcolors']
@@ -81,12 +81,12 @@ class TableCell(flowable.Flow):
             if desiredStyle != None:
                 children = desiredStyle.childNodes
 
-                for child in children: 
+                for child in children:
                     childAttrs = child.attributes
                     attrDict = dict([(x[1], childAttrs[x]) for x in childAttrs])
                     for key in attrDict:
-                        # 'backgroundcolor' is processed by cellProps 
-                        # 'backgroundcolor' passed in by 'rowProperties' is 
+                        # 'backgroundcolor' is processed by cellProps
+                        # 'backgroundcolor' passed in by 'rowProperties' is
                         # modified to 'backgroundcolors' for later distinction
                         if child.tagName == u'style:table-row-properties':
                             stylesCollection[str(key)+'s'] = str(attrDict[key])
@@ -166,7 +166,7 @@ class TableCell(flowable.Flow):
         self.cellProps.setAttribute('shrinktofit', True)
         self.cellStyleName = manager.getNextStyleName('TableCell')
         self.cellStyle = odf.style.Style(
-            name=self.cellStyleName, 
+            name=self.cellStyleName,
             family='table-cell')
         self.cell = odf.table.TableCell(
             stylename=self.cellStyleName,
@@ -175,7 +175,7 @@ class TableCell(flowable.Flow):
         # Cell Text styling
         self.cellContentStyleName = manager.getNextStyleName('CellContent')
         self.contentStyle = odf.style.Style(
-            name=self.cellContentStyleName, 
+            name=self.cellContentStyleName,
             family='paragraph')
 
         # XXX: Has textalign, justifysingleword
@@ -195,24 +195,24 @@ class TableCell(flowable.Flow):
 
 
 class TableBulkData(directive.RMLDirective):
-	signature = rml_flowable.ITableBulkData
+    signature = rml_flowable.ITableBulkData
 
-	def process(self):
-		# Retrieves the text in the bulkData tag.
-		contents = self.element.text.strip().split('\n')
-		contents = [x.strip() for x in contents]
-		# Converts the retrieved text into table row and cell objects
-		for rowData in contents:
-			newRow = lxml.etree.Element('tr')
-			for cell in range(len(rowData.split(','))):
-				newCell = lxml.etree.Element('td')
-				newCell.text = rowData.split(',')[cell]
-				newRow.append(newCell)
-			self.parent.element.append(newRow)
-		# Removes bulkData object so that recursion loop does not occur
-		self.parent.element.remove(self.element)
-		self.parent.process()
-			
+    def process(self):
+        # Retrieves the text in the bulkData tag.
+        contents = self.element.text.strip().split('\n')
+        contents = [x.strip() for x in contents]
+        # Converts the retrieved text into table row and cell objects
+        for rowData in contents:
+            newRow = lxml.etree.Element('tr')
+            for cell in range(len(rowData.split(','))):
+                newCell = lxml.etree.Element('td')
+                newCell.text = rowData.split(',')[cell]
+                newRow.append(newCell)
+            self.parent.element.append(newRow)
+        # Removes bulkData object so that recursion loop does not occur
+        self.parent.element.remove(self.element)
+        self.parent.process()
+
 
 class TableRow(directive.RMLDirective):
     signature = rml_flowable.ITableRow
@@ -221,24 +221,24 @@ class TableRow(directive.RMLDirective):
 
     def styleRow(self):
         rowHeights = self.parent.element.attrib['rowHeights'].split(' ')
-    	# XXX: Finish this to use for conversion of rowHeights
-    	# rh = self.parent.element.attrib['rowHeights'].split(" ")
-    	rowHeight = rowHeights[TableRow.count] + DEFAULT_TABLE_UNIT
-    	manager = attr.getManager(self)
-    	self.styleName = manager.getNextStyleName('TableRow')
-    	style = odf.style.Style(name=self.styleName, family='table-row')
-    	manager.document.automaticstyles.addElement(style)
-    	rowProps = odf.style.TableRowProperties()
-    	style.addElement(rowProps)
-    	rowProps.setAttribute('rowheight', rowHeight)
+        # XXX: Finish this to use for conversion of rowHeights
+        # rh = self.parent.element.attrib['rowHeights'].split(" ")
+        rowHeight = rowHeights[TableRow.count] + DEFAULT_TABLE_UNIT
+        manager = attr.getManager(self)
+        self.styleName = manager.getNextStyleName('TableRow')
+        style = odf.style.Style(name=self.styleName, family='table-row')
+        manager.document.automaticstyles.addElement(style)
+        rowProps = odf.style.TableRowProperties()
+        style.addElement(rowProps)
+        rowProps.setAttribute('rowheight', rowHeight)
         # ??
         rowProps.setAttribute('useoptimalrowheight', True)
         self.element.attrib['rowHeight'] = unicode(rowHeight)
-    	TableRow.count+=1
+        TableRow.count+=1
 
 
     def process(self):
-    	self.styleRow()
+        self.styleRow()
         self.row = odf.table.TableRow(stylename=self.styleName)
         self.parent.table.addElement(self.row)
         self.processSubDirectives()
@@ -261,20 +261,20 @@ class BlockTable(flowable.Flowable):
                 temp = ' '.join([x + DEFAULT_TABLE_UNIT for x in tempHeights])
                 self.element.attrib['rowHeights'] = temp
         except:
-        	self.element.attrib['rowHeights'] = "30%s "%DEFAULT_TABLE_UNIT * rows
+            self.element.attrib['rowHeights'] = "30%s "%DEFAULT_TABLE_UNIT * rows
 
         try:
-        	self.element.attrib['colWidths']
+            self.element.attrib['colWidths']
         except:
-        	base_width = str(100/cols) + '% '
-        	self.element.attrib['colWidths'] = base_width * cols
+            base_width = str(100/cols) + '% '
+            self.element.attrib['colWidths'] = base_width * cols
 
 
         colWidths = self.getAttributeValues(
             select=['colWidths'], valuesOnly=True)[0]
 
         if colWidths and len(colWidths) != len(self.element[0]):
-        	raise ValueError('colWidths` entries do not match column count.')
+            raise ValueError('colWidths` entries do not match column count.')
 
         manager = attr.getManager(self)
         for idx in range(cols):
@@ -295,7 +295,7 @@ class BlockTable(flowable.Flowable):
 
 
     def convertBulkData(self):
-        # Checks if bulktable in tag and dynamically adds colWidths and 
+        # Checks if bulktable in tag and dynamically adds colWidths and
         # rowHeights to the parent (blockTable)
         element = self.element.getchildren()[0]
         if element.tag != 'bulkData':
@@ -317,7 +317,7 @@ class BlockTable(flowable.Flowable):
 
 
     def process(self):
-    	TableRow.count = 0
+        TableRow.count = 0
         # Naive way of determining the size of the table.
         rows = len(self.element)
         manager = attr.getManager(self)
@@ -337,7 +337,7 @@ class BlockTable(flowable.Flowable):
         if isinstance(self.parent, TableCell):
             self.table.setAttribute('issubtable', 'true')
         self.contents.addElement(self.table)
-    	flag = self.convertBulkData()
+        flag = self.convertBulkData()
         if not flag:
             self.addColumns()
         self.processSubDirectives()

@@ -25,9 +25,9 @@ env:
 	echo $(PYTHON_OFFICE_BIN) > env
 
 .PHONY: install-office
-install-office: $(OFFICE_BIN)
+install-office: $(PYTHON_OFFICE_BIN)
 
-$(OFFICE_BIN):
+$(PYTHON_OFFICE_BIN):
 	sudo VERSION=$(OFFICE_VERSION) bash ci/linux.bash
 	sudo VERSION=$(OFFICE_VERSION) bash ci/osx.bash
 

@@ -45,26 +45,21 @@ class ColorDefinition(directive.RMLDirective):
         colorVal = self.element.attrib.get('value')
         if colorVal.startswith('#'):
             setattr(reportlab.lib.colors, id, reportlab.lib.colors.HexColor(colorVal))
-        
+
 
 class RegisterTTFont(directive.RMLDirective):
     signature = rml_document.IRegisterTTFont
 
     def process(self):
-        attributes = self.element.attrib
-        fontName = attributes['faceName']
-        location = attributes['fileName']
+        fontName, location = self.getAttributeValues(valuesOnly=True)
 
-        font = FontFace(name=fontName,fontfamily=fontName, fontfamilygeneric='modern', fontpitch='variable')
-
-        import os; cwd = os.getcwd()
-        path = cwd+"/src/shoobx/rml2odt/tests/test_rml2odt_data/input"+os.sep+location
+        font = FontFace(name=fontName,fontfamily=fontName,
+                        fontfamilygeneric='modern', fontpitch='variable')
 
         source = FontFaceSrc()
-        urn = FontFaceUri(href = path, actuate = 'onRequest', type='simple')
+        urn = FontFaceUri(href = location, actuate = 'onRequest', type='simple')
         source.appendChild(urn)
-        defSource = DefinitionSrc(href = path, actuate = 'onRequest')
-        # import pdb; pdb.set_trace()
+        defSource = DefinitionSrc(href = location, actuate = 'onRequest')
         font.appendChild(source)
         # font.appendChild(defSource)
         self.parent.parent.document.fontfacedecls.addElement(font)
@@ -144,11 +139,11 @@ class Document(directive.RMLDirective):
         self.document = OpenDocumentText()
         self.registerDefaultStyles()
         # Process common sub-directives
-        self.processSubDirectives(select=('docinit'))
+        self.processSubDirectives(select=('docinit',))
 
         # Handle Flowable-based documents.
         if self.element.find('template') is not None:
-            self.processSubDirectives(select=('stylesheet'))
-            self.processSubDirectives(select=('story'))
+            self.processSubDirectives(select=('stylesheet',))
+            self.processSubDirectives(select=('story',))
         # Save the output.
         self.document.save(outputFile)

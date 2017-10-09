@@ -13,7 +13,7 @@
 ##############################################################################
 """Style Related Element Processing
 """
-import six, pdb, zope.interface
+import six, zope.interface
 import reportlab.platypus
 
 
@@ -32,7 +32,6 @@ class Story(flowable.Flow):
 
     @property
     def contents(self):
-        # import pdb; pdb.set_trace()
         return self.parent.document.text
 
 
@@ -92,7 +91,6 @@ class Story(flowable.Flow):
 #         # #Get the page size
 #         # size = self.parent.pt.pagesize
 #         # if size is None:
-#         #       import pdb; pdb.set_trace()
 #         #     # size = self.parent.parent.parent.doc.pagesize
 #         # #get the arguments
 #         args = dict(self.getAttributeValues())
@@ -119,7 +117,7 @@ class Story(flowable.Flow):
 
 #         self.frames = []
 #         # self.pt = platypus.PageTemplate(**args)
-#         self.pt = 
+#         self.pt =
 
 #         self.processSubDirectives()
 #         self.pt.frames = self.frames
@@ -137,7 +135,6 @@ class Story(flowable.Flow):
 #     }
 
 #     def process(self):
-#         # pdb.set_trace()
 #         args = self.getAttributeValues()
 #         args += self.parent.getAttributeValues(
 #             select=('debug', 'compression', 'invariant'),

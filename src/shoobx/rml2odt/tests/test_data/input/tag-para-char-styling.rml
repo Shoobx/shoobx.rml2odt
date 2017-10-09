@@ -24,7 +24,7 @@
     <para><font color="red">This is red text.</font></para>
     <para>Formula: E<sub>i</sub>=m<sub>i</sub>c<super>2</super></para>
     <para>Here is a simple<br/>break.</para>
-    <para>Link: <a url="http://python.org">Python Website</a></para>
+    <para>Link: <a href="http://python.org">Python Website</a></para>
     <para>Page number: <pageNumber/> </para>
 
     <para>This <b>is</b> a paragraph with <i>multiple</i> formatting.</para>

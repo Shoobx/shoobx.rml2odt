@@ -35,6 +35,16 @@ from z3c.rml import attr, directive
 from z3c.rml import stylesheet
 
 
+def fontNameKW(fontname):
+    """A dict of ListProperties keywords for fontname
+
+    This helper method will create a keyword dict with the fontname
+    parameter if a fontname was specified. This is because fontname=None
+    will be rendered as fontname="None" in the ODT"""
+    if fontname:
+        return {'fontname': fontname}
+    return {}
+
 
 @zope.interface.implementer(IContentContainer)
 class ListItem(flowable.Flow):
@@ -51,16 +61,16 @@ class ListItem(flowable.Flow):
             newStyle = ListStyle(name=newStyleName, consecutivenumbering=False)
             selectedBullet = self.element.attrib.get('value', 'disc')
             bul = ListLevelStyleBullet(
-                level=str(self.parent.level), 
+                level=str(self.parent.level),
                 stylename="Standard",
-                bulletchar=UnorderedListItem.bulletDict.get(selectedBullet, 
+                bulletchar=UnorderedListItem.bulletDict.get(selectedBullet,
                     UnorderedListItem.bulletDict['disc'])
                 )
 
             prop = ListLevelProperties(
-                spacebefore=str(0.25*self.parent.level) + "in", 
-                minlabelwidth="0.25in", 
-                fontname=self.element.attrib.get('bulletFontName', 'Arial')
+                spacebefore=str(0.25*self.parent.level) + "in",
+                minlabelwidth="0.25in",
+                **fontNameKW(self.element.attrib.get('bulletFontName'))
                 )
             bul.addElement(prop)
             newStyle.addElement(bul)
@@ -68,11 +78,11 @@ class ListItem(flowable.Flow):
             # Add to automaticstyles collection
             manager.document.automaticstyles.addElement(newStyle)
             return newStyleName
-            
+
         elif isinstance(self, OrderedListItem):
             if self.parent.element.attrib.get('style', None) == 'Articles':
                 units_ordinal = ['zeroth', 'first', 'second', 'third', 'fourth', 'fifth', 'sixth',
-                'seventh', 'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth', 'thirteenth', 
+                'seventh', 'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth', 'thirteenth',
                 'fourteenth', 'fifteenth', 'sixteenth', 'seventeenth','eighteenth', 'nineteenth']
                 manager = attr.getManager(self)
                 newStyleName = manager.getNextStyleName('Articles')
@@ -81,36 +91,36 @@ class ListItem(flowable.Flow):
                 newStyle = ListStyle(name=newStyleName)
 
                 numStyle = ListLevelStyleNumber(
-                    stylename="Numbering_20_Symbols", 
+                    stylename="Numbering_20_Symbols",
                     numprefix= units_ordinal[index].upper(),
                     numformat = '',
                     numsuffix=":",
-                    level=str(self.parent.level), 
+                    level=str(self.parent.level),
                 )
                 prop = ListLevelProperties(
-                    minlabelwidth="1in", 
-                    fontname=self.element.attrib.get('bulletFontName', 'Arial')
+                    minlabelwidth="1in",
+                    **fontNameKW(self.element.attrib.get('bulletFontName'))
                 )
                 numStyle.addElement(prop)
                 newStyle.addElement(numStyle)
                 manager.document.automaticstyles.addElement(newStyle)
                 return newStyleName
-                
+
             elif self.parent.element.attrib.get('style', None) == 'TableList':
                 manager = attr.getManager(self)
                 newStyleName = manager.getNextStyleName('TableList')
                 newStyle = ListStyle(name=newStyleName)
                 numStyle = ListLevelStyleNumber(
-                    stylename="Numbering_20_Symbols", 
+                    stylename="Numbering_20_Symbols",
                     numprefix= self.element.attrib.get('bulletText', 'None').upper(),
                     numformat = '',
                     numsuffix="",
-                    level=str(self.parent.level), 
+                    level=str(self.parent.level),
                 )
                 prop = ListLevelProperties(
                     spacebefore = "1.5in",
-                    minlabelwidth="2in", 
-                    fontname=self.element.attrib.get('bulletFontName', 'Arial')
+                    minlabelwidth="2in",
+                    **fontNameKW(self.element.attrib.get('bulletFontName'))
                 )
                 numStyle.addElement(prop)
                 newStyle.addElement(numStyle)
@@ -121,22 +131,22 @@ class ListItem(flowable.Flow):
 
 
     def createList(self):
-        # Attempts to retrieve <li> style name, but sets it to it's parent's 
+        # Attempts to retrieve <li> style name, but sets it to it's parent's
         # style name if it doesn't have one
-        styleName = (self.newStyleName if self.newStyleName!=None 
+        styleName = (self.newStyleName if self.newStyleName!=None
                     else ListBase.createdStylesDict[self.parent.styleID])
 
-        # Creates a new List ID for every <li> element since each of them 
+        # Creates a new List ID for every <li> element since each of them
         # creates a new list
         listID = str(uuid.uuid4())
 
         # Keeps track of the list ID of every first <li> element
         # for subsequent <li> element lists to continue from
-        if (self.parent.element.getchildren()[0] == self.element 
-                and isinstance(self, OrderedListItem)): 
+        if (self.parent.element.getchildren()[0] == self.element
+                and isinstance(self, OrderedListItem)):
             ListItem.ListIDTracker.append(listID)
 
-        # Creates a new list for each <li> element and continues from the 
+        # Creates a new list for each <li> element and continues from the
         # initial created list by its listID if it's parent is an <ol>
         if isinstance(self, OrderedListItem):
             self.parent.list = odf.text.List(
@@ -153,7 +163,7 @@ class ListItem(flowable.Flow):
 
         # Removes the last list ID from the tracker list if the current <li>
         # element is the last element
-        if (self.parent.element.getchildren()[-1] == self.element 
+        if (self.parent.element.getchildren()[-1] == self.element
                 and isinstance(self, OrderedListItem)):
             del(ListItem.ListIDTracker[-1])
 
@@ -187,7 +197,7 @@ class ListItem(flowable.Flow):
         # Create new OrderedList and give it a style
         ol = lxml.etree.Element('ol')
         ol.set('style', 'TableList')
-        # Create style for the paragraph being created 
+        # Create style for the paragraph being created
         manager = attr.getManager(self)
         newParaStyleName = manager.getNextStyleName('TableListPara')
         newParaStyle = odf.style.Style(name = newParaStyleName)
@@ -297,15 +307,15 @@ class createStyle(object):
             selectedBullet = bulletList[self.listLevel-1%len(bulletList)]
             # XXX: Perhaps worry about list general bullet specifications
             bullet = ListLevelStyleBullet(
-                level=str(self.listLevel), 
+                level=str(self.listLevel),
                 stylename="Standard",
-                bulletchar=UnorderedListItem.bulletDict.get(selectedBullet, 
+                bulletchar=UnorderedListItem.bulletDict.get(selectedBullet,
                     UnorderedListItem.bulletDict['disc'])
                 )
             prop = ListLevelProperties(
-                spacebefore=self.spacebefore, 
-                minlabelwidth="0.25in", 
-                fontname=attributes.get('bulletFontName', 'Arial')
+                spacebefore=self.spacebefore,
+                minlabelwidth="0.25in",
+                **fontNameKW(attributes.get('bulletFontName'))
                 )
             bullet.addElement(prop)
             new_style.addElement(bullet)
@@ -313,15 +323,15 @@ class createStyle(object):
         elif self.tag == "ol":
             new_style = ListStyle(name=self.name)
             numstyle = ListLevelStyleNumber(
-                level=str(self.listLevel), 
-                stylename="Numbering_20_Symbols", 
-                numsuffix=".", 
+                level=str(self.listLevel),
+                stylename="Numbering_20_Symbols",
+                numsuffix=".",
                 numformat='1'
                 )
             prop = ListLevelProperties(
-                spacebefore=self.spacebefore, 
-                minlabelwidth="0.25in", 
-                fontname=attributes.get('bulletFontName', 'Arial')
+                spacebefore=self.spacebefore,
+                minlabelwidth="0.25in",
+                **fontNameKW(attributes.get('bulletFontName'))
                 )
             numstyle.addElement(prop)
             new_style.addElement(numstyle)
@@ -339,7 +349,7 @@ class createStyle(object):
         self.spacebefore = str(0.25*self.listLevel) + "in"
         self.new_style = createStyle.applyAttributes(self, self.attributes)
         manager.document.automaticstyles.addElement(self.new_style)
-        
+
 
 class ListBase(flowable.Flowable):
     factories = {'li': ListItem}
@@ -379,13 +389,13 @@ class ListBase(flowable.Flowable):
     def determineStyle(self):
         # Checks if the list was supplied an already declared style
         existingStyleName = self.element.attrib.get('style', None)
-        # Creates a new style if an exisitng style does not exist
+        # Creates a new style if an existing style does not exist
         if existingStyleName == None:
-            style = createStyle(self.element.tag, self.level, self.parent, 
+            style = createStyle(self.element.tag, self.level, self.parent,
                 self.element.attrib)
             ListBase.createdStylesDict[self.styleID] = style.name
         else:
-            # XXX: Find a way to check if provided styleNames have already 
+            # XXX: Find a way to check if provided styleNames have already
             # been initialized
             ListBase.createdStylesDict[self.styleID] = existingStyleName
             self.setStyleExtraProperties(existingStyleName)

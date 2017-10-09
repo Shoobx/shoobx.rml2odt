@@ -7,9 +7,9 @@ env
 ve/
 
 *.pyc
-src/shoobx/rml2odt/tests/test_rml2odt_data/expected/*.pdf
-src/shoobx/rml2odt/tests/test_rml2odt_data/expected/*.png
-src/shoobx/rml2odt/tests/test_rml2odt_data/output/*.odt
-src/shoobx/rml2odt/tests/test_rml2odt_data/output/*.pdf
-src/shoobx/rml2odt/tests/test_rml2odt_data/output/*.png
+src/shoobx/rml2odt/tests/test_data/expected/*.pdf
+src/shoobx/rml2odt/tests/test_data/expected/*.png
+src/shoobx/rml2odt/tests/test_data/output/*.odt
+src/shoobx/rml2odt/tests/test_data/output/*.pdf
+src/shoobx/rml2odt/tests/test_data/output/*.png
 src/shoobx.rml2odt.egg-info

@@ -8,6 +8,8 @@
 from __future__ import absolute_import
 
 import math
+import six
+
 
 class Number2Words(object):
 
@@ -52,7 +54,7 @@ class Number2Words(object):
         return output
 
     def fmtNumber(self, num, ordinal=False):
-        str_num = unicode(num)
+        str_num = six.text_type(num)
         if ordinal:
             str_num += "tsnrhtdd"[
                 (num / 10 % 10 != 1) * (num % 10 < 4) * num % 10::4]

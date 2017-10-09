@@ -19,6 +19,7 @@ import odf.text
 import reportlab.lib.styles
 import reportlab.lib.enums
 import reportlab.platypus
+import six
 
 from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT, TA_JUSTIFY
 from z3c.rml import attr, directive, interfaces, occurence, SampleStyleSheet, \
@@ -43,6 +44,21 @@ class Initialize(directive.RMLDirective):
         'name': special.Name,
         'alias': special.Alias,
     }
+
+
+FONT_MAP = {
+    'symbol': 'Symbol',
+    'zapfdingbats': 'ZapfDingbats',
+    'helvetica': 'Arial',
+    'times': 'Times New Roman',
+    'courier': 'Courier',
+}
+
+
+def rmlFont2odfFont(font):
+    # Maps between RML/Postscript font names and ODT/LibreOffice names
+    name = font.lower().split('-')[0]
+    return FONT_MAP.get(name, font)
 
 
 def RegisterParagraphStyle(doc, name, rmlStyle):
@@ -81,26 +97,26 @@ def RegisterParagraphStyle(doc, name, rmlStyle):
     paraProps.setAttribute(
         'marginbottom', pt(rmlStyle.spaceAfter))
 
-
-    
     if rmlStyle.backColor is not None:
         paraProps.setAttribute('backgroundcolor', '#' + rmlStyle.backColor.hexval()[2:])
 
     if rmlStyle.borderPadding is not None:
 
-        paraProps.setAttribute('padding', '{}mm {}mm {}mm'.format(rmlStyle.borderPadding,
-                                                                  rmlStyle.borderPadding, rmlStyle.borderPadding))
-
-        # in case of need for specification if not 'padding' takes care of all the following
-        # paraProps.setAttribute('paddingtop', rmlStyle.borderPadding)
-        # paraProps.setAttribute('paddingbottom', rmlStyle.borderPadding)
-        # paraProps.setAttribute('paddingleft', rmlStyle.borderPadding)
-        # paraProps.setAttribute('paddingright', rmlStyle.borderPadding)
+        paraProps.setAttribute('padding', '%spt' % rmlStyle.borderPadding)
 
     if rmlStyle.borderWidth:
-        paraProps.setAttribute('border', '{}mm'.format(rmlStyle.borderWidth) + 'double #00800a')
-        # paraProps.setAttribute('borderlinewidth', str(rmlStyle.borderWidth))
+        if rmlStyle.borderColor:
+            color = rmlStyle.borderColor.hexval()[2:]
+        else:
+            # Default to black if no color is specified. I can't find any
+            # docs on how attributes like this are supposed to work, so...
+            color = "000000"
+        paraProps.setAttribute('border', "%spt solid #%s" % (
+            rmlStyle.borderWidth, color))
 
+    # reportlab styles doesn't have guaranteed attributes, so we need hasattr
+    if getattr(rmlStyle, 'keepWithNext', False):
+        paraProps.setAttribute('keepwithnext', 'always')
 
     # Text Properties
     textProps = odf.style.TextProperties()
@@ -108,21 +124,19 @@ def RegisterParagraphStyle(doc, name, rmlStyle):
 
     if rmlStyle.fontName is not None:
         flag = rmlStyle.fontName.find('-')
-        if flag == -1:
-            fontName = rmlStyle.fontName
-        else:
-            fontName = rmlStyle.fontName[:flag]
+        if flag != -1:
             transform = rmlStyle.fontName[flag + 1:]
             if transform == 'Italic':
                 textProps.setAttribute('fontstyle', 'italic')
             elif transform == 'Bold':
                 textProps.setAttribute('fontweight', 'bold')
 
+        odf_font_name = rmlFont2odfFont(rmlStyle.fontName)
         doc.fontfacedecls.addElement(
             odf.style.FontFace(
-                name=fontName,
-                fontfamily=fontName))
-        textProps.setAttribute('fontname', fontName)
+                name=odf_font_name,
+                fontfamily=odf_font_name))
+        textProps.setAttribute('fontname', odf_font_name)
     textProps.setAttribute('fontsize', rmlStyle.fontSize)
     textProps.setAttribute('texttransform', rmlStyle.textTransform)
 
@@ -163,11 +177,12 @@ def RegisterListStyle(doc, attributes, rmlStyle, name):
     listProps.setAttribute('textalign', x.get('bulletAlign'))
 
     if rmlStyle.bulletFontName is not None:
+        odf_font_name = rmlFont2odfFont(rmlStyle.bulletFontName)
         doc.fontfacedecls.addElement(
             odf.style.FontFace(
-                name=rmlStyle.bulletFontName,
-                fontfamily=rmlStyle.bulletFontName))
-        listProps.setAttribute('fontname', rmlStyle.bulletFontName)
+                name=odf_font_name,
+                fontfamily=odf_font_name))
+        listProps.setAttribute('fontname', odf_font_name)
 
     if bulletFormat != None:
         if bulletFormat == '(%s)':
@@ -197,10 +212,10 @@ class ParagraphStyle(directive.RMLDirective):
 
     def adjustAttributeValues(self, style, parentName):
         try:
-            parentElem = self.parent.parent.document.getStyleByName(unicode(parentName))
+            parentElem = self.parent.parent.document.getStyleByName(six.text_type(parentName))
             paraProps = [x for x in parentElem.childNodes if 'paragraph' in x.tagName][0]
             textProps = [x for x in parentElem.childNodes if 'text' in x.tagName][0]
-            
+
             textPropsMapper = {
                 'font-name': 'fontName',
                 'text-transform': 'textTransform',
@@ -222,7 +237,7 @@ class ParagraphStyle(directive.RMLDirective):
             for attrib in textProps.attributes:
                 desiredAttribute = str(attrib[1])
                 value = textProps.attributes[attrib]
-                try: 
+                try:
                     value = float(value)
                 except:
                     value = value
@@ -232,7 +247,7 @@ class ParagraphStyle(directive.RMLDirective):
             for attrib in paraProps.attributes:
                 desiredAttribute = str(attrib[1])
                 value = paraProps.attributes[attrib]
-                try: 
+                try:
                     value = float(value)
                 except:
                     value = value
@@ -258,7 +273,7 @@ class ParagraphStyle(directive.RMLDirective):
         style = self.adjustAttributeValues(style, parent.name)
 
         for attrName, attrValue in kwargs.items():
-            setattr(style, attrName, attrValue)  
+            setattr(style, attrName, attrValue)
         RegisterParagraphStyle(document, name, style)
 
 
@@ -314,10 +329,11 @@ class TableStyleCommand(directive.RMLDirective):
             elif key in TableStyleCommand.textProps:
                 if key == 'name':
                     manager = attr.getManager(self)
+                    odf_font_name = rmlFont2odfFont(value)
                     manager.document.fontfacedecls.addElement(
                         odf.style.FontFace(
-                            name=value,
-                            fontfamily=value))
+                            name=odf_font_name,
+                            fontfamily=odf_font_name))
                 self.parent.textProps.setAttribute(
                     TableStyleCommand.textProps[key], value)
 

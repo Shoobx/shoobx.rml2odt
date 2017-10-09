@@ -25,6 +25,7 @@ import copy
 import png
 import reportlab.lib.styles
 import re
+import six
 import zope.interface
 
 from reportlab.lib import styles, utils
@@ -52,11 +53,7 @@ def pygments2xpre(s, language="python"):
     l = get_lexer_by_name(language)
 
     h = HtmlFormatter()
-    # XXX: Does not work in Python 2, since pygments creates non-unicode
-    # output snippets.
-    #from io import StringIO
-    from six import StringIO
-    out = StringIO()
+    out = six.StringIO()
     highlight(s,l,h,out)
     styles = [(cls, style.split(';')[0].split(':')[1].strip())
                 for cls, (style, ttype, level) in h.class2style.items()
@@ -155,7 +152,7 @@ def inputImageIntoCell(self):
 
 def getImageDimensions(self):
     attributes = self.element.attrib
-    tempFrameWidth = attributes['width'] 
+    tempFrameWidth = attributes['width']
     tempFrameHeight = attributes['height']
     try:
         tempRowHeight = self.parent.parent.element.attrib['rowHeight']
@@ -171,7 +168,7 @@ def getImageDimensions(self):
     if not tempFrameWidth.isdigit():
         tempFrameWidth = int(re.findall(regex, tempFrameWidth)[0])
     else:
-        tempFrameWidth = int(tempFrameWidth) 
+        tempFrameWidth = int(tempFrameWidth)
 
     if not tempRowHeight.isdigit():
         tempRowHeight = int(re.findall(regex, tempRowHeight)[0])
@@ -187,8 +184,8 @@ def getImageDimensions(self):
 
     frameWidth = tempFrameWidth * ratio
 
-    finalFrameHeight = str(frameHeight) 
-    finalFrameWidth = str(frameWidth) 
+    finalFrameHeight = str(frameHeight)
+    finalFrameWidth = str(frameWidth)
     return finalFrameWidth, finalFrameHeight
 
 
@@ -246,12 +243,12 @@ class BarCodeFlowable(Flowable):
                 show = 'embed',
                 actuate = 'onLoad')
             self.image.appendChild(self.binaryImage)
-            
+
             if self.parent.element.tag != 'td':
                 inputImageIntoDoc(self)
             else:
                 inputImageIntoCell(self)
-        
+
 
 class Spacer(Flowable):
     signature = rml_flowable.ISpacer
@@ -263,7 +260,7 @@ class Spacer(Flowable):
         spacerStyleName = manager.getNextStyleName('Sp')
         spacer = odf.style.Style(name=spacerStyleName, family='paragraph')
         prop = odf.style.ParagraphProperties()
-        length = self.element.attrib.get('length', "0.5in")
+        length = self.element.attrib.get('length')
         unit = length[-2:]
         floatLength = float(length[:-2])/2
         prop.setAttribute("linespacing", str(floatLength)+ unit)
@@ -427,7 +424,6 @@ class Break(SubParagraphDirective):
 
     def process(self):
         span = self.paragraph.odtParagraph.addElement(odf.text.LineBreak())
-        # import pdb; pdb.set_trace()
         manager = attr.getManager(self)
         if Break.createdStyle == False:
             odtStyle = odf.style.Style(name='BreakJustify', family='paragraph')
@@ -437,7 +433,10 @@ class Break(SubParagraphDirective):
             odtStyle.appendChild(paraProps)
             Break.createdStyle == True
 
-        self.paragraph.odtParagraph.setAttribute('stylename', 'BreakJustify')
+        # I don't know what this is supposed to do, but what it does is that
+        # it overwrites the paragraph style if you have a line break in it.
+        # //Lennart
+        # self.paragraph.odtParagraph.setAttribute('stylename', 'BreakJustify')
 
         if self.element.tail:
             # XXX: ADDED .strip()
@@ -447,7 +446,7 @@ class Break(SubParagraphDirective):
 class IAnchor(IComplexSubParagraphDirective):
     """Adds an anchor link into the paragraph."""
 
-    url = attr.Text(
+    href = attr.Text(
         title=u'URL',
         description=u'The URL to link to.',
         required=True)
@@ -483,7 +482,7 @@ class Anchor(ComplexSubParagraphDirective):
 
     def process(self):
         attrs = dict(self.getAttributeValues())
-        anchor = odf.text.A(href=attrs['url'], text=self.element.text)
+        anchor = odf.text.A(href=attrs['href'], text=self.element.text)
         if 'name' in attrs:
             anchor.setAttribute('name', attrs['name'])
         self.paragraph.odtParagraph.addElement(anchor)
@@ -581,11 +580,12 @@ class Paragraph(Flowable):
             textProps.setAttribute('textunderlinetype', 'single')
         if self.fontName:
             # Make a font declaration, if necessary
+            odf_font_name = rml_stylesheet.rmlFont2odfFont(self.fontName)
             manager.document.fontfacedecls.addElement(
                 odf.style.FontFace(
-                    name=self.fontName,
-                    fontfamily=self.fontName))
-            textProps.setAttribute('fontname', self.fontName)
+                    name=odf_font_name,
+                    fontfamily=odf_font_name))
+            textProps.setAttribute('fontname', odf_font_name)
         if self.fontSize:
             textProps.setAttribute('fontsize', self.fontSize)
         if self.strike:
@@ -601,7 +601,7 @@ class Paragraph(Flowable):
 
 
     def determineStyle(self):
-        try: 
+        try:
             styleName = self.element.attrib.pop('style')
             if len(self.element.attrib) > 0:
                 manager = attr.getManager(self)
@@ -610,7 +610,7 @@ class Paragraph(Flowable):
                 else:
                     newStyleName = manager.getNextStyleName(styleName)
 
-                style = manager.document.getStyleByName(unicode(styleName))
+                style = manager.document.getStyleByName(six.text_type(styleName))
                 newStyle = copy.deepcopy(style)
                 newStyle.setAttribute('name', newStyleName)
                 newStyle.setAttribute('displayname', newStyleName)
@@ -631,7 +631,6 @@ class Paragraph(Flowable):
                 return newStyleName
             else:
                 self.element.attrib['style'] = styleName
-                # import pdb; pdb.set_trace()
                 return styleName
         except:
             return self.defaultStyle
@@ -763,12 +762,12 @@ class PageNumber(Flowable):
 class NextPage(Flowable):
     signature = rml_flowable.INextPage
     klass = reportlab.platypus.PageBreak
-    
+
     def process(self):
         manager = attr.getManager(self)
         pageBreakStyleName = manager.getNextStyleName("PageBreak")
         pageBreakStyle = odf.style.Style(
-            name=pageBreakStyleName, 
+            name=pageBreakStyleName,
             family='paragraph',
             parentstylename='Footer')
         prop = odf.style.ParagraphProperties()

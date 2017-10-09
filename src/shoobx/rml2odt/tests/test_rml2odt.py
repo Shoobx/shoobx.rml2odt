@@ -16,20 +16,23 @@
 from __future__ import absolute_import
 
 import os
+import re
 import subprocess
 import sys
 import unittest
+import zipfile
 from PIL import Image
 from zope.interface import verify
+from odf.element import Element
 
 from shoobx.rml2odt import interfaces, rml2odt
 
 INPUT_DIR = os.path.join(
-    os.path.dirname(__file__), 'test_rml2odt_data', 'input')
+    os.path.dirname(__file__), 'test_data', 'input')
 OUTPUT_DIR = os.path.join(
-    os.path.dirname(__file__), 'test_rml2odt_data', 'output')
+    os.path.dirname(__file__), 'test_data', 'output')
 EXPECT_DIR = os.path.join(
-    os.path.dirname(__file__), 'test_rml2odt_data', 'expected')
+    os.path.dirname(__file__), 'test_data', 'expected')
 
 LOG_FILE = os.path.join(os.path.dirname(__file__), 'render.log')
 
@@ -42,6 +45,8 @@ if os.path.exists(ENV_PATH):
     with open(ENV_PATH) as env_file:
         PYTHON_OFFICE_BIN=env_file.read().strip()
 
+NORMALIZE_CONTENT_RES = [re.compile(attrib+'\=\".*?\"')
+    for attrib in ('xml:id', 'text:continue-list')]
 
 def gs_command(path):
     cmd = (
@@ -68,13 +73,28 @@ class Rml2OdtConverterTest(unittest.TestCase):
 
 class Rml2OdtConverterFileTest(unittest.TestCase):
 
-    def __init__(self, inputPath, outputPath):
+    def __init__(self, inputPath, outputPath, expectPath):
         self.inputPath = inputPath
         self.outputPath = outputPath
+        self.expectPath = expectPath
         super(Rml2OdtConverterFileTest, self).__init__()
 
     def runTest(self):
         rml2odt.go(self.inputPath, self.outputPath)
+        expected = zipfile.ZipFile(self.expectPath, 'r')
+        output = zipfile.ZipFile(self.outputPath, 'r')
+        expected_names = set(expected.namelist())
+        output_names = set(output.namelist())
+
+        if expected_names != output_names:
+            raise ValueError("ODT namelist doesn't match expectations for "
+                             "RML file %s.\nIs %s, should be %s." % (
+                                 self.inputPath, output_names, expected_names))
+
+    def _normalize(self, text):
+        for regexp in NORMALIZE_CONTENT_RES:
+            text = regexp.sub('', text)
+        return text
 
 
 class CompareODTTestCase(unittest.TestCase):
@@ -108,11 +128,23 @@ class CompareODTTestCase(unittest.TestCase):
         # If the base ODT has not been converted to PDF yet, then
         # let's do that now.
         basePdfPath = self._basePath.rsplit('.', 1)[0] + '.pdf'
-        status = subprocess.Popen(
-            unoconv_command(self._basePath)).wait()
-        if status:
-            raise ValueError(
-                'Base ODT -> PDF conversion failed: %i' % status)
+        if not os.path.exists(basePdfPath):
+            command = unoconv_command(self._basePath)
+            status = subprocess.Popen(command).wait()
+            if status:
+                raise ValueError(
+                    'Base ODT -> PDF conversion failed: %i\n'
+                    'Command line %s'% (status, ' '.join(command)))
+
+        # If the base PDF isn't converted into images, do that now:
+        basePNGPath = self._basePath.rsplit('.', 1)[0] + '.[Page-1].png'
+        # We only check the first image, because we don't know how
+        # many pages there are.
+        if not os.path.exists(basePNGPath):
+            status = subprocess.Popen(gs_command(basePdfPath)).wait()
+            if status:
+                raise ValueError(
+                    'Base PDF -> PNG conversion failed: %i' % status)
 
         # Convert the test ODT file to PDF.
         testPdfPath = self._testPath.rsplit('.', 1)[0] + '.pdf'
@@ -123,26 +155,26 @@ class CompareODTTestCase(unittest.TestCase):
             raise ValueError(
                 'Test ODT -> PDF conversion failed: %i' % status)
 
-        # Convert the PDF file to image(s)
-        status = subprocess.Popen(gs_command(basePdfPath)).wait()
-        if status:
-            raise ValueError(
-                'Base PDF -> PNG conversion failed: %i' % status)
-
         # Convert the test PDF to image(s)
         status = subprocess.Popen(gs_command(testPdfPath)).wait()
         if status:
             raise ValueError(
                 'Test PDF -> PNG conversion failed: %i' % status)
 
-        # Go through all pages and ensure their equality
+        # Go through all images and ensure their equality
         n = 1
         while True:
-            baseImage = self._basePath[:-4] + '[Page-%i].png' %n
-            testImage = self._testPath[:-4] + '[Page-%i].png' %n
-            if os.path.exists(baseImage) and os.path.exists(testImage):
+            baseImage = self._basePath[:-4] + '.[Page-%i].png' %n
+            testImage = self._testPath[:-4] + '.[Page-%i].png' %n
+            if os.path.exists(baseImage):
+                if not os.path.exists(testImage):
+                    raise RuntimeError(
+                        'The expected PNG file is missing: %s' % testImage)
+
                 self.assertSameImage(baseImage, testImage)
             else:
+                if os.path.exists(testImage):
+                    raise AssertionError('Unexpected PNG file: %s' % test)
                 break
             n += 1
 
@@ -166,7 +198,7 @@ def test_suite():
         # ** Test RML to ODT rednering! **
         testName = 'rml2odt-' + inputFilename[:-4]
         TestCase = type(testName, (Rml2OdtConverterFileTest,), {})
-        case = TestCase(inputPath, outputPath)
+        case = TestCase(inputPath, outputPath, expectPath)
         suite.addTest(case)
 
         # ** Test ODT rendering correctness **

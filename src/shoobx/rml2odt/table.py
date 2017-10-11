@@ -16,6 +16,7 @@
 import lxml.etree
 import odf.table
 import re
+import six
 import zope.interface
 
 from z3c.rml import attr, directive
@@ -57,7 +58,7 @@ class TableCell(flowable.Flow):
     def searchStyle(self, tableStyleName):
         manager = attr.getManager(self)
         try:
-            style = manager.document.getStyleByName(unicode(tableStyleName))
+            style = manager.document.getStyleByName(six.text_type(tableStyleName))
             return style
         except:
             return None
@@ -233,7 +234,7 @@ class TableRow(directive.RMLDirective):
         rowProps.setAttribute('rowheight', rowHeight)
         # ??
         rowProps.setAttribute('useoptimalrowheight', True)
-        self.element.attrib['rowHeight'] = unicode(rowHeight)
+        self.element.attrib['rowHeight'] = six.text_type(rowHeight)
         TableRow.count+=1
 
 
@@ -287,7 +288,7 @@ class BlockTable(flowable.Flowable):
             # Apply the width if available.
             colWidth = colWidths[idx]
 
-            if isinstance(colWidth, basestring) and colWidth.endswith('%'):
+            if isinstance(colWidth, six.string_types) and colWidth.endswith('%'):
                 colProps.setAttribute('relcolumnwidth', colWidth[:-1] + '*')
             else:
                 colProps.setAttribute('columnwidth', colWidth)

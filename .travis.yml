@@ -5,8 +5,8 @@ python:
     - 3.5
     - 3.6
 before_install:
-    - sudo apt-get install ghostscript libreoffice
-    - echo '/usr/bin/python' > env
+    - sudo apt-get install ghostscript libreoffice python3-uno
+    - echo '/usr/bin/python3' > env
 install:
     - travis_retry pip install tox tox-travis coveralls
 script:

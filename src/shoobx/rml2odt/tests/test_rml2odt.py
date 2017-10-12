@@ -38,6 +38,7 @@ LOG_FILE = os.path.join(os.path.dirname(__file__), 'render.log')
 
 UNOCONV_BIN = os.path.join(
     os.path.dirname(sys.executable), 'unoconv')
+UNOCONV_BIN = 'unoconv'
 PYTHON_OFFICE_BIN = os.environ.get('PYTHON_OFFICE_BIN')
 
 ENV_PATH = os.path.abspath('env')

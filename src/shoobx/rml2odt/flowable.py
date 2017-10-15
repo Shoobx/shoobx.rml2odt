@@ -32,7 +32,7 @@ from reportlab.lib import styles, utils
 from z3c.rml import directive, occurence
 from z3c.rml import flowable as rml_flowable
 from z3c.rml import template as rml_template
-from shoobx.rml2odt import stylesheet as rml_stylesheet
+from shoobx.rml2odt import stylesheet
 
 # from z3c.rml flowable.py file
 from z3c.rml import attr, directive, interfaces, platypus
@@ -580,7 +580,7 @@ class Paragraph(Flowable):
             textProps.setAttribute('textunderlinetype', 'single')
         if self.fontName:
             # Make a font declaration, if necessary
-            odf_font_name = rml_stylesheet.rmlFont2odfFont(self.fontName)
+            odf_font_name = stylesheet.rmlFont2odfFont(self.fontName)
             manager.document.fontfacedecls.addElement(
                 odf.style.FontFace(
                     name=odf_font_name,

@@ -35,7 +35,7 @@ from z3c.rml import attr, directive
 from z3c.rml import stylesheet
 
 
-def fontNameKW(fontname):
+def fontNameKeyword(fontname):
     """A dict of ListProperties keywords for fontname
 
     This helper method will create a keyword dict with the fontname
@@ -70,7 +70,7 @@ class ListItem(flowable.Flow):
             prop = ListLevelProperties(
                 spacebefore=str(0.25*self.parent.level) + "in",
                 minlabelwidth="0.25in",
-                **fontNameKW(self.element.attrib.get('bulletFontName'))
+                **fontNameKeyword(self.element.attrib.get('bulletFontName'))
                 )
             bul.addElement(prop)
             newStyle.addElement(bul)
@@ -99,7 +99,7 @@ class ListItem(flowable.Flow):
                 )
                 prop = ListLevelProperties(
                     minlabelwidth="1in",
-                    **fontNameKW(self.element.attrib.get('bulletFontName'))
+                    **fontNameKeyword(self.element.attrib.get('bulletFontName'))
                 )
                 numStyle.addElement(prop)
                 newStyle.addElement(numStyle)
@@ -120,7 +120,7 @@ class ListItem(flowable.Flow):
                 prop = ListLevelProperties(
                     spacebefore = "1.5in",
                     minlabelwidth="2in",
-                    **fontNameKW(self.element.attrib.get('bulletFontName'))
+                    **fontNameKeyword(self.element.attrib.get('bulletFontName'))
                 )
                 numStyle.addElement(prop)
                 newStyle.addElement(numStyle)
@@ -315,7 +315,7 @@ class createStyle(object):
             prop = ListLevelProperties(
                 spacebefore=self.spacebefore,
                 minlabelwidth="0.25in",
-                **fontNameKW(attributes.get('bulletFontName'))
+                **fontNameKeyword(attributes.get('bulletFontName'))
                 )
             bullet.addElement(prop)
             new_style.addElement(bullet)
@@ -331,7 +331,7 @@ class createStyle(object):
             prop = ListLevelProperties(
                 spacebefore=self.spacebefore,
                 minlabelwidth="0.25in",
-                **fontNameKW(attributes.get('bulletFontName'))
+                **fontNameKeyword(attributes.get('bulletFontName'))
                 )
             numstyle.addElement(prop)
             new_style.addElement(numstyle)

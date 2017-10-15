@@ -1,0 +1,31 @@
+<!DOCTYPE document SYSTEM "rml_1_0.dtd">
+<document filename="test_000_simple.pdf" invariant="1">
+
+<template pagesize="letter" showBoundary="0" leftMargin="2.0in"
+    topMargin="1.0in" rightMargin="1.0in" bottomMargin="1.0in">
+  <pageTemplate id="Standard">
+    <header x="1.3cm" y="25.3cm" height="1.8cm" width="15cm">
+      <para fontSize="12.0" fontName="Times-Bold">Shoobx</para>
+    </header>
+    <frame id="first" x1="1.3cm" y1="100.0" width="18.6cm" height="630"/>
+    <footer x="1.3cm" y="1cm" height="1cm" width="18.6cm">
+      <blockTable>
+        <tr>
+          <td align="left"><para>This is footer</para></td>
+          <td align="center"></td>
+          <td align="right"><para><pageNumber/></para></td>
+        </tr>
+      </blockTable>
+    </footer>
+  </pageTemplate>
+</template>
+
+<stylesheet/>
+
+<story>
+  <h1>This is page 1</h1>
+  <nextPage/>
+  <h1>This is page 2</h1>
+</story>
+
+</document>

@@ -13,8 +13,8 @@
 ##############################################################################
 """Style Related Element Processing
 """
+import odf
 import six, zope.interface
-import reportlab.platypus
 
 
 from z3c.rml import directive, attr, interfaces, occurence
@@ -22,8 +22,6 @@ from z3c.rml import template as rml_template
 from shoobx.rml2odt import flowable
 from shoobx.rml2odt.directive import NotImplementedDirective
 from shoobx.rml2odt.interfaces import IContentContainer
-from reportlab import platypus
-
 
 
 @zope.interface.implementer(IContentContainer)
@@ -35,49 +33,85 @@ class Story(flowable.Flow):
         return self.parent.document.text
 
 
+@zope.interface.implementer(IContentContainer)
+class Header(flowable.Flow):
+    signature = rml_template.IPageGraphics
+    klass = staticmethod(odf.style.Header)
+
+    def process(self):
+        self.contents = self.klass()
+        self.parent.content.addElement(self.contents)
+        self.processSubDirectives()
+
+
+class Footer(Header):
+    klass = staticmethod(odf.style.Footer)
+
+
+class PageTemplate(directive.RMLDirective):
+    signature = rml_template.IPageTemplate
+    attrMapping = {'id': 'name'}
+    factories = {
+        'header': Header,
+        'footer': Footer,
+    }
+
+    def process(self):
+        manager = attr.getManager(self)
+        styleName = manager.getNextStyleName('Mpm')
+
+        attrMapping = {'bottomMargin': 'marginbottom',
+                       'topMargin': 'margintop',
+                       'leftMargin': 'marginleft',
+                       'rightMargin': 'marginright',
+                       'pagesize': 'pagesize',
+                       'showBoundary': 'border',
+                       }
+        args = dict(self.parent.getAttributeValues(attrMapping=attrMapping))
+        allowed = attrMapping.values()
+        styleArgs = {}
+        for arg in args:
+            if arg not in allowed:
+                continue
+            if arg == 'pagesize':
+                styleArgs['pagewidth'] = '%spt' % args[arg][0]
+                styleArgs['pageheight'] = '%spt' % args[arg][1]
+            elif arg == 'border':
+                if args[arg]:
+                    styleArgs[arg] = "3pt"
+                else:
+                    styleArgs[arg] = "0pt"
+            else:
+                styleArgs[arg] = '%spt' % args[arg]
+
+        pageLayout = odf.style.PageLayout(name=styleName)
+        pageLayoutProps = odf.style.PageLayoutProperties(**styleArgs)
+
+        pageLayout.addElement(pageLayoutProps)
+        manager.document.automaticstyles.addElement(pageLayout)
+
+        args = dict(self.getAttributeValues(attrMapping=self.attrMapping))
+        self.content = odf.style.MasterPage(name=args['name'],
+                                            pagelayoutname=styleName)
+        self.parent.parent.document.masterstyles.addElement(self.content)
+        self.processSubDirectives()
+
+
+class Template(directive.RMLDirective):
+    signature = rml_template.ITemplate
+
+    factories = {
+        'pageTemplate': PageTemplate,
+    }
+
+    def process(self):
+        self.processSubDirectives()
+
 
 # @zope.interface.implementer(interfaces.ICanvasManager)
 # class PageGraphics(directive.RMLDirective):
 #     signature = rml_template.IPageGraphics
 
-
-# class PageTemplate(directive.RMLDirective):
-#     signature = rml_template.IPageTemplate
-#     attrMapping = {'autoNextTemplate': 'autoNextPageTemplate'}
-#     factories = {
-#         'pageGraphics': PageGraphics,
-#         }
-
-#     def process(self):
-#         args = dict(self.getAttributeValues(attrMapping=self.attrMapping))
-#         pagesize = args.pop('pagesize', None)
-
-#         self.frames = []
-#         self.pt = platypus.PageTemplate(**args)
-
-#         self.processSubDirectives()
-#         self.pt.frames = self.frames
-
-#         if pagesize:
-#             self.pt.pagesize = pagesize
-
-#         self.parent.parent.doc.addPageTemplates(self.pt)
-
-
-# class Template(directive.RMLDirective):
-#     signature = rml_template.ITemplate
-#     factories = {
-#         'pageTemplate': PageTemplate,
-#     }
-
-#     def process(self):
-#         args = self.getAttributeValues()
-#         args += self.parent.getAttributeValues(
-#             select=('debug', 'compression', 'invariant'),
-#             attrMapping={'debug': '_debug', 'compression': 'pageCompression'})
-#         self.parent.doc = platypus.BaseDocTemplate(
-#             self.parent.outputFile, **dict(args))
-#         self.processSubDirectives()
 
 # @zope.interface.implementer(interfaces.ICanvasManager)
 # class PageGraphics(directive.RMLDirective):

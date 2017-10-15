@@ -488,6 +488,13 @@ class Anchor(ComplexSubParagraphDirective):
         self.paragraph.odtParagraph.addElement(anchor)
 
 
+class PageNumber(Flowable):
+    signature = rml_flowable.IPageNumber
+
+    def process(self):
+        self.parent.odtParagraph.addElement(odf.text.PageNumber())
+
+
 ComplexSubParagraphDirective.factories = {
     'i': Italic,
     'b': Bold,
@@ -499,7 +506,7 @@ ComplexSubParagraphDirective.factories = {
     'sub': Sub,
     'a': Anchor,
     'br': Break,
-    # 'pageNumber': pageNumber,
+    'pageNumber': PageNumber,
     # Unsupported tags:
     # 'greek': Greek,
 }
@@ -520,6 +527,7 @@ IComplexSubParagraphDirective.setTaggedValue(
     )
 )
 
+
 @zope.interface.implementer(rml_flowable.IParagraph)
 class Paragraph(Flowable):
     signature = rml_flowable.IParagraph
@@ -535,7 +543,7 @@ class Paragraph(Flowable):
         'sub': Sub,
         'a': Anchor,
         'br': Break,
-        #'pageNumber': PageNumber,
+        'pageNumber': PageNumber,
         # Unsupported tags:
         # 'greek': Greek,
     }
@@ -599,7 +607,6 @@ class Paragraph(Flowable):
             textProps.setAttribute('textposition', 'sub 58%')
         return span
 
-
     def determineStyle(self):
         try:
             styleName = self.element.attrib.pop('style')
@@ -634,7 +641,6 @@ class Paragraph(Flowable):
                 return styleName
         except:
             return self.defaultStyle
-
 
     def process(self):
         self.odtParagraph = odf.text.P()
@@ -727,26 +733,6 @@ class Link(Flowable):
         flow = Flow(self.element, self.parent)
         flow.process()
 
-
-class PageNumber(Flowable):
-    signature = rml_flowable.IPageNumber
-
-    def process(self):
-        manager = attr.getManager(self)
-        pageNumberStyleName = manager.getNextStyleName("PageNumber")
-        pageNumberStyle = odf.style.Style(
-            name=pageNumberStyleName,
-            family='paragraph',
-            parentstylename='Footer')
-        prop = odf.style.ParagraphProperties()
-        prop.setAttribute('textalign', 'center')
-        pageNumberStyle.addElement(prop)
-        manager.document.automaticstyles.addElement(pageNumberStyle)
-        self.para = odf.text.P()
-        self.para.addText("Page ")
-        self.para.appendChild(odf.text.PageNumber())
-        self.para.setAttribute('stylename', pageNumberStyleName)
-        self.contents.addElement(self.para)
 
 
 # class pageNumber(Flowable):

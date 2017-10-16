@@ -105,7 +105,7 @@ class Document(directive.RMLDirective):
     factories = {
         'docinit': DocInit,
         'story': template.Story,
-        # 'template': template.Template,
+        'template': template.Template,
         # 'pageGraphics': template.PageGraphics,
         'stylesheet': stylesheet.Stylesheet,
         # 'frame': template.Frame
@@ -143,7 +143,7 @@ class Document(directive.RMLDirective):
 
         # Handle Flowable-based documents.
         if self.element.find('template') is not None:
-            self.processSubDirectives(select=('stylesheet',))
+            self.processSubDirectives(select=('stylesheet', 'template'))
             self.processSubDirectives(select=('story',))
         # Save the output.
         self.document.save(outputFile)

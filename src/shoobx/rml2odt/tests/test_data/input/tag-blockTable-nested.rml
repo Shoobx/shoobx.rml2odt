@@ -10,7 +10,7 @@
   <story>
 
     <title><font face="Courier">&lt;blockTable&gt;</font> Tag Demo</title>
-    <blockTable colWidths="30% 70%" rowHeights="12cm 20cm">
+    <blockTable colWidths="30% 70%" rowHeights="12mm 20mm">
       <tr>
         <td>This</td>
         <td>is</td>
@@ -18,7 +18,7 @@
       <tr>
         <td>a</td>
         <td>
-          <blockTable colWidths="30% 70%" rowHeights="10cm 10cm">
+          <blockTable colWidths="30% 70%" rowHeights="10mm 10mm">
             <tr>
               <td>This</td>
               <td>is</td>

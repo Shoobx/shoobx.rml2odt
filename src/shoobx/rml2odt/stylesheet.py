@@ -61,7 +61,7 @@ def rmlFont2odfFont(font):
     return FONT_MAP.get(name, font)
 
 
-def RegisterParagraphStyle(doc, name, rmlStyle):
+def registerParagraphStyle(doc, name, rmlStyle):
     if 'style.' in name:
         name = name[6:]
 
@@ -74,11 +74,13 @@ def RegisterParagraphStyle(doc, name, rmlStyle):
     if name == "sig-small-logo":
         paraProps.setAttribute('lineheight', "0.14in")
     else:
-        paraProps.setAttribute('linespacing', pt(rmlStyle.leading - rmlStyle.fontSize))
+        paraProps.setAttribute('linespacing',
+                               pt(rmlStyle.leading - rmlStyle.fontSize))
     if name == "Small":
         paraProps.setAttribute('textalign', 'left')
     else:
-        paraProps.setAttribute('textalign', RML2ODT_ALIGNMENTS[rmlStyle.alignment])
+        paraProps.setAttribute('textalign',
+                               RML2ODT_ALIGNMENTS[rmlStyle.alignment])
     if rmlStyle.justifyLastLine:
         paraProps.setAttribute(
             'textalignlast', 'justify')
@@ -98,7 +100,8 @@ def RegisterParagraphStyle(doc, name, rmlStyle):
         'marginbottom', pt(rmlStyle.spaceAfter))
 
     if rmlStyle.backColor is not None:
-        paraProps.setAttribute('backgroundcolor', '#' + rmlStyle.backColor.hexval()[2:])
+        paraProps.setAttribute(
+            'backgroundcolor', '#' + rmlStyle.backColor.hexval()[2:])
 
     if rmlStyle.borderPadding is not None:
 
@@ -149,11 +152,11 @@ def RegisterParagraphStyle(doc, name, rmlStyle):
 
 def RegisterListStyle(doc, attributes, rmlStyle, name):
     name = attributes.get('name', 'undefined')
-    bulletType = attributes.get('start', None)
-    bulletFormat = attributes.get('bulletFormat', None)
+    bulletType = attributes.get('start')
+    bulletFormat = attributes.get('bulletFormat')
     bulletOffsetY = attributes.get('bulletOffsetY', '0pt')
     bulletDedent = attributes.get('bulletDedent', '50pt')
-    numType = attributes.get('bulletType', None)
+    numType = attributes.get('bulletType')
 
     bulletDict = {
         'bulletchar': u'\u2022',
@@ -184,7 +187,7 @@ def RegisterListStyle(doc, attributes, rmlStyle, name):
                 fontfamily=odf_font_name))
         listProps.setAttribute('fontname', odf_font_name)
 
-    if bulletFormat != None:
+    if bulletFormat is not None:
         if bulletFormat == '(%s)':
             numbering = odf.text.ListLevelStyleNumber(
                 level='1',
@@ -212,50 +215,55 @@ class ParagraphStyle(directive.RMLDirective):
 
     def adjustAttributeValues(self, style, parentName):
         try:
-            parentElem = self.parent.parent.document.getStyleByName(six.text_type(parentName))
-            paraProps = [x for x in parentElem.childNodes if 'paragraph' in x.tagName][0]
-            textProps = [x for x in parentElem.childNodes if 'text' in x.tagName][0]
-
-            textPropsMapper = {
-                'font-name': 'fontName',
-                'text-transform': 'textTransform',
-                'font-size': 'fontSize'
-            }
-            paraPropsMapper = {
-                # 'margin-right':'rightIndent',
-                # 'line-spacing':,
-                # 'margin-top':'spaceBefore',
-                # 'text-align':'alignment',
-                'orphans':'allowOrphans',
-                # 'margin-left':'leftIndent',
-                # 'margin-bottom':'spaceAfter',
-                'padding':'borderPadding',
-                # 'text-indent':'firstLineIndent',
-                'widows': 'allowWidows'
-            }
-
-            for attrib in textProps.attributes:
-                desiredAttribute = str(attrib[1])
-                value = textProps.attributes[attrib]
-                try:
-                    value = float(value)
-                except:
-                    value = value
-                if desiredAttribute in textPropsMapper:
-                    setattr(style, textPropsMapper[desiredAttribute], value)
-
-            for attrib in paraProps.attributes:
-                desiredAttribute = str(attrib[1])
-                value = paraProps.attributes[attrib]
-                try:
-                    value = float(value)
-                except:
-                    value = value
-                if desiredAttribute in paraPropsMapper:
-                    setattr(style, paraPropsMapper[desiredAttribute], value)
+            parentElem = self.parent.parent.document.getStyleByName(
+                six.text_type(parentName))
+        except AssertionError:
+            # The style doesn't exist in the document
             return style
-        except:
-            return style
+
+        paraProps = [x for x in parentElem.childNodes
+                     if 'paragraph' in x.tagName][0]
+        textProps = [x for x in parentElem.childNodes
+                     if 'text' in x.tagName][0]
+
+        textPropsMapper = {
+            'font-name': 'fontName',
+            'text-transform': 'textTransform',
+            'font-size': 'fontSize'
+        }
+        paraPropsMapper = {
+            # 'margin-right':'rightIndent',
+            # 'line-spacing':,
+            # 'margin-top':'spaceBefore',
+            # 'text-align':'alignment',
+            'orphans': 'allowOrphans',
+            # 'margin-left':'leftIndent',
+            # 'margin-bottom':'spaceAfter',
+            'padding': 'borderPadding',
+            # 'text-indent':'firstLineIndent',
+            'widows': 'allowWidows'
+        }
+
+        for attrib in textProps.attributes:
+            desiredAttribute = str(attrib[1])
+            value = textProps.attributes[attrib]
+            try:
+                value = float(value)
+            except ValueError:
+                value = value
+            if desiredAttribute in textPropsMapper:
+                setattr(style, textPropsMapper[desiredAttribute], value)
+
+        for attrib in paraProps.attributes:
+            desiredAttribute = str(attrib[1])
+            value = paraProps.attributes[attrib]
+            try:
+                value = float(value)
+            except ValueError:
+                value = value
+            if desiredAttribute in paraPropsMapper:
+                setattr(style, paraPropsMapper[desiredAttribute], value)
+        return style
 
     def process(self):
         kwargs = dict(self.getAttributeValues())
@@ -264,17 +272,19 @@ class ParagraphStyle(directive.RMLDirective):
         name = kwargs.pop('name')
         style = copy.deepcopy(parent)
         style.name = name[6:] if name.startswith('style.') else name
-
         document = self.parent.parent.document
         if name == 'Normal':
-            defaultNormalStyle = self.parent.parent.document.getStyleByName(u'Normal')
-            self.parent.parent.document.automaticstyles.removeChild(defaultNormalStyle)
+            defaultNormalStyle = self.parent.parent.document.getStyleByName(
+                u'Normal')
+            self.parent.parent.document.automaticstyles.removeChild(
+                defaultNormalStyle)
 
         style = self.adjustAttributeValues(style, parent.name)
 
         for attrName, attrValue in kwargs.items():
             setattr(style, attrName, attrValue)
-        RegisterParagraphStyle(document, name, style)
+        registerParagraphStyle(document, name, style)
+        attr.getManager(self).styles[name] = style
 
 
 class TableStyleCommand(directive.RMLDirective):
@@ -287,6 +297,8 @@ class TableStyleCommand(directive.RMLDirective):
     paraProps = {}
 
     def process(self):
+        # This is mostly attribute processing, and we don't need conversions
+        # from "36pt" into a numerical value
         attributes = self.element.attrib
         # Loops through all attributes of the blockTableStyle and attempts to
         # implement them using the correct property 'type'
@@ -305,7 +317,8 @@ class TableStyleCommand(directive.RMLDirective):
 
             elif key == 'colorNames':
                 tempVal = attributes[key].split(" ")
-                value = ['#' + reportlab.lib.colors.toColor(x).hexval()[2:] for x in tempVal]
+                value = ['#' + reportlab.lib.colors.toColor(x).hexval()[2:]
+                         for x in tempVal]
             else:
                 value = attributes[key]
 
@@ -412,15 +425,6 @@ class BlockBackground(TableStyleCommand):
     signature = rml_stylesheet.IBlockBackground
     name = 'BACKGROUND'
 
-    # def process(self):
-    #     args = [self.name]
-    # if 'colorsByRow' in self.element.keys():
-    #     args = [BlockRowBackground.name]
-    # elif 'colorsByCol' in self.element.keys():
-    #     args = [BlockColBackground.name]
-    # attributes = self.getAttributeValues(valuesOnly=True)
-    # self.parent.style.add(*args)
-
 
 class BlockRowBackground(TableStyleCommand):
     signature = rml_stylesheet.IBlockRowBackground
@@ -499,6 +503,7 @@ class BlockTableStyle(directive.RMLDirective):
         # Add style to the manager
         manager = attr.getManager(self)
         manager.document.automaticstyles.addElement(self.style)
+        manager.styles[self.styleID] = self.style
 
 
 class ListStyle(directive.RMLDirective):
@@ -508,13 +513,13 @@ class ListStyle(directive.RMLDirective):
         kwargs = dict(self.getAttributeValues())
         parent = kwargs.pop(
             'parent', reportlab.lib.styles.ListStyle(name=None))
-        name = kwargs.pop('name')
         style = copy.deepcopy(parent)
         for name, value in kwargs.items():
             setattr(style, name, value)
-        attributeDict = self.element.attrib
+        attributeDict = dict(self.getAttributeValues())
         document = self.parent.parent.document
         RegisterListStyle(document, attributeDict, style, name)
+        attr.getManager(self).styles[style.name] = style
 
 
 class Stylesheet(directive.RMLDirective):

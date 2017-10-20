@@ -43,10 +43,11 @@ PYTHON_OFFICE_BIN = os.environ.get('PYTHON_OFFICE_BIN')
 ENV_PATH = os.path.abspath('env')
 if os.path.exists(ENV_PATH):
     with open(ENV_PATH) as env_file:
-        PYTHON_OFFICE_BIN=env_file.read().strip()
+        PYTHON_OFFICE_BIN = env_file.read().strip()
 
 NORMALIZE_CONTENT_RES = [re.compile(attrib+'\=\".*?\"')
-    for attrib in ('xml:id', 'text:continue-list')]
+                         for attrib in ('xml:id', 'text:continue-list')]
+
 
 def gs_command(path):
     cmd = (
@@ -134,7 +135,7 @@ class CompareODTTestCase(unittest.TestCase):
             if status:
                 raise ValueError(
                     'Base ODT -> PDF conversion failed: %i\n'
-                    'Command line %s'% (status, ' '.join(command)))
+                    'Command line %s' % (status, ' '.join(command)))
 
         # If the base PDF isn't converted into images, do that now:
         basePNGPath = self._basePath.rsplit('.', 1)[0] + '.[Page-1].png'
@@ -164,8 +165,8 @@ class CompareODTTestCase(unittest.TestCase):
         # Go through all images and ensure their equality
         n = 1
         while True:
-            baseImage = self._basePath[:-4] + '.[Page-%i].png' %n
-            testImage = self._testPath[:-4] + '.[Page-%i].png' %n
+            baseImage = self._basePath[:-4] + '.[Page-%i].png' % n
+            testImage = self._testPath[:-4] + '.[Page-%i].png' % n
             if os.path.exists(baseImage):
                 if not os.path.exists(testImage):
                     raise RuntimeError(
@@ -174,7 +175,7 @@ class CompareODTTestCase(unittest.TestCase):
                 self.assertSameImage(baseImage, testImage)
             else:
                 if os.path.exists(testImage):
-                    raise AssertionError('Unexpected PNG file: %s' % test)
+                    raise AssertionError('Unexpected PNG file: %s' % testImage)
                 break
             n += 1
 

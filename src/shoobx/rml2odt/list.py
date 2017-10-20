@@ -24,12 +24,12 @@ import zope.schema
 
 from odf.style import FontFace, ListLevelProperties, ParagraphProperties
 from odf.style import Style, TextProperties
-from odf.text  import P, H, A, S, List, ListItem, ListStyle, ListLevelStyleBullet
-from odf.text  import ListLevelStyleNumber, ListLevelStyleBullet, Span
+from odf.text import P, H, A, S, ListItem, ListStyle, ListLevelStyleBullet
+from odf.text import List, ListLevelStyleNumber, ListLevelStyleBullet, Span
 from shoobx.rml2odt import flowable
 from shoobx.rml2odt.interfaces import IContentContainer
 from z3c.rml import list as rml_list
-from z3c.rml import stylesheet  as rml_stylesheet
+from z3c.rml import stylesheet as rml_stylesheet
 from z3c.rml import flowable as rml_flowable
 from z3c.rml import attr, directive
 from z3c.rml import stylesheet
@@ -51,26 +51,29 @@ class ListItem(flowable.Flow):
     signature = rml_flowable.IParagraph
     styleAttributes = zope.schema.getFieldNames(stylesheet.IMinimalListStyle)
     ListIDTracker = []
+    attrMapping = {}
 
     def modifyStyle(self):
-        if isinstance(self, UnorderedListItem) and self.element.attrib != {}:
+        attrs = dict(self.getAttributeValues(attrMapping=self.attrMapping))
+        if isinstance(self, UnorderedListItem) and len(attrs) == 0:
             # Retrieve parent's list style name
             parentStyleName = ListBase.createdStylesDict[self.parent.styleID]
             manager = attr.getManager(self)
             newStyleName = manager.getNextStyleName('Sh_Li')
             newStyle = ListStyle(name=newStyleName, consecutivenumbering=False)
-            selectedBullet = self.element.attrib.get('value', 'disc')
+            selectedBullet = attrs.get('value', 'disc')
             bul = ListLevelStyleBullet(
                 level=str(self.parent.level),
                 stylename="Standard",
-                bulletchar=UnorderedListItem.bulletDict.get(selectedBullet,
+                bulletchar=UnorderedListItem.bulletDict.get(
+                    selectedBullet,
                     UnorderedListItem.bulletDict['disc'])
                 )
 
             prop = ListLevelProperties(
                 spacebefore=str(0.25*self.parent.level) + "in",
                 minlabelwidth="0.25in",
-                **fontNameKeyword(self.element.attrib.get('bulletFontName'))
+                **fontNameKeyword(attrs.get('bulletFontName'))
                 )
             bul.addElement(prop)
             newStyle.addElement(bul)
@@ -80,10 +83,16 @@ class ListItem(flowable.Flow):
             return newStyleName
 
         elif isinstance(self, OrderedListItem):
-            if self.parent.element.attrib.get('style', None) == 'Articles':
-                units_ordinal = ['zeroth', 'first', 'second', 'third', 'fourth', 'fifth', 'sixth',
-                'seventh', 'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth', 'thirteenth',
-                'fourteenth', 'fifteenth', 'sixteenth', 'seventeenth','eighteenth', 'nineteenth']
+            # We just want the style name, not the style, and it can be None,
+            # so looking directly at the attributes makes sense here:
+            parent_style = self.parent.element.attrib.get('style')
+            if parent_style == 'Articles':
+                units_ordinal = ['zeroth', 'first', 'second', 'third',
+                                 'fourth', 'fifth', 'sixth', 'seventh',
+                                 'eighth', 'ninth', 'tenth', 'eleventh',
+                                 'twelfth', 'thirteenth', 'fourteenth',
+                                 'fifteenth', 'sixteenth', 'seventeenth',
+                                 'eighteenth', 'nineteenth']
                 manager = attr.getManager(self)
                 newStyleName = manager.getNextStyleName('Articles')
                 regex = '[0-9]+'
@@ -92,49 +101,50 @@ class ListItem(flowable.Flow):
 
                 numStyle = ListLevelStyleNumber(
                     stylename="Numbering_20_Symbols",
-                    numprefix= units_ordinal[index].upper(),
-                    numformat = '',
+                    numprefix=units_ordinal[index].upper(),
+                    numformat='',
                     numsuffix=":",
                     level=str(self.parent.level),
                 )
                 prop = ListLevelProperties(
                     minlabelwidth="1in",
-                    **fontNameKeyword(self.element.attrib.get('bulletFontName'))
+                    **fontNameKeyword(attrs.get('bulletFontName'))
                 )
                 numStyle.addElement(prop)
                 newStyle.addElement(numStyle)
                 manager.document.automaticstyles.addElement(newStyle)
                 return newStyleName
 
-            elif self.parent.element.attrib.get('style', None) == 'TableList':
+            elif parent_style == 'TableList':
                 manager = attr.getManager(self)
                 newStyleName = manager.getNextStyleName('TableList')
                 newStyle = ListStyle(name=newStyleName)
                 numStyle = ListLevelStyleNumber(
                     stylename="Numbering_20_Symbols",
-                    numprefix= self.element.attrib.get('bulletText', 'None').upper(),
-                    numformat = '',
+                    numprefix=attrs.get('bulletText', 'None').upper(),
+                    numformat='',
                     numsuffix="",
                     level=str(self.parent.level),
                 )
                 prop = ListLevelProperties(
-                    spacebefore = "1.5in",
+                    spacebefore="1.5in",
                     minlabelwidth="2in",
-                    **fontNameKeyword(self.element.attrib.get('bulletFontName'))
+                    **fontNameKeyword(attrs.get('bulletFontName'))
                 )
                 numStyle.addElement(prop)
                 newStyle.addElement(numStyle)
                 manager.document.automaticstyles.addElement(newStyle)
                 return newStyleName
             else:
-                return self.parent.element.attrib.get('style', None)
-
+                # We just want the style name, not the style, and it can be
+                # None, so looking directly at the attributes makes sense here:
+                return parent_style
 
     def createList(self):
         # Attempts to retrieve <li> style name, but sets it to it's parent's
         # style name if it doesn't have one
-        styleName = (self.newStyleName if self.newStyleName!=None
-                    else ListBase.createdStylesDict[self.parent.styleID])
+        styleName = (self.newStyleName if self.newStyleName is not None
+                     else ListBase.createdStylesDict[self.parent.styleID])
 
         # Creates a new List ID for every <li> element since each of them
         # creates a new list
@@ -142,43 +152,42 @@ class ListItem(flowable.Flow):
 
         # Keeps track of the list ID of every first <li> element
         # for subsequent <li> element lists to continue from
-        if (self.parent.element.getchildren()[0] == self.element
-                and isinstance(self, OrderedListItem)):
+        if (self.parent.element.getchildren()[0] == self.element and
+           isinstance(self, OrderedListItem)):
             ListItem.ListIDTracker.append(listID)
 
         # Creates a new list for each <li> element and continues from the
         # initial created list by its listID if it's parent is an <ol>
         if isinstance(self, OrderedListItem):
             self.parent.list = odf.text.List(
-                id = listID,
+                id=listID,
                 continuelist=ListItem.ListIDTracker[-1],
                 stylename=styleName
                 )
         else:
-        # Creates a new list for each <li> element if it's parent is a <ul>
+            # Creates a new list for each <li> element if it's parent is a <ul>
             self.parent.list = odf.text.List(
-                id = listID,
+                id=listID,
                 stylename=styleName
                 )
 
         # Removes the last list ID from the tracker list if the current <li>
         # element is the last element
-        if (self.parent.element.getchildren()[-1] == self.element
-                and isinstance(self, OrderedListItem)):
+        if (self.parent.element.getchildren()[-1] == self.element and
+           isinstance(self, OrderedListItem)):
             del(ListItem.ListIDTracker[-1])
 
         # Adds list to the document
         self.parent.contents.addElement(self.parent.list)
 
-
     def _convertSimpleContent(self):
         # Check whether we need to create a para element.
         # 1. Is there text in the element?
         # 2. Are any of the children valid Flow elements?
-        if ((self.element.text is not None and
-             not self.element.text.strip()) or
-             any([sub.tag in flowable.Flow.factories
-                    for sub in self.element])):
+        if (self.element.text is not None and
+           not self.element.text.strip() or
+           any([sub.tag in flowable.Flow.factories
+                for sub in self.element])):
             return
         # Create a <para> element.
         para = lxml.etree.Element('para')
@@ -191,8 +200,6 @@ class ListItem(flowable.Flow):
         # Add paragraph to list item.
         self.element.append(para)
 
-
-
     def convertTableContentToList(self, tableContent):
         # Create new OrderedList and give it a style
         ol = lxml.etree.Element('ol')
@@ -200,7 +207,7 @@ class ListItem(flowable.Flow):
         # Create style for the paragraph being created
         manager = attr.getManager(self)
         newParaStyleName = manager.getNextStyleName('TableListPara')
-        newParaStyle = odf.style.Style(name = newParaStyleName)
+        newParaStyle = odf.style.Style(name=newParaStyleName)
         paraProps = odf.style.ParagraphProperties()
         paraProps.setAttribute('textalign', 'left')
         newParaStyle.appendChild(paraProps)
@@ -217,7 +224,7 @@ class ListItem(flowable.Flow):
             if '\n' in content:
                 regex = "([0-9A-Za-z\t .,]+)"
                 res = re.findall(regex, content)
-                for i in range (len(res)):
+                for i in range(len(res)):
                     if i == 0:
                         para.text = res[i].strip()
                     else:
@@ -231,11 +238,10 @@ class ListItem(flowable.Flow):
         # Add created list to the list of elements for processing
         self.element.append(ol)
 
-
-
     def extractTableContent(self):
         # Isolate all tables which occur within list items
-        tables = [x for x in self.element.getchildren() if x.tag=="blockTable"]
+        tables = [x for x in self.element.getchildren()
+                  if x.tag == "blockTable"]
         for table in tables:
             tableContent = []
             self.element.remove(table)
@@ -244,19 +250,18 @@ class ListItem(flowable.Flow):
             for row in rows:
                 newLine = ""
                 cells = row.getchildren()
-                key = cells[0].text.strip() if cells[0].text.strip() != "" else ""
+                key = cells[0].text.strip()
                 for cell in cells:
                     for para in cell.getchildren():
-                        if para.text != None:
-                            newLine += para.text.strip() if para.text.strip() != "" else ""
+                        if para.text is not None:
+                            newLine += para.text.strip()
                         for br in para.getchildren():
-                            if br.tail != None:
+                            if br.tail is not None:
                                 newLine += '\n'
-                                newLine += br.tail.strip() if br.tail.strip() != "" else ""
+                                newLine += br.tail.strip()
                 value = newLine
                 tableContent.append((key, value))
             self.convertTableContentToList(tableContent)
-
 
     def process(self):
         self.styleID = str(uuid.uuid4())
@@ -266,18 +271,18 @@ class ListItem(flowable.Flow):
         self.createList()
         self.parent.list.addElement(self.item)
         self.contents = self.item
-        try:
-            super(ListItem, self).process()
-        except:
-            # Used to handle case where table appears in list item
-            firstTable = [x for x in self.element.getchildren() if x.tag=="blockTable"][0]
-            firstTableIndex = self.element.getchildren().index(firstTable)
-            self.extractTableContent()
-            children = self.element.getchildren()
-            for i in range (len(children)):
-                if i < firstTableIndex:
-                    self.element.remove(children[i])
-            super(ListItem, self).process()
+        super(ListItem, self).process()
+
+        # Used to handle case where table appears in list item (never happened)
+        # firstTable = [x for x in self.element.getchildren()
+        #               if x.tag=="blockTable"][0]
+        # firstTableIndex = self.element.getchildren().index(firstTable)
+        # self.extractTableContent()
+        # children = self.element.getchildren()
+        # for i in range (len(children)):
+        #     if i < firstTableIndex:
+        #         self.element.remove(children[i])
+        # super(ListItem, self).process()
 
 
 class OrderedListItem(ListItem):
@@ -288,10 +293,10 @@ class UnorderedListItem(ListItem):
     signature = rml_list.IUnorderedListItem
     styleAttributes = ListItem.styleAttributes + ['value']
     bulletDict = {
-    'disc':u'\u25CF',
-    'square':u'\u25A0',
-    'diamond':u'\u25C6',
-    'rarrowhead': u'\u27A4',
+        'disc': u'\u25CF',
+        'square': u'\u25A0',
+        'diamond': u'\u25C6',
+        'rarrowhead': u'\u27A4',
     }
     bulletList = ['disc', 'square', 'diamond', 'rarrowhead']
 
@@ -304,12 +309,13 @@ class createStyle(object):
             bulletList = UnorderedListItem.bulletList
             # listLevel-1 is used because the numbering of levels begins from 1
             # but the indexing of the bullet list starts at 0
-            selectedBullet = bulletList[self.listLevel-1%len(bulletList)]
+            selectedBullet = bulletList[self.listLevel-1 % len(bulletList)]
             # XXX: Perhaps worry about list general bullet specifications
             bullet = ListLevelStyleBullet(
                 level=str(self.listLevel),
                 stylename="Standard",
-                bulletchar=UnorderedListItem.bulletDict.get(selectedBullet,
+                bulletchar=UnorderedListItem.bulletDict.get(
+                    selectedBullet,
                     UnorderedListItem.bulletDict['disc'])
                 )
             prop = ListLevelProperties(
@@ -372,9 +378,12 @@ class ListBase(flowable.Flowable):
     def setStyleExtraProperties(self, existingStyleName):
         # Used when a list already has a style but has extra inline properties
         mapper = {
-        'bulletType': 'numformat'
+            'bulletType': 'numformat'
         }
-        if len(self.element.attrib) <= 1: return
+
+        attrs = dict(self.getAttributeValues(attrMapping=mapper))
+        if len(self.element.attrib) <= 1:
+            return
         manager = attr.getManager(self)
         declaredStyles = manager.document.automaticstyles.childNodes
         for style in declaredStyles:
@@ -384,15 +393,17 @@ class ListBase(flowable.Flowable):
                     for key in self.element.attrib:
                         if key != 'style':
                             value = self.element.attrib[key]
-                            style.childNodes[0].setAttribute(mapper[key], value)
+                            if style.childNodes:
+                                style.childNodes[0].setAttribute(
+                                    mapper[key], value)
 
     def determineStyle(self):
         # Checks if the list was supplied an already declared style
-        existingStyleName = self.element.attrib.get('style', None)
+        existingStyleName = self.element.attrib.get('style')
         # Creates a new style if an existing style does not exist
-        if existingStyleName == None:
+        if existingStyleName is None:
             style = createStyle(self.element.tag, self.level, self.parent,
-                self.element.attrib)
+                                self.element.attrib)
             ListBase.createdStylesDict[self.styleID] = style.name
         else:
             # XXX: Find a way to check if provided styleNames have already

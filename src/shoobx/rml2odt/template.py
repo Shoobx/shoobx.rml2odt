@@ -14,8 +14,8 @@
 """Style Related Element Processing
 """
 import odf
-import six, zope.interface
-
+import six
+import zope.interface
 
 from z3c.rml import directive, attr, interfaces, occurence
 from z3c.rml import template as rml_template
@@ -106,74 +106,3 @@ class Template(directive.RMLDirective):
 
     def process(self):
         self.processSubDirectives()
-
-
-# @zope.interface.implementer(interfaces.ICanvasManager)
-# class PageGraphics(directive.RMLDirective):
-#     signature = rml_template.IPageGraphics
-
-
-# @zope.interface.implementer(interfaces.ICanvasManager)
-# class PageGraphics(directive.RMLDirective):
-#     signature = rml_template.IPageGraphics
-
-# @zope.interface.implementer(rml_template.IFrame)
-# class Frame(directive.RMLDirective):
-#     signature = rml_template.IFrame
-#     args = {}
-#     def process(self):
-#         # #Get the page size
-#         # size = self.parent.pt.pagesize
-#         # if size is None:
-#         #     # size = self.parent.parent.parent.doc.pagesize
-#         # #get the arguments
-#         args = dict(self.getAttributeValues())
-#         #deal with percentages
-#         # for name, dir in (('x1', 0), ('y1', 1), ('width', 0), ('height', 1)):
-#         #     if isinstance(args[name], six.string_types) and args[name].endswith('%'):
-#         #         args[name] = float(args[name][:-1])/100*size[dir]
-#         # frame = self.Frame(**args)
-#         frame = self.args
-#         self.parent.frames.append(frame)
-
-# class PageTemplate(directive.RMLDirective):
-#     signature = rml_template.IPageTemplate
-#     attrMapping = {'autoNextTemplate': 'autoNextPageTemplate'}
-#     factories = {
-#         'frame': Frame,
-#         # 'mergePage': page.MergePageInPageTemplate,
-#         # 'pageGraphics': PageGraphics
-#         }
-
-#     def process(self):
-#         args = dict(self.getAttributeValues(attrMapping=self.attrMapping))
-#         pagesize = args.pop('pagesize', None)
-
-#         self.frames = []
-#         # self.pt = platypus.PageTemplate(**args)
-#         self.pt =
-
-#         self.processSubDirectives()
-#         self.pt.frames = self.frames
-
-#     #     if pagesize:
-#     #         self.pt.pagesize = pagesize
-#     #     self.parent.parent.doc.addPageTemplates(self.pt)
-
-
-
-# class Template(directive.RMLDirective):
-#     signature = rml_template.ITemplate
-#     factories = {
-#         'pageTemplate': PageTemplate,
-#     }
-
-#     def process(self):
-#         args = self.getAttributeValues()
-#         args += self.parent.getAttributeValues(
-#             select=('debug', 'compression', 'invariant'),
-#             attrMapping={'debug': '_debug', 'compression': 'pageCompression'})
-
-#         # args += (('cropMarks',  self.parent.cropMarks),)
-#         self.processSubDirectives()
-

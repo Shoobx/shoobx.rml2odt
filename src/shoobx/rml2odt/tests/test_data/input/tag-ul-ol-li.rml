@@ -29,7 +29,7 @@
         bulletAlign="center"
         bulletFormat="(%s)"
         bulletType="a"
-        
+
         />
     <listStyle
         name="CustomBulletTextList"
@@ -84,7 +84,7 @@
           <li><para>unordered 5</para></li>
           <li><para>unordered 6</para></li>
           <li value="disc" bulletColor="green"><para>unordered 3</para></li>
-          <li value="triangle" bulletColor="yellow"><para>unordered 4</para></li>
+          <li bulletColor="yellow"><para>unordered 4</para></li>
         </ul>
       </li>
       <li><para>Welcome to RML 2</para></li>
@@ -136,7 +136,7 @@
 
     <spacer length="0.5in" />
 
-    <ol style="Ordered" bulletType="1">
+    <ol style="OrderedList" bulletType="1">
       <li><para>One</para></li>
       <li><para>Two</para></li>
       <li><para>Three</para></li>
@@ -144,7 +144,7 @@
 
     <spacer length="0.3in" />
 
-    <ol style="Ordered" bulletType="a">
+    <ol style="OrderedList" bulletType="a">
       <li><para>One</para></li>
       <li><para>Two</para></li>
       <li><para>Three</para></li>
@@ -152,7 +152,7 @@
 
     <spacer length="0.2in" />
 
-    <ol style="Ordered" bulletType="A">
+    <ol style="OrderedList" bulletType="A">
       <li><para>One</para></li>
       <li><para>Two</para></li>
       <li><para>Three</para></li>
@@ -160,7 +160,7 @@
 
     <spacer length="0.5in" />
 
-    <ol style="Ordered" bulletType="i">
+    <ol style="OrderedList" bulletType="i">
       <li><para>One</para></li>
       <li><para>Two</para></li>
       <li><para>Three</para></li>
@@ -168,7 +168,7 @@
 
     <spacer length="1in" />
 
-    <ol style="Ordered" bulletType="I">
+    <ol style="OrderedList" bulletType="I">
       <li><para>One</para></li>
       <li><para>Two</para></li>
       <li><para>Three</para></li>
@@ -176,7 +176,7 @@
 
     <spacer length="1.5in" />
 
-    <ol style="Ordered" bulletType="l">
+    <ol style="OrderedList" bulletType="l">
       <li><para>One</para></li>
       <li><para>Two</para></li>
       <li><para>Three</para></li>
@@ -184,7 +184,7 @@
 
     <spacer length="0.5in" />
 
-    <ol style="Ordered" bulletType="L">
+    <ol style="OrderedList" bulletType="L">
       <li><para>One</para></li>
       <li><para>Two</para></li>
       <li><para>Three</para></li>
@@ -192,7 +192,7 @@
 
     <spacer length="1in" />
 
-    <ol style="Ordered" bulletType="o">
+    <ol style="OrderedList" bulletType="o">
       <li><para>One</para></li>
       <li><para>Two</para></li>
       <li><para>Three</para></li>
@@ -200,7 +200,7 @@
 
     <spacer length="0.1in" />
 
-    <ol style="Ordered" bulletType="O">
+    <ol style="OrderedList" bulletType="O">
       <li><para>One</para></li>
       <li><para>Two</para></li>
       <li><para>Three</para></li>
@@ -208,7 +208,7 @@
 
     <spacer length="0.05in" />
 
-    <ol style="Ordered" bulletType="r">
+    <ol style="OrderedList" bulletType="r">
       <li><para>One</para></li>
       <li><para>Two</para></li>
       <li><para>Three</para></li>
@@ -216,7 +216,7 @@
 
     <spacer length="0.5in" />
 
-    <ol style="Ordered" bulletType="R">
+    <ol style="OrderedList" bulletType="R">
       <li><para>One</para></li>
       <li><para>Two</para></li>
       <li><para>Three</para></li>

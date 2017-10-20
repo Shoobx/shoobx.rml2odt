@@ -33,18 +33,12 @@ from shoobx.rml2odt import list, stylesheet, table, template
 
 
 RMLSTYLE_HANDLERS = {
-    styles.ParagraphStyle: stylesheet.RegisterParagraphStyle
+    styles.ParagraphStyle: stylesheet.registerParagraphStyle
 }
+
 
 class ColorDefinition(directive.RMLDirective):
     signature = rml_document.IColorDefinition
-
-    def process(self):
-        kwargs = dict(self.getAttributeValues())
-        id = kwargs.pop('id')
-        colorVal = self.element.attrib.get('value')
-        if colorVal.startswith('#'):
-            setattr(reportlab.lib.colors, id, reportlab.lib.colors.HexColor(colorVal))
 
 
 class RegisterTTFont(directive.RMLDirective):
@@ -53,13 +47,13 @@ class RegisterTTFont(directive.RMLDirective):
     def process(self):
         fontName, location = self.getAttributeValues(valuesOnly=True)
 
-        font = FontFace(name=fontName,fontfamily=fontName,
+        font = FontFace(name=fontName, fontfamily=fontName,
                         fontfamilygeneric='modern', fontpitch='variable')
 
         source = FontFaceSrc()
-        urn = FontFaceUri(href = location, actuate = 'onRequest', type='simple')
+        urn = FontFaceUri(href=location, actuate='onRequest', type='simple')
         source.appendChild(urn)
-        defSource = DefinitionSrc(href = location, actuate = 'onRequest')
+        defSource = DefinitionSrc(href=location, actuate='onRequest')
         font.appendChild(source)
         # font.appendChild(defSource)
         self.parent.parent.document.fontfacedecls.addElement(font)
@@ -81,12 +75,11 @@ class DocInit(directive.RMLDirective):
         # 'startIndex': StartIndex,
         }
 
-    viewerOptions = dict(
-        (option[0].lower()+option[1:], option)
-        for option in ['HideToolbar', 'HideMenubar', 'HideWindowUI', 'FitWindow',
-                       'CenterWindow', 'DisplayDocTitle',
-                       'NonFullScreenPageMode', 'Direction', 'ViewArea',
-                       'ViewClip', 'PrintArea', 'PrintClip', 'PrintScaling'])
+    viewerOptions = {option[0].lower()+option[1:]: option for option in
+                     ['HideToolbar', 'HideMenubar', 'HideWindowUI',
+                      'FitWindow', 'CenterWindow', 'DisplayDocTitle',
+                      'NonFullScreenPageMode', 'Direction', 'ViewArea',
+                      'ViewClip', 'PrintArea', 'PrintClip', 'PrintScaling']}
 
     def process(self):
         kwargs = dict(self.getAttributeValues())

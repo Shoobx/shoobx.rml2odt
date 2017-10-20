@@ -1,4 +1,4 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 ##############################################################################
 #
 # Copyright (c) 2017 Shoobx, Inc.
@@ -34,11 +34,9 @@ from z3c.rml import flowable as rml_flowable
 from z3c.rml import template as rml_template
 from shoobx.rml2odt import stylesheet
 
-# from z3c.rml flowable.py file
 from z3c.rml import attr, directive, interfaces, platypus
 from shoobx.rml2odt.interfaces import IContentContainer
 
-DEFAULT_IMAGE_UNIT = 'pt'
 
 def pygments2xpre(s, language="python"):
     "Return markup suitable for XPreformatted"
@@ -54,16 +52,16 @@ def pygments2xpre(s, language="python"):
 
     h = HtmlFormatter()
     out = six.StringIO()
-    highlight(s,l,h,out)
+    highlight(s, l, h, out)
     styles = [(cls, style.split(';')[0].split(':')[1].strip())
-                for cls, (style, ttype, level) in h.class2style.items()
-                if cls and style and style.startswith('color:')]
+              for cls, (style, ttype, level) in h.class2style.items()
+              if cls and style and style.startswith('color:')]
     from reportlab.lib.pygments2xpre import _2xpre
-    return _2xpre(out.getvalue(),styles)
+    return _2xpre(out.getvalue(), styles)
 
 
 class Flowable(directive.RMLDirective):
-    klass=None
+    klass = None
     attrMapping = None
 
     @property
@@ -75,118 +73,74 @@ class Flowable(directive.RMLDirective):
             parent = parent.parent
         return parent.contents
 
-    def process(self):
-        args = dict(self.getAttributeValues(attrMapping=self.attrMapping))
+    def inputImageIntoDoc(self):
+        self.frame = odf.draw.Frame(
+            id=self.frameName,
+            width='%spt' % self.frameWidth,
+            height='%spt' % self.frameHeight,
+            anchortype='as-char',
+            )
+        self.frame.appendChild(self.image)
+        self.contents.addElement(self.frame)
 
+    def inputImageIntoCell(self):
+        manager = attr.getManager(self)
+        paraStyleName = manager.getNextStyleName('ImagePara')
+        paraStyle = odf.style.Style(
+            family='paragraph',
+            name=paraStyleName,
+            parentstylename="Standard"
+            )
+        paraProps = odf.style.ParagraphProperties(
+            textalign=self.align,
+            justifysingleword='false'
+            )
+        paraStyle.appendChild(paraProps)
+        manager.document.automaticstyles.addElement(paraStyle)
+        para = odf.text.P(stylename=paraStyleName)
 
-def inputImageIntoDoc(self):
-    self.frame = odf.draw.Frame(
-        id = self.frameName,
-        width = self.frameWidth+DEFAULT_IMAGE_UNIT,
-        height = self.frameHeight+DEFAULT_IMAGE_UNIT,
-        anchortype= 'as-char',
+        firstFrameID = manager.getNextStyleName('Frame')
+        firstFrameStyleName = manager.getNextStyleName('FrameStyle')
+        firstFrameStyle = odf.style.Style(
+            family="graphic",
+            name=firstFrameStyleName,
+            parentstylename="Frame"
+            )
+        graphicsProperties = odf.style.GraphicProperties(
+            border="0.06pt",
+            padding="0in",
+            shadow="none",
+            verticalpos="top",
+            verticalrel="baseline"
+            )
+        firstFrameStyle.appendChild(graphicsProperties)
+        manager.document.automaticstyles.addElement(firstFrameStyle)
+        firstFrame = odf.draw.Frame(
+            name=firstFrameID,
+            stylename=firstFrameStyle,
+            width='%spt' % self.frameWidth,
+            height='%spt' % self.frameHeight,
+            anchortype='as-char',
+            zindex='0'
+            )
+        textBox = odf.draw.TextBox()
+        para2 = odf.text.P()
+        secondFrameID = manager.getNextStyleName('InternalFrame')
+        secondFrame = odf.draw.Frame(
+            id=secondFrameID,
+            width='%spt' % self.frameWidth,
+            height='%spt' % self.frameHeight,
+            anchortype='char'
         )
-    self.frame.appendChild(self.image)
-    self.contents.addElement(self.frame)
-
-
-def inputImageIntoCell(self):
-    manager = attr.getManager(self)
-    paraStyleName = manager.getNextStyleName('ImagePara')
-    paraStyle = odf.style.Style(
-        family = 'paragraph',
-        name = paraStyleName,
-        parentstylename = "Standard"
-        )
-    paraProps = odf.style.ParagraphProperties(
-        textalign = self.align,
-        justifysingleword = 'false'
-        )
-    paraStyle.appendChild(paraProps)
-    manager.document.automaticstyles.addElement(paraStyle)
-    para = odf.text.P(stylename = paraStyleName)
-
-    firstFrameID = manager.getNextStyleName('Frame')
-    firstFrameStyleName = manager.getNextStyleName('FrameStyle')
-    firstFrameStyle = odf.style.Style(
-        family = "graphic",
-        name = firstFrameStyleName,
-        parentstylename = "Frame"
-        )
-    graphicsProperties = odf.style.GraphicProperties(
-        border="0.06pt",
-        padding = "0in",
-        shadow = "none",
-        verticalpos = "top",
-        verticalrel = "baseline"
-        )
-    firstFrameStyle.appendChild(graphicsProperties)
-    manager.document.automaticstyles.addElement(firstFrameStyle)
-    firstFrame = odf.draw.Frame(
-        name = firstFrameID,
-        stylename = firstFrameStyle,
-        width = self.frameWidth + DEFAULT_IMAGE_UNIT,
-        height = self.frameHeight + DEFAULT_IMAGE_UNIT,
-        anchortype = 'as-char',
-        zindex = '0'
-        )
-    textBox = odf.draw.TextBox()
-    para2 = odf.text.P()
-    secondFrameID = manager.getNextStyleName('InternalFrame')
-    secondFrame = odf.draw.Frame(
-        id = secondFrameID,
-        width = self.frameWidth + DEFAULT_IMAGE_UNIT,
-        height = self.frameHeight + DEFAULT_IMAGE_UNIT,
-        anchortype = 'char'
-    )
-    secondFrame.appendChild(self.image)
-    para2.appendChild(secondFrame)
-    textBox.appendChild(para2)
-    firstFrame.appendChild(textBox)
-    para.appendChild(firstFrame)
-    self.contents.setAttribute('numbercolumnsspanned', '2')
-    if isinstance(self, BarCodeFlowable):
-        self.contents.setAttribute('numberrowsspanned', '2')
-    self.contents.addElement(para)
-
-
-def getImageDimensions(self):
-    attributes = self.element.attrib
-    tempFrameWidth = attributes['width']
-    tempFrameHeight = attributes['height']
-    try:
-        tempRowHeight = self.parent.parent.element.attrib['rowHeight']
-    except:
-        tempRowHeight = tempFrameHeight
-
-    regex = '[0-9]+'
-    if not tempFrameHeight.isdigit():
-        tempFrameHeight = int(re.findall(regex, tempFrameHeight)[0])
-    else:
-        tempFrameHeight = int(tempFrameHeight)
-
-    if not tempFrameWidth.isdigit():
-        tempFrameWidth = int(re.findall(regex, tempFrameWidth)[0])
-    else:
-        tempFrameWidth = int(tempFrameWidth)
-
-    if not tempRowHeight.isdigit():
-        tempRowHeight = int(re.findall(regex, tempRowHeight)[0])
-    else:
-        tempRowHeight = int(tempRowHeight)
-
-    if tempRowHeight < 15: tempRowHeight *= 7
-    # if tempFrameHeight <50: tempFrameHeight *= 1.2
-
-    # The 0.8 accounts for the padding
-    frameHeight = (min(tempFrameHeight, tempRowHeight)) * 0.8
-    ratio = float(frameHeight) / tempFrameHeight
-
-    frameWidth = tempFrameWidth * ratio
-
-    finalFrameHeight = str(frameHeight)
-    finalFrameWidth = str(frameWidth)
-    return finalFrameWidth, finalFrameHeight
+        secondFrame.appendChild(self.image)
+        para2.appendChild(secondFrame)
+        textBox.appendChild(para2)
+        firstFrame.appendChild(textBox)
+        para.appendChild(firstFrame)
+        self.contents.setAttribute('numbercolumnsspanned', '2')
+        if isinstance(self, BarCodeFlowable):
+            self.contents.setAttribute('numberrowsspanned', '2')
+        self.contents.addElement(para)
 
 
 class Image(Flowable):
@@ -194,30 +148,32 @@ class Image(Flowable):
     klass = reportlab.platypus.flowables.Image
     attrMapping = {'src': 'filename', 'align': 'hAlign'}
 
-
     def process(self):
-        attributes = self.element.attrib
-        breakPoint = attributes['src'].find(',')
-        imageString = attributes['src'][breakPoint + 1:]
-        metaData = attributes['src'][:breakPoint]
-        fileType = metaData[metaData.find('/') + 1 : metaData.find(';')]
+        # Filetype isn't preserved by getAttributeValues, so we pick it
+        # directly from the element.
+        binary = self.element.attrib['src']
+        metaData, imageString = binary.split(',', 1)
+        fileType = metaData[metaData.find('/') + 1:metaData.find(';')]
+
         manager = attr.getManager(self)
-        self.align = attributes.get('align', 'left')
+        attrs = dict(self.getAttributeValues(attrMapping=self.attrMapping))
+        self.align = attrs.get('align', 'left')
         self.frameName = manager.getNextStyleName('ImageFrame')
-        self.frameWidth, self.frameHeight = getImageDimensions(self)
+        self.frameWidth = attrs['width']
+        self.frameHeight = attrs['height']
         self.binaryImage = odf.office.BinaryData()
         self.binaryImage.addText(imageString)
 
         self.image = odf.draw.Image(
-            type = 'simple',
-            show = 'embed',
-            actuate = 'onLoad')
+            type='simple',
+            show='embed',
+            actuate='onLoad')
         self.image.appendChild(self.binaryImage)
 
         if self.parent.element.tag != 'td':
-            inputImageIntoDoc(self)
+            self.inputImageIntoDoc()
         else:
-            inputImageIntoCell(self)
+            self.inputImageIntoCell()
 
 
 class BarCodeFlowable(Flowable):
@@ -226,28 +182,29 @@ class BarCodeFlowable(Flowable):
     attrMapping = {'code': 'codeName'}
 
     def process(self):
-        attributes = self.element.attrib
-        codeType = attributes.get('code', None)
-        url = attributes.get('value', 'https://www.shoobx.com')
+        attrs = dict(self.getAttributeValues(attrMapping=self.attrMapping))
+        codeType = attrs.get('code')
+        url = attrs.get('value', 'https://www.shoobx.com')
         if codeType == 'QR':
             qrCode = pyqrcode.create(url)
             qrAscii = qrCode.png_as_base64_str(scale=5)
             manager = attr.getManager(self)
-            self.align = attributes.get('alignment', 'right').lower()
+            self.align = attrs.get('alignment', 'right').lower()
             self.frameName = manager.getNextStyleName('BarcodeFrame')
-            self.frameWidth, self.frameHeight = getImageDimensions(self)
+            self.frameWidth = attrs['width']
+            self.frameHeight = attrs['height']
             self.binaryImage = odf.office.BinaryData()
             self.binaryImage.addText(qrAscii)
             self.image = odf.draw.Image(
-                type = 'simple',
-                show = 'embed',
-                actuate = 'onLoad')
+                type='simple',
+                show='embed',
+                actuate='onLoad')
             self.image.appendChild(self.binaryImage)
 
             if self.parent.element.tag != 'td':
-                inputImageIntoDoc(self)
+                self.inputImageIntoDoc()
             else:
-                inputImageIntoCell(self)
+                self.inputImageIntoCell()
 
 
 class Spacer(Flowable):
@@ -256,14 +213,13 @@ class Spacer(Flowable):
     attrMapping = {'length': 'height'}
 
     def process(self):
+        attrs = dict(self.getAttributeValues(attrMapping=self.attrMapping))
         manager = attr.getManager(self)
         spacerStyleName = manager.getNextStyleName('Sp')
         spacer = odf.style.Style(name=spacerStyleName, family='paragraph')
         prop = odf.style.ParagraphProperties()
-        length = self.element.attrib.get('length')
-        unit = length[-2:]
-        floatLength = float(length[:-2])/2
-        prop.setAttribute("linespacing", str(floatLength)+ unit)
+        length = attrs['height']
+        prop.setAttribute("linespacing", '%spt' % (length/2.0))
         spacer.addElement(prop)
         self.parent.parent.document.automaticstyles.addElement(spacer)
         self.odtParagraph = odf.text.P()
@@ -425,21 +381,15 @@ class Break(SubParagraphDirective):
     def process(self):
         span = self.paragraph.odtParagraph.addElement(odf.text.LineBreak())
         manager = attr.getManager(self)
-        if Break.createdStyle == False:
+        if not Break.createdStyle:
             odtStyle = odf.style.Style(name='BreakJustify', family='paragraph')
             manager.document.automaticstyles.addElement(odtStyle)
             paraProps = odf.style.ParagraphProperties()
             paraProps.setAttribute('textalign', 'center')
             odtStyle.appendChild(paraProps)
-            Break.createdStyle == True
-
-        # I don't know what this is supposed to do, but what it does is that
-        # it overwrites the paragraph style if you have a line break in it.
-        # //Lennart
-        # self.paragraph.odtParagraph.setAttribute('stylename', 'BreakJustify')
+            Break.createdStyle = True
 
         if self.element.tail:
-            # XXX: ADDED .strip()
             self.paragraph.addSpan(self.element.tail.strip())
 
 
@@ -524,7 +474,7 @@ IComplexSubParagraphDirective.setTaggedValue(
      occurence.ZeroOrMore('sub', ISub),
      occurence.ZeroOrMore('a', IAnchor),
      occurence.ZeroOrMore('br', rml_flowable.IBreak),
-    )
+     )
 )
 
 
@@ -553,7 +503,7 @@ class Paragraph(Flowable):
     underline = None
     strike = None
     fontName = None
-    fontSize  = None
+    fontSize = None
     fontColor = None
     superscript = None
     subscript = None
@@ -608,39 +558,43 @@ class Paragraph(Flowable):
         return span
 
     def determineStyle(self):
-        try:
-            styleName = self.element.attrib.pop('style')
-            if len(self.element.attrib) > 0:
-                manager = attr.getManager(self)
-                if styleName[-1].isdigit():
-                    newStyleName = manager.getNextStyleName(styleName+'.')
-                else:
-                    newStyleName = manager.getNextStyleName(styleName)
+        if 'style' not in self.element.attrib:
+            return self.defaultStyle
 
-                style = manager.document.getStyleByName(six.text_type(styleName))
-                newStyle = copy.deepcopy(style)
-                newStyle.setAttribute('name', newStyleName)
-                newStyle.setAttribute('displayname', newStyleName)
+        # The style name may not exist, access attrib directly
+        styleName = self.element.attrib.pop('style')
+        if len(self.element.attrib) > 0:
+            # XXX! This is untested magic code to rename the 'alignments'
+            # attribute to 'textalign'. It was a horrid mess and I rewrote
+            # it, but I don't know if it's actually needed or good. //Lennart
 
-                mapper = {'alignment':'textalign'}
+            # Make a copy of the current style
+            style = manager.document.getStyleByName(six.text_type(styleName))
+            newStyle = copy.deepcopy(style)
 
-                for key in self.element.attrib:
+            # Rename that copy
+            manager = attr.getManager(self)
+            if styleName[-1].isdigit():
+                newStyleName = manager.getNextStyleName(styleName+'.')
+            else:
+                newStyleName = manager.getNextStyleName(styleName)
+
+            newStyle.setAttribute('name', newStyleName)
+            newStyle.setAttribute('displayname', newStyleName)
+
+            mapper = {'alignment': 'textalign'}
+            for key in mapper:
+                if key in self.element.attrib:
                     value = self.element.attrib[key]
 
-                    try:
-                        newStyle.childNodes[0].setAttribute(mapper[key], value)
-                    except:
-                        try:
-                            newStyle.childNodes[1].setAttribute(mapper[key], value)
-                        except:
-                            continue
-                manager.document.automaticstyles.addElement(newStyle)
-                return newStyleName
-            else:
-                self.element.attrib['style'] = styleName
-                return styleName
-        except:
-            return self.defaultStyle
+                    for node in newStyle.childNodes:
+                        node.setAttribute(mapper[key], value)
+
+            manager.document.automaticstyles.addElement(newStyle)
+            return newStyleName
+        else:
+            self.element.attrib['style'] = styleName
+            return styleName
 
     def process(self):
         self.odtParagraph = odf.text.P()
@@ -728,21 +682,11 @@ class Link(Flowable):
             newPara = lxml.etree.Element('para')
             newPara.text = self.element.text
             self.element.text = None
-            for subElement in tuple(self.element): newPara.append(subElement)
+            for subElement in tuple(self.element):
+                newPara.append(subElement)
             self.element.append(newPara)
         flow = Flow(self.element, self.parent)
         flow.process()
-
-
-
-# class pageNumber(Flowable):
-#     signature = rml_flowable.IPageNumber
-
-#     def process(self):
-#         self.para = odf.text.P()
-#         self.para.addText("Page ")
-#         self.para.appendChild(odf.text.PageNumber())
-#         self.contents.addElement(self.para)
 
 
 class NextPage(Flowable):
@@ -795,10 +739,10 @@ class Flow(directive.RMLDirective):
         'h5': Heading5,
         'h6': Heading6,
         'title': Title,
-        'hr':HorizontalRow,
+        'hr': HorizontalRow,
         'link': Link,
 
-        #Page-Level Flowables
+        # Page-Level Flowables
         'nextPage': NextPage,
         'pageNumber': PageNumber,
         'spacer': Spacer,
@@ -815,5 +759,6 @@ class Flow(directive.RMLDirective):
 
     def process(self):
         if self.element.tag == 'story':
-            self.parent.document.body.childNodes[0].setAttribute('usesoftpagebreaks', 'true')
+            self.parent.document.body.childNodes[0].setAttribute(
+                'usesoftpagebreaks', 'true')
         self.processSubDirectives()

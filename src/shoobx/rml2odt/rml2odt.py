@@ -11,10 +11,7 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
-"""RML to ODT Converter
-"""
-
-
+"""RML to ODT Converter"""
 import argparse
 import lxml.etree
 import os

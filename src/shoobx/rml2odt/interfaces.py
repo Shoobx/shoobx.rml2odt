@@ -15,6 +15,7 @@
 """
 import zope.interface
 
+
 class IRML2ODT(zope.interface.Interface):
     """This is the main public API of shoobx.rml2odt"""
 
@@ -33,8 +34,7 @@ class IRML2ODT(zope.interface.Interface):
 
 
 class IContentContainer(zope.interface.Interface):
-    """Content Container
-    """
+    """Content Container"""
 
     contents = zope.interface.Attribute(
         'Container to which content, such as paragraphs and tables can be '

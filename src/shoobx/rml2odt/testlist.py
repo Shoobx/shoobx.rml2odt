@@ -41,7 +41,7 @@ itemList = (
     ">>Russian Blue",
     ">>Siamese",
     ">>>Seal Point",
-     ">>>Flame Point",
+    ">>>Flame Point",
     "Dogs",
     ">Retrievers",
     ">>Golden Retriever",
@@ -51,20 +51,21 @@ itemList = (
     ">>Standard Poodle"
 )
 
+
 def createList(itemList, indentDelim, styleName):
     listArray = []
     listItem = ListItem()
     level = 0
     lastLevel = 0
 
-    for levCount in range(0,10):
+    for levCount in range(0, 10):
         listArray.append(None)
     listArray[0] = List()
 
     for item in itemList:
-        level = 0;
+        level = 0
         while (level < len(item) and item[level] == indentDelim):
-            level +=1
+            level += 1
         item = item[level:]
 
         if (level > lastLevel):    # open the sub-levels
@@ -72,46 +73,49 @@ def createList(itemList, indentDelim, styleName):
                 listArray[levCount] = List()
         elif (level < lastLevel):    # close off the intervening lists
             for levCount in range(lastLevel, level, -1):
-                listArray[levCount-1].childNodes[-1].addElement(listArray[levCount])
+                listArray[levCount-1].childNodes[-1].addElement(
+                    listArray[levCount])
 
         # now that we are at the proper level, add the item.
-        listArray[level].setAttribute( 'stylename', styleName );
+        listArray[level].setAttribute('stylename', styleName)
         listItem = ListItem()
-        para = P(text=item);
-        listItem.addElement(para);
-        listArray[level].addElement(listItem);
-        lastLevel = level;
+        para = P(text=item)
+        listItem.addElement(para)
+        listArray[level].addElement(listItem)
+        lastLevel = level
 
     # close off any remaining open lists
     for levCount in range(lastLevel, 0, -1):
         listArray[levCount-1].childNodes[-1].addElement(listArray[levCount])
     return listArray[0]
 
+
 textdoc = OpenDocumentText()
 
 s = textdoc.styles
-listStyle = easyliststyle.styleFromString('bullet1', bulletListSpec,
-    ',', '0.6cm', easyliststyle.SHOW_ONE_LEVEL)
+listStyle = easyliststyle.styleFromString(
+    'bullet1', bulletListSpec, ',',
+    '0.6cm', easyliststyle.SHOW_ONE_LEVEL)
 s.addElement(listStyle)
 
 listElement = createList(itemList, '>', 'bullet1')
 textdoc.text.addElement(listElement)
 
-para = P(text="-----------------------");
+para = P(text="-----------------------")
 textdoc.text.addElement(para)
 
-listStyle = easyliststyle.styleFromList('num1', numberListSpecArray,
-    '0.25in', easyliststyle.SHOW_ALL_LEVELS)
+listStyle = easyliststyle.styleFromList('num1', numberListSpecArray, '0.25in',
+                                        easyliststyle.SHOW_ALL_LEVELS)
 s.addElement(listStyle)
 
 listElement = createList(itemList, '>', 'num1')
 textdoc.text.addElement(listElement)
 
-para = P(text="-----------------------");
+para = P(text="-----------------------")
 textdoc.text.addElement(para)
 
-listStyle = easyliststyle.styleFromString('mix1', mixedListSpec,
-    '!', '0.8cm', easyliststyle.SHOW_ONE_LEVEL)
+listStyle = easyliststyle.styleFromString('mix1', mixedListSpec, '!', '0.8cm',
+                                          easyliststyle.SHOW_ONE_LEVEL)
 s.addElement(listStyle)
 
 listElement = createList(itemList, '>', 'mix1')

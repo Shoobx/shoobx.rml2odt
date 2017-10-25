@@ -9,7 +9,7 @@
 
   <story>
     <title><font face="Courier">&lt;blockTable&gt;</font> Tag Demo</title>
-    <blockTable colWidths="50% 15% 15% 20%" rowHeights="25in 25cm 25cm">
+    <blockTable colWidths="50% 15% 15% 20%" rowHeights="25pt 25mm 2.5in">
       <tr>
         <td>Evaluation Criterium</td>
         <td>Java</td>

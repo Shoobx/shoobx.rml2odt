@@ -15,6 +15,7 @@
 """
 from z3c.rml import directive
 
+
 class NotImplementedDirective(directive.RMLDirective):
 
     def process(self):

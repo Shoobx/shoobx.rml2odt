@@ -92,6 +92,6 @@ def main(args=None):
         pargs = parser.parse_args()
         args = (
             pargs.xmlInputName, pargs.outputFileName,
-            pargs.outDir, pargs.dtdDir)
+            pargs.outDir,)
 
     go(*args)

@@ -569,11 +569,11 @@ class Paragraph(Flowable):
             # it, but I don't know if it's actually needed or good. //Lennart
 
             # Make a copy of the current style
+            manager = attr.getManager(self)
             style = manager.document.getStyleByName(six.text_type(styleName))
             newStyle = copy.deepcopy(style)
 
             # Rename that copy
-            manager = attr.getManager(self)
             if styleName[-1].isdigit():
                 newStyleName = manager.getNextStyleName(styleName+'.')
             else:
@@ -588,7 +588,8 @@ class Paragraph(Flowable):
                     value = self.element.attrib[key]
 
                     for node in newStyle.childNodes:
-                        node.setAttribute(mapper[key], value)
+                        if node.tagName == u'style:paragraph-properties':
+                            node.setAttribute(mapper[key], value)
 
             manager.document.automaticstyles.addElement(newStyle)
             return newStyleName

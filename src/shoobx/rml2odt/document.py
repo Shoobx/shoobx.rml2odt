@@ -25,7 +25,7 @@ from odf.opendocument import OpenDocumentText
 from odf.style import FontFace
 from odf.svg import FontFaceSrc
 from reportlab.pdfbase import pdfmetrics, ttfonts, cidfonts
-from z3c.rml import directive, canvas
+from z3c.rml import attr, directive, canvas
 from z3c.rml import document as rml_document, interfaces as rml_interfaces
 
 # Import modules, so their directives get registered.
@@ -39,6 +39,11 @@ RMLSTYLE_HANDLERS = {
 
 class ColorDefinition(directive.RMLDirective):
     signature = rml_document.IColorDefinition
+
+    def process(self):
+        attrs = dict(self.getAttributeValues())
+        manager = attr.getManager(self)
+        manager.colors[attrs['id']] = attrs['value']
 
 
 class RegisterTTFont(directive.RMLDirective):

@@ -52,6 +52,7 @@ FONT_MAP = {
     'helvetica': 'Arial',
     'times': 'Times New Roman',
     'courier': 'Courier',
+    'garamond': 'Adobe Garamond Pro',
 }
 
 

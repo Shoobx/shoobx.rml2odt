@@ -15,6 +15,9 @@
       <blockAlignment
           start="0,0" stop="-1,1" value="right"
           doc:example="" />
+      <blockValign
+          start="0,0" stop="2,2" value="top"
+          doc:example="" />
       <blockBackground start="1,1" stop="-2,-2" colorName="purple"
           doc:example="" />
       <blockRightPadding start="0,0" stop="-1,1" length="0.1in"
@@ -32,10 +35,6 @@
           doc:example="" />
     </blockTableStyle>
 
-
-
-
-
     <blockTableStyle id="table2">
       <blockRowBackground
           start="3,0" stop="-1,-1" colorNames="blue yellow"
@@ -44,10 +43,6 @@
           start="0,0" stop="-1,1" length="0.18in"
           doc:example="" />
     </blockTableStyle>
-
-
-
-
 
     <blockTableStyle id="table3">
       <blockColBackground
@@ -62,17 +57,10 @@
           doc:example="" />
     </blockTableStyle>
 
-
-
-
     <blockTableStyle id="custom-table" doc:example="">
       <blockFont
           start="0,0" stop="-1,-1" name="Courier-Bold" size="10" />
     </blockTableStyle>
-
-
-
-
 
   </stylesheet>
 

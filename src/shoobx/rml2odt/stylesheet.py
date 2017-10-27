@@ -298,92 +298,37 @@ class TableStyleCommand(directive.RMLDirective):
     paraProps = {}
 
     def process(self):
-        # This is mostly attribute processing, and we don't need conversions
-        # from "36pt" into a numerical value
-        attributes = self.element.attrib
-        # Loops through all attributes of the blockTableStyle and attempts to
-        # implement them using the correct property 'type'
-        for key in attributes:
-            if key == "colorName" and isinstance(self, BlockTextColor):
-                value = '#' + reportlab.lib.colors.toColor(
-                    attributes[key]).hexval()[2:]
-                self.parent.tableProps.setAttribute(
-                    'backgroundcolor', [value] + ['text'])
-
-            elif key == 'colorName' and not isinstance(self, BlockTextColor):
-                value = '#' + reportlab.lib.colors.toColor(
-                    attributes[key]).hexval()[2:]
-                self.parent.cellProps.setAttribute(
-                    'backgroundcolor', [value] + ['back'])
-
-            elif key == 'colorNames':
-                tempVal = attributes[key].split(" ")
-                value = ['#' + reportlab.lib.colors.toColor(x).hexval()[2:]
-                         for x in tempVal]
-            else:
-                value = attributes[key]
-
-            # Takes care of 'length' belonging to different properties
-            if key == 'length':
-                if isinstance(self, BlockLeftPadding):
-                    self.parent.cellProps.setAttribute('paddingleft', value)
-                elif isinstance(self, BlockRightPadding):
-                    self.parent.cellProps.setAttribute('paddingright', value)
-                elif isinstance(self, BlockTopPadding):
-                    self.parent.cellProps.setAttribute('paddingtop', value)
-                elif isinstance(self, BlockBottomPadding):
-                    self.parent.cellProps.setAttribute('paddingbottom', value)
-                elif isinstance(self, BlockLeading):
-                    self.parent.paraProps.setAttribute('linespacing', value)
-
-            if key in TableStyleCommand.colProps:
-                self.parent.colProps.setAttribute(
-                    TableStyleCommand.colProps[key], value)
-
-            elif key in TableStyleCommand.textProps:
-                if key == 'name':
-                    manager = attr.getManager(self)
-                    odf_font_name = rmlFont2odfFont(value)
-                    manager.document.fontfacedecls.addElement(
-                        odf.style.FontFace(
-                            name=odf_font_name,
-                            fontfamily=odf_font_name))
-                self.parent.textProps.setAttribute(
-                    TableStyleCommand.textProps[key], value)
-
-            elif key in TableStyleCommand.cellProps:
-                self.parent.cellProps.setAttribute(
-                    TableStyleCommand.cellProps[key], value)
-
-            elif key in TableStyleCommand.paraProps:
-                self.parent.paraProps.setAttribute(
-                    TableStyleCommand.paraProps[key], value)
-
-            elif key in TableStyleCommand.tableProps:
-                self.parent.tableProps.setAttribute(
-                    TableStyleCommand.tableProps[key], value)
-
-            elif key in TableStyleCommand.rowProps:
-                # TableColProperties do not support background colors at all
-                # TableRowProperties is being used to process both alternating
-                # rows and cols colors. Appending either 'row' or 'col' is used
-                # to distinguish between alternating colored rows or cols
-                if isinstance(self, BlockColBackground):
-                    self.parent.rowProps.setAttribute(
-                        TableStyleCommand.rowProps[key], value + ['col'])
-                elif isinstance(self, BlockRowBackground):
-                    self.parent.rowProps.setAttribute(
-                        TableStyleCommand.rowProps[key], value + ['row'])
-            else:
-                pass
+        raise NotImplementedError(self.__class__)
 
 
 class BlockFont(TableStyleCommand):
     signature = rml_stylesheet.IBlockFont
     name = 'FONT'
-    TableStyleCommand.textProps['name'] = 'fontname'
-    TableStyleCommand.textProps['size'] = 'fontsize'
-    TableStyleCommand.paraProps['leading'] = 'linespacing'
+    attrMapping = {
+        'name':'fontname',
+        'size':'fontsize',
+        'leading': 'linespacing',
+    }
+
+    def process(self):
+        attrs = dict(self.getAttributeValues())
+        odf_font_name = rmlFont2odfFont(attrs['name'])
+        manager = attr.getManager(self)
+        manager.document.fontfacedecls.addElement(
+            odf.style.FontFace(
+                name=odf_font_name,
+                fontfamily=odf_font_name))
+
+        for key, val in attrs.items():
+            if key == 'name':
+                self.parent.textProps.setAttribute(
+                    'fontname', val)
+            elif key == 'size':
+                self.parent.textProps.setAttribute(
+                    'fontsize', '%spt' % val)
+            elif key == 'leading':
+                self.parent.paraProps.setAttribute(
+                    'linespacing', '%spt' % val)
 
 
 class BlockLeading(TableStyleCommand):
@@ -395,54 +340,107 @@ class BlockTextColor(TableStyleCommand):
     signature = rml_stylesheet.IBlockTextColor
     name = 'TEXTCOLOR'
 
+    def process(self):
+        attrs = dict(self.getAttributeValues())
+        hexcolor = '#%s' % attrs['colorName'].hexval()[2:]
+        # Yes, magically, if you set the background color to
+        # ['#color', 'text'] it sets the foreground text color!
+        self.parent.tableProps.setAttribute(
+            'backgroundcolor', [hexcolor] + ['text'])
+
 
 class BlockAlignment(TableStyleCommand):
     signature = rml_stylesheet.IBlockAlignment
     name = 'ALIGNMENT'
-    TableStyleCommand.tableProps['value'] = 'align'
+
+    def process(self):
+        attrs = dict(self.getAttributeValues())
+        self.parent.tableProps.setAttribute(
+            'align', attrs['value'].lower())
 
 
 class BlockLeftPadding(TableStyleCommand):
     signature = rml_stylesheet.IBlockLeftPadding
     name = 'LEFTPADDING'
 
+    def process(self):
+        attrs = dict(self.getAttributeValues())
+        self.parent.cellProps.setAttribute(
+            'paddingleft', '%spt' % attrs['length'])
+
 
 class BlockRightPadding(TableStyleCommand):
     signature = rml_stylesheet.IBlockRightPadding
     name = 'RIGHTPADDING'
+
+    def process(self):
+        attrs = dict(self.getAttributeValues())
+        self.parent.cellProps.setAttribute(
+            'paddingright', '%spt' % attrs['length'])
 
 
 class BlockBottomPadding(TableStyleCommand):
     signature = rml_stylesheet.IBlockBottomPadding
     name = 'BOTTOMPADDING'
 
+    def process(self):
+        attrs = dict(self.getAttributeValues())
+        self.parent.cellProps.setAttribute(
+            'paddingbottom', '%spt' % attrs['length'])
+
 
 class BlockTopPadding(TableStyleCommand):
     signature = rml_stylesheet.IBlockTopPadding
     name = 'TOPPADDING'
+
+    def process(self):
+        attrs = dict(self.getAttributeValues())
+        self.parent.cellProps.setAttribute(
+            'paddingtop', '%spt' % attrs['length'])
 
 
 class BlockBackground(TableStyleCommand):
     signature = rml_stylesheet.IBlockBackground
     name = 'BACKGROUND'
 
+    def process(self):
+        attrs = dict(self.getAttributeValues())
+        hexcolor = '#%s' % attrs['colorName'].hexval()[2:]
+
+        self.parent.cellProps.setAttribute(
+            'backgroundcolor', [hexcolor] + ['back'])
+
 
 class BlockRowBackground(TableStyleCommand):
     signature = rml_stylesheet.IBlockRowBackground
     name = 'ROWBACKGROUNDS'
-    TableStyleCommand.rowProps['colorNames'] = 'backgroundcolor'
+
+    def process(self):
+        attrs = dict(self.getAttributeValues())
+        colors = ['#%s' % col.hexval()[2:] for col in attrs['colorNames']]
+        self.parent.rowProps.setAttribute(
+            'backgroundcolor', colors + ['row'])
 
 
 class BlockColBackground(TableStyleCommand):
     signature = rml_stylesheet.IBlockColBackground
     name = 'COLBACKGROUNDS'
-    TableStyleCommand.rowProps['colorNames'] = 'backgroundcolor'
+
+    def process(self):
+        attrs = dict(self.getAttributeValues())
+        colors = ['#%s' % col.hexval()[2:] for col in attrs['colorNames']]
+        self.parent.rowProps.setAttribute(
+            'backgroundcolor', colors + ['col'])
 
 
 class BlockValign(TableStyleCommand):
     signature = rml_stylesheet.IBlockValign
     name = 'VALIGN'
-    TableStyleCommand.cellProps['value'] = 'verticalalign'
+
+    def process(self):
+        attrs = dict(self.getAttributeValues())
+        self.parent.cellProps.setAttribute(
+            'verticalalign', attrs['value'].lower())
 
 
 class BlockSpan(TableStyleCommand):

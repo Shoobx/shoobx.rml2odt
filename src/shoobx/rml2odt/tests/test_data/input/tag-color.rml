@@ -4,6 +4,7 @@
 <document filename="hello-world.pdf">
 
   <docinit>
+    <color id="TableHeaderBackgroundColor" value="#EEEEEE"/>
     <color id="SbGrayLight" value="#CFD9D9"/>
     <color id="SbGrayDark" value="#566165"/>
   </docinit>
@@ -13,6 +14,17 @@
                fontName="Source-Sans-Regular" textColor="SbGrayDark"/>
     <paraStyle name="light" fontSize="24pt"
                fontName="Source-Sans-Regular" textColor="SbGrayLight"/>
+
+    <blockTableStyle id="GridTableWithHeader">
+      <blockFont start="0,0" stop="-1,0" name="Garamond-Bold" size="12pt"/>
+      <blockFont start="0,1" stop="-1,-1" name="Garamond" size="12pt"/>
+      <blockBackground start="0,0" stop="-1,0" colorName="TableHeaderBackgroundColor"/>
+      <blockLeftPadding start="0,0" stop="-1,-1" length="3pt"/>
+      <blockTopPadding start="0,0" stop="-1,-1" length="3pt"/>
+      <lineStyle start="0,0" stop="-1,-1" kind="GRID" colorName="Black" thickness="0.7"/>
+      <blockValign start="0,0" stop="-1,-1" value="top"/>
+    </blockTableStyle>
+
   </stylesheet>
 
   <template>

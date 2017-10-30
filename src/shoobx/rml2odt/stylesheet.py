@@ -134,6 +134,9 @@ def registerParagraphStyle(doc, name, rmlStyle):
                 textProps.setAttribute('fontstyle', 'italic')
             elif transform == 'Bold':
                 textProps.setAttribute('fontweight', 'bold')
+            elif transform == 'BoldItalic':
+                textProps.setAttribute('fontweight', 'bold')
+                textProps.setAttribute('fontstyle', 'italic')
 
         odf_font_name = rmlFont2odfFont(rmlStyle.fontName)
         doc.fontfacedecls.addElement(

@@ -14,6 +14,7 @@
 ##############################################################################
 """Flowable Element Processing
 """
+import base64
 import lazy
 import lxml
 import reportlab.platypus.flowables
@@ -22,6 +23,7 @@ import odf.text
 import odf.draw
 import pyqrcode
 import copy
+import os
 import png
 import reportlab.lib.styles
 import re
@@ -149,14 +151,21 @@ class Image(Flowable):
     attrMapping = {'src': 'filename', 'align': 'hAlign'}
 
     def process(self):
+        manager = attr.getManager(self)
+        attrs = dict(self.getAttributeValues(attrMapping=self.attrMapping))
         # Filetype isn't preserved by getAttributeValues, so we pick it
         # directly from the element.
         binary = self.element.attrib['src']
-        metaData, imageString = binary.split(',', 1)
-        fileType = metaData[metaData.find('/') + 1:metaData.find(';')]
+        if ',' in binary:
+            # Embedded image
+            metaData, imageString = binary.split(',', 1)
+            fileType = metaData[metaData.find('/') + 1:metaData.find(';')]
+        else:
+            # File image
+            filename, ext = os.path.splitext(binary)
+            fileType = ext[1:]
+            imageString = base64.b64encode(attrs['filename'].getvalue())
 
-        manager = attr.getManager(self)
-        attrs = dict(self.getAttributeValues(attrMapping=self.attrMapping))
         self.align = attrs.get('align', 'left')
         self.frameName = manager.getNextStyleName('ImageFrame')
         self.frameWidth = attrs['width']
@@ -571,7 +580,10 @@ class Paragraph(Flowable):
             # Make a copy of the current style
             manager = attr.getManager(self)
             style = manager.document.getStyleByName(six.text_type(styleName))
-            newStyle = copy.deepcopy(style)
+            try:
+                newStyle = copy.deepcopy(style)
+            except:
+                import pdb;pdb.set_trace()
 
             # Rename that copy
             if styleName[-1].isdigit():
@@ -759,6 +771,8 @@ class Flow(directive.RMLDirective):
         super(Flow, self).__init__(*args, **kw)
 
     def process(self):
+        if self.element.tag == 'img':
+            import pdb;pdb.set_trace()
         if self.element.tag == 'story':
             self.parent.document.body.childNodes[0].setAttribute(
                 'usesoftpagebreaks', 'true')

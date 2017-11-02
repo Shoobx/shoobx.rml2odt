@@ -54,38 +54,19 @@ class ListItem(flowable.Flow):
     attrMapping = {}
 
     def modifyStyle(self):
+        # Here, instead of using the parent style, it creates one style
+        # per list item. No idea why. Is it even needed? /regebro
         attrs = dict(self.getAttributeValues(attrMapping=self.attrMapping))
-        if isinstance(self, UnorderedListItem) and len(attrs) == 0:
-            # Retrieve parent's list style name
-            parentStyleName = ListBase.createdStylesDict[self.parent.styleID]
-            manager = attr.getManager(self)
-            newStyleName = manager.getNextStyleName('Sh_Li')
-            newStyle = ListStyle(name=newStyleName, consecutivenumbering=False)
-            selectedBullet = attrs.get('value', 'disc')
-            bul = ListLevelStyleBullet(
-                level=str(self.parent.level),
-                stylename="Standard",
-                bulletchar=UnorderedListItem.bulletDict.get(
-                    selectedBullet,
-                    UnorderedListItem.bulletDict['disc'])
-                )
+        if not attrs:
+            # No attributes, do nothing
+            return
 
-            prop = ListLevelProperties(
-                spacebefore=str(0.25*self.parent.level) + "in",
-                minlabelwidth="0.25in",
-                **fontNameKeyword(attrs.get('bulletFontName'))
-                )
-            bul.addElement(prop)
-            newStyle.addElement(bul)
-
-            # Add to automaticstyles collection
-            manager.document.automaticstyles.addElement(newStyle)
-            return newStyleName
-
-        elif isinstance(self, OrderedListItem):
+        if isinstance(self, OrderedListItem):
             # We just want the style name, not the style, and it can be None,
             # so looking directly at the attributes makes sense here:
             parent_style = self.parent.element.attrib.get('style')
+            # Ugh, it's hardcoded on the style name. That may be the only way,
+            # but it's still not nice.
             if parent_style == 'Articles':
                 units_ordinal = ['zeroth', 'first', 'second', 'third',
                                  'fourth', 'fifth', 'sixth', 'seventh',

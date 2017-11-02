@@ -108,8 +108,8 @@
     </blockTableStyle>
 
     <blockTableStyle id="sig-main">
-       <lineStyle kind="LINEABOVE" colorName="lightgrey" start="0,0" stop="-1,0" thicknes="5"/>
-       <lineStyle kind="LINEBELOW" colorName="lightgrey" start="0,-1" stop="-1,-1" thicknes="5"/>
+       <lineStyle kind="LINEABOVE" colorName="lightgrey" start="0,0" stop="-1,0" thickness="5"/>
+       <lineStyle kind="LINEBELOW" colorName="lightgrey" start="0,-1" stop="-1,-1" thickness="5"/>
        <blockSpan start="0,0" stop="1,0"/>
        <blockSpan start="0,1" stop="1,1"/>
        <blockSpan start="1,2" stop="2,2"/>
@@ -384,13 +384,13 @@
 
   <h2>NEW YEAR RESOLUTIONS</h2>
 
-  <ol style="Resolutions">
-    <li>Lose weight</li>
-    <li>Stop smoking</li>
-    <li>Spend more time with the kids</li>
-    <li>Go to the gym</li>
-    <li>Clean the kitchen more often</li>
-  </ol>
+  <ul style="Resolutions">
+    <li><para>Lose weight</para></li>
+    <li><para>Stop smoking</para></li>
+    <li><para>Spend more time with the kids</para></li>
+    <li><para>Go to the gym</para></li>
+    <li><para>Help out more at home</para></li>
+  </ul>
 
   </story>
 </document>

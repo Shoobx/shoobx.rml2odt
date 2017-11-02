@@ -191,8 +191,10 @@ def RegisterListStyle(doc, attributes, rmlStyle, name):
                 fontfamily=odf_font_name))
         listProps.setAttribute('fontname', odf_font_name)
 
+    retrievedBullet = bulletDict.get(bulletType)
+
     if bulletFormat is not None:
-        if bulletFormat == '(%s)':
+        if bulletFormat == '(%s)': # Why limit to only (%s)? Lazy.
             numbering = odf.text.ListLevelStyleNumber(
                 level='1',
                 stylename="Numbering_20_Symbols",
@@ -201,8 +203,16 @@ def RegisterListStyle(doc, attributes, rmlStyle, name):
                 numformat=numType)
             numbering.addElement(listProps)
             odtStyle.addElement(numbering)
+    elif retrievedBullet is None:
+        numbering = odf.text.ListLevelStyleNumber(
+            level='1',
+            stylename="Numbering_20_Text",
+            numsuffix='',
+            numprefix=bulletType,
+            numformat='')
+        numbering.addElement(listProps)
+        odtStyle.addElement(numbering)
     else:
-        retrievedBullet = bulletDict.get(bulletType, 'circle')
         bullet = odf.text.ListLevelStyleBullet(
             bulletchar=retrievedBullet,
             level='1',
@@ -513,6 +523,8 @@ class ListStyle(directive.RMLDirective):
 
     def process(self):
         kwargs = dict(self.getAttributeValues())
+        # I do not know the purpose of using a temporary reportlab style here.
+        # /regebro
         parent = kwargs.pop(
             'parent', reportlab.lib.styles.ListStyle(name=None))
         style = copy.deepcopy(parent)

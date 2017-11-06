@@ -22,7 +22,7 @@ import zope.interface
 from z3c.rml import attr, directive
 from z3c.rml import flowable as rml_flowable
 
-from shoobx.rml2odt import flowable, stylesheet
+from shoobx.rml2odt import flowable, stylesheet, list as lists
 from shoobx.rml2odt.interfaces import IContentContainer
 
 DEFAULT_TABLE_UNIT = 'mm'
@@ -316,7 +316,22 @@ class BlockTable(flowable.Flowable):
         self.table = odf.table.Table(stylename=styleName)
         if isinstance(self.parent, TableCell):
             self.table.setAttribute('issubtable', 'true')
-        self.contents.addElement(self.table)
+
+        if isinstance(self.parent, lists.ListItem):
+            # ODT doesn't allow tables in list-items, so we add it to
+            # office:text. This means it will lack indentation, but I don't
+            # know how to get the indentation of the list-item, it's likely
+            # not calculated at this point anyway.
+            ob = self.parent.parent
+            while ob is not None:
+                if (getattr(getattr(ob, 'contents'), 'tagName') ==
+                   u'office:text'):
+                    break
+                ob = ob.parent
+            ob.contents.addElement(self.table)
+        else:
+            self.contents.addElement(self.table)
+
         flag = self.convertBulkData()
         if not flag:
             self.addColumns()

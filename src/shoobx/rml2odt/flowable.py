@@ -580,10 +580,7 @@ class Paragraph(Flowable):
             # Make a copy of the current style
             manager = attr.getManager(self)
             style = manager.document.getStyleByName(six.text_type(styleName))
-            try:
-                newStyle = copy.deepcopy(style)
-            except:
-                import pdb;pdb.set_trace()
+            newStyle = copy.deepcopy(style)
 
             # Rename that copy
             if styleName[-1].isdigit():
@@ -771,8 +768,6 @@ class Flow(directive.RMLDirective):
         super(Flow, self).__init__(*args, **kw)
 
     def process(self):
-        if self.element.tag == 'img':
-            import pdb;pdb.set_trace()
         if self.element.tag == 'story':
             self.parent.document.body.childNodes[0].setAttribute(
                 'usesoftpagebreaks', 'true')

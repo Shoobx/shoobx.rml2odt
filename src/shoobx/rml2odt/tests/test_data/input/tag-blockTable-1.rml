@@ -30,5 +30,18 @@
       </tr>
     </blockTable>
 
+    <ul>
+      <li>
+        <blockTable>
+          <tr>
+            <td>BlockTables</td>
+            <td>In lists</td>
+            <td>Need special</td>
+            <td>Handling in ODT</td>
+          </tr>
+        </blockTable>
+      </li>
+    </ul>
+
   </story>
 </document>

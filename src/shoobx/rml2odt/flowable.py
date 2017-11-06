@@ -568,43 +568,10 @@ class Paragraph(Flowable):
 
     def determineStyle(self):
         if 'style' not in self.element.attrib:
-            return self.defaultStyle
-
-        # The style name may not exist, access attrib directly
-        styleName = self.element.attrib.pop('style')
-        if len(self.element.attrib) > 0:
-            # XXX! This is untested magic code to rename the 'alignments'
-            # attribute to 'textalign'. It was a horrid mess and I rewrote
-            # it, but I don't know if it's actually needed or good. //Lennart
-
-            # Make a copy of the current style
-            manager = attr.getManager(self)
-            style = manager.document.getStyleByName(six.text_type(styleName))
-            newStyle = copy.deepcopy(style)
-
-            # Rename that copy
-            if styleName[-1].isdigit():
-                newStyleName = manager.getNextStyleName(styleName+'.')
-            else:
-                newStyleName = manager.getNextStyleName(styleName)
-
-            newStyle.setAttribute('name', newStyleName)
-            newStyle.setAttribute('displayname', newStyleName)
-
-            mapper = {'alignment': 'textalign'}
-            for key in mapper:
-                if key in self.element.attrib:
-                    value = self.element.attrib[key]
-
-                    for node in newStyle.childNodes:
-                        if node.tagName == u'style:paragraph-properties':
-                            node.setAttribute(mapper[key], value)
-
-            manager.document.automaticstyles.addElement(newStyle)
-            return newStyleName
+            styleName = self.defaultStyle
         else:
-            self.element.attrib['style'] = styleName
-            return styleName
+            styleName = self.element.attrib.pop('style')
+        return styleName
 
     def process(self):
         self.odtParagraph = odf.text.P()

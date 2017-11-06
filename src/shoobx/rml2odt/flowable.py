@@ -230,7 +230,7 @@ class Spacer(Flowable):
         length = attrs['height']
         prop.setAttribute("linespacing", '%spt' % (length/2.0))
         spacer.addElement(prop)
-        self.parent.parent.document.automaticstyles.addElement(spacer)
+        manager.document.automaticstyles.addElement(spacer)
         self.odtParagraph = odf.text.P()
         self.odtParagraph.setAttribute('stylename', spacerStyleName)
         self.contents.addElement(self.odtParagraph)

@@ -76,12 +76,16 @@ class Flowable(directive.RMLDirective):
         return parent.contents
 
     def inputImageIntoDoc(self):
-        self.frame = odf.draw.Frame(
-            id=self.frameName,
-            width='%spt' % self.frameWidth,
-            height='%spt' % self.frameHeight,
-            anchortype='as-char',
-            )
+        args = {
+            'id': self.frameName,
+            'anchortype': 'as-char',
+        }
+        if self.frameWidth is not None:
+            args['width'] = '%spt' % self.frameWidth
+        if self.frameHeight is not None:
+            args['height'] = '%spt' % self.frameHeight
+
+        self.frame = odf.draw.Frame(**args)
         self.frame.appendChild(self.image)
         self.contents.addElement(self.frame)
 
@@ -117,23 +121,33 @@ class Flowable(directive.RMLDirective):
             )
         firstFrameStyle.appendChild(graphicsProperties)
         manager.document.automaticstyles.addElement(firstFrameStyle)
-        firstFrame = odf.draw.Frame(
-            name=firstFrameID,
-            stylename=firstFrameStyle,
-            width='%spt' % self.frameWidth,
-            height='%spt' % self.frameHeight,
-            anchortype='as-char',
-            zindex='0'
-            )
+
+
+        args = {
+            'name': firstFrameID,
+            'anchortype': 'as-char',
+            'stylename': firstFrameStyle,
+            'zindex': '0'
+        }
+        if self.frameWidth is not None:
+            args['width'] = '%spt' % self.frameWidth
+        if self.frameHeight is not None:
+            args['height'] = '%spt' % self.frameHeight
+        firstFrame = odf.draw.Frame(**args)
+
         textBox = odf.draw.TextBox()
         para2 = odf.text.P()
+
         secondFrameID = manager.getNextStyleName('InternalFrame')
-        secondFrame = odf.draw.Frame(
-            id=secondFrameID,
-            width='%spt' % self.frameWidth,
-            height='%spt' % self.frameHeight,
-            anchortype='char'
-        )
+        args = {
+            'id': secondFrameID,
+            'anchortype': 'as-char',
+        }
+        if self.frameWidth is not None:
+            args['width'] = '%spt' % self.frameWidth
+        if self.frameHeight is not None:
+            args['height'] = '%spt' % self.frameHeight
+        secondFrame = odf.draw.Frame(**args)
         secondFrame.appendChild(self.image)
         para2.appendChild(secondFrame)
         textBox.appendChild(para2)
@@ -168,8 +182,8 @@ class Image(Flowable):
 
         self.align = attrs.get('align', 'left')
         self.frameName = manager.getNextStyleName('ImageFrame')
-        self.frameWidth = attrs['width']
-        self.frameHeight = attrs['height']
+        self.frameWidth = attrs.get('width')
+        self.frameHeight = attrs.get('height')
         self.binaryImage = odf.office.BinaryData()
         self.binaryImage.addText(imageString)
 

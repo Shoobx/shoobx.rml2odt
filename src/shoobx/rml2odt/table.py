@@ -267,9 +267,6 @@ class BlockTable(flowable.Flowable):
 
         colWidths = attribs.get('colWidths', [])
 
-        if colWidths and len(colWidths) != len(self.element[0]):
-            raise ValueError('colWidths` entries do not match column count.')
-
         manager = attr.getManager(self)
         for idx in range(cols):
             # Create a style for each col.

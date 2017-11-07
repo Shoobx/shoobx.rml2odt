@@ -359,7 +359,7 @@ class ListBase(flowable.Flowable):
     def setStyleExtraProperties(self, existingStyleName):
         # Used when a list already has a style but has extra inline properties
         mapper = {
-            'bulletType': 'numformat'
+            'bulletType': 'numformat',
         }
 
         attrs = dict(self.getAttributeValues(attrMapping=mapper))
@@ -375,8 +375,10 @@ class ListBase(flowable.Flowable):
                         if key != 'style':
                             value = self.element.attrib[key]
                             if style.childNodes:
-                                style.childNodes[0].setAttribute(
-                                    mapper[key], value)
+                                if key in mapper:
+                                    # XXX We ignore a lot here.
+                                    style.childNodes[0].setAttribute(
+                                        mapper[key], value)
 
     def determineStyle(self):
         # Checks if the list was supplied an already declared style

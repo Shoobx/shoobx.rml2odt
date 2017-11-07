@@ -742,7 +742,7 @@ class Flow(directive.RMLDirective):
         # Graphic flowables
         'illustration': Illustration,
         'barCodeFlowable': BarCodeFlowable,
-        'img': Image
+        'img': Image,
     }
 
     def __init__(self, *args, **kw):

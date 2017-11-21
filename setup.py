@@ -16,8 +16,10 @@
 import os
 from setuptools import setup, find_packages
 
+
 def read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
+
 
 def alltests():
     import os
@@ -34,13 +36,15 @@ def alltests():
     suites = list(zope.testrunner.find.find_suites(options))
     return unittest.TestSuite(suites)
 
+
 TESTS_REQUIRE = [
     'coverage',
     'unoconv',
     'zope.testrunner',
     ]
 
-setup (
+
+setup(
     name="shoobx.rml2odt",
     version='0.1.0.dev0',
     author="Shoobx, Inc.",
@@ -54,7 +58,7 @@ setup (
     license="ZPL 2.1",
     keywords="rml odf odt libreoffice pagetemplate",
     classifiers=[
-        'Development Status :: 2 - Alpha',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Zope Public License',
         'Programming Language :: Python',

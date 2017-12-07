@@ -178,7 +178,8 @@ class Image(Flowable):
             # File image
             filename, ext = os.path.splitext(binary)
             fileType = ext[1:]
-            imageString = base64.b64encode(attrs['filename'].getvalue())
+            rawdata = attrs['filename'].getvalue()
+            imageString = base64.b64encode(rawdata).decode()
 
         self.align = attrs.get('align', 'left')
         self.frameName = manager.getNextStyleName('ImageFrame')

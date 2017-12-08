@@ -1,8 +1,8 @@
 CHANGES
 =======
 
-1.0 (unreleased)
-----------------
+0.2.0 (2017-12-08)
+------------------
 
 - Cleaned up the public API.
 

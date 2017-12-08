@@ -81,7 +81,7 @@ class Rml2OdtConverterFileTest(unittest.TestCase):
         super(Rml2OdtConverterFileTest, self).__init__()
 
     def runTest(self):
-        rml2odt.go(self.inputPath, self.outputPath)
+        rml2odt.convertFile(self.inputPath, self.outputPath)
         expected = zipfile.ZipFile(self.expectPath, 'r')
         output = zipfile.ZipFile(self.outputPath, 'r')
         expected_names = set(expected.namelist())

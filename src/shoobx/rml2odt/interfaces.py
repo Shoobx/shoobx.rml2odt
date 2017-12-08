@@ -19,17 +19,14 @@ import zope.interface
 class IRML2ODT(zope.interface.Interface):
     """This is the main public API of shoobx.rml2odt"""
 
-    def parseString(xml):
-        """Parse an XML string and convert it to ODT.
+    def convertString(rml, remove_encoding=True, filename=None):
+        """Parse an RML string and convert it to ODT.
 
         The output is a ``StringIO`` object.
         """
 
-    def go(xmlInputName, outputFileName=None, outDir=None):
-        """Convert RML to ODT.
-
-        The generated file will be located in the ``outDir`` under the name
-        ``outputFileName``.
+    def convertFile(inputfile, outputfile):
+        """Convert an RML file to an ODT file.
         """
 
 

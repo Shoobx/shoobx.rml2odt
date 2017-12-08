@@ -15,6 +15,58 @@
     :target: https://pypi.python.org/pypi/shoobx.rml2odt/
 
 
-This library implements a converter from RML to ODT format utilizing
-the ``z3c.rml`` parser and odfpy library.
+This library implements a converter from Reportlabs RML format to
+Libreoffices/Open Document Formats ODT format utilizing the ``z3c.rml``
+parser and ``odfpy`` library.
+
+It's developed by Shoobx (https://shoobx.com) but is open source, and
+we are happy to accept outside contributions. See DEVELOPMENT.rst for more
+information.
+
+
+Installing
+==========
+
+Install with::
+
+    $ pip install shoobx.rml2odt
+
+
+Usage
+=====
+
+There is three ways of using shoobx.rml2odt.
+
+
+From the command line
+---------------------
+
+Installing shoobx.rml2odt will install a script that can be used from the
+command line::
+
+   rml2odt <infile> <outfile>
+
+
+Converting files from Python
+----------------------------
+
+You can import shoobx.rml2odt as a library and convert files from Python::
+
+    >>> from shoobx.rml2odt import rml2odt
+    >>> rml2odt.convertFile(infilepath, outfilepath)
+
+which will convert the file at infilepath and create the ODT file at
+outfilepath.
+
+
+Converting an RML string in Python
+----------------------------------
+
+If your RML data isn't in a file, but is held in a string, you can import
+shoobx.rml2odt as a library and convert text data from Python::
+
+    >>> from shoobx.rml2odt import rml2odt
+    >>> odt_data = rml2odt.convertFile(infilepath, outfilepath)
+    >>> with open(outputfile, 'wb') as output:
+    ...     output.write(odt_data)
 

@@ -4,7 +4,9 @@ CHANGES
 1.0 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Cleaned up the public API.
+
+- Added basic docs.
 
 
 0.1.0 (2017-11-21)

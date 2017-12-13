@@ -57,6 +57,16 @@
         bulletDedent="100pt"
         leftIndent="100pt"
         />
+    <listStyle
+        name="Resolutions"
+        bulletFontName="Garamond-Bold"
+        bulletFontSize="12pt"
+        bulletType="bullet"
+        bulletDedent="80"
+        leftIndent="80"
+        start="RESOLVED:"
+        />
+
   </stylesheet>
 
   <story>
@@ -230,6 +240,28 @@
       <li><para>One</para></li>
       <li><para>Two</para></li>
       <li><para>Three</para></li>
+    </ol>
+
+    <ol style="Resolutions">
+
+      <li><para>Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+      Mauris euismod congue quam, id accumsan neque feugiat ac. Praesent
+      mauris enim, pretium ut arcu quis, mollis pretium magna. Vestibulum
+      ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia
+      Curae; Aliquam pharetra mattis ornare. </para></li>
+
+      <li><para>Curabitur dapibus id augue quis pretium. Suspendisse at
+      libero suscipit, elementum orci non, egestas risus. Curabitur sem nisi,
+      egestas non semper at, tempor eget nisi. Duis varius nisl nisl, nec
+      tristique augue tincidunt et. Quisque interdum convallis
+      elementum.</para></li>
+
+      <li><para>Ut feugiat dui eu erat dapibus congue. Aliquam feugiat
+      suscipit tellus, sollicitudin faucibus libero mattis ac. Sed ultrices
+      diam at felis pretium, et vehicula arcu commodo. Maecenas fermentum ut
+      elit ac dignissim. Cras sit amet turpis rutrum, ultricies urna eu,
+      luctus ligula.</para></li>
+
     </ol>
 
   </story>

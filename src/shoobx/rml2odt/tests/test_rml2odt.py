@@ -71,6 +71,29 @@ class Rml2OdtConverterTest(unittest.TestCase):
     def test_interface(self):
         verify.verifyObject(interfaces.IRML2ODT, rml2odt)
 
+    def test_convertString(self):
+        instr = """<?xml version="1.0" encoding="iso-8859-1" standalone="no"?>
+<!DOCTYPE document SYSTEM "rml.dtd">
+
+<document filename="hello-world.pdf">
+
+  <template>
+    <pageTemplate id="main">
+      <frame id="first" x1="1cm" y1="1cm" width="19cm" height="26cm"/>
+    </pageTemplate>
+  </template>
+
+  <story>
+    <para>Hello <i>World</i>!</para>
+  </story>
+
+</document>"""
+        result = rml2odt.convertString(instr)
+        # The resulting output is indeed a zip file, so the conversion
+        # succeeded.
+        self.assertEqual(result.getvalue()[:2], b'PK')
+
+
 
 class Rml2OdtConverterFileTest(unittest.TestCase):
 

@@ -33,7 +33,8 @@ from shoobx.rml2odt import list, stylesheet, table, template
 
 
 RMLSTYLE_HANDLERS = {
-    styles.ParagraphStyle: stylesheet.registerParagraphStyle
+    styles.ParagraphStyle: stylesheet.registerParagraphStyle,
+    styles.ListStyle: stylesheet.registerListStyle,
 }
 
 
@@ -113,6 +114,7 @@ class Document(directive.RMLDirective):
         super(Document, self).__init__(element, None)
         self.names = {}
         self.styles = {}
+        self.odtStyles = {}
         self.styleCounters = {}
         self.colors = {}
         self.attributesCache = {}
@@ -129,7 +131,8 @@ class Document(directive.RMLDirective):
             handler = RMLSTYLE_HANDLERS.get(style.__class__)
             if handler is None:
                 continue
-            handler(self.document, name, style)
+            odtStyle = handler(self.document, name, style)
+            self.odtStyles[name] = odtStyle
 
     def process(self, outputFile=None, maxPasses=2):
         """Process document"""

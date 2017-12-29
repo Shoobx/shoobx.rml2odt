@@ -153,75 +153,7 @@ def registerParagraphStyle(doc, name, rmlStyle):
         textProps.setAttribute(
             'backgroundcolor', '#' + rmlStyle.backColor.hexval()[2:])
 
-
-def RegisterListStyle(doc, attributes, rmlStyle, name):
-    name = attributes.get('name', 'undefined')
-    bulletType = attributes.get('start')
-    bulletFormat = attributes.get('bulletFormat')
-    bulletOffsetY = attributes.get('bulletOffsetY', '0pt')
-    bulletDedent = attributes.get('bulletDedent', '50pt')
-    numType = attributes.get('bulletType')
-
-    bulletDict = {
-        'bulletchar': u'\u2022',
-        'circle': u'\u25cf',
-        'square': u'\u25AA',
-        'diamond': u'\u2B29',
-        'darrowhead': u'\u2304',
-        'rarrowhead': u'\u27a4'
-    }
-
-    x = reportlab.lib.styles.ListStyle.defaults
-
-    # Declare properties of the list style
-    odtStyle = odf.text.ListStyle(name=name)
-    listProps = odf.style.ListLevelProperties()
-
-    listProps.setAttribute('width', None)
-    listProps.setAttribute('height', None)
-    listProps.setAttribute('minlabelwidth', '0.25in')
-    listProps.setAttribute('minlabeldistance', '0.15in')
-    listProps.setAttribute('textalign', x.get('bulletAlign'))
-
-    if rmlStyle.bulletFontName is not None:
-        odf_font_name = rmlFont2odfFont(rmlStyle.bulletFontName)
-        doc.fontfacedecls.addElement(
-            odf.style.FontFace(
-                name=odf_font_name,
-                fontfamily=odf_font_name))
-        listProps.setAttribute('fontname', odf_font_name)
-
-    retrievedBullet = bulletDict.get(bulletType)
-
-    if bulletFormat is not None:
-        if bulletFormat == '(%s)': # Why limit to only (%s)? Lazy.
-            numbering = odf.text.ListLevelStyleNumber(
-                level='1',
-                stylename="Numbering_20_Symbols",
-                numsuffix=")",
-                numprefix="(",
-                numformat=numType)
-            numbering.addElement(listProps)
-            odtStyle.addElement(numbering)
-    elif retrievedBullet is None:
-        numbering = odf.text.ListLevelStyleNumber(
-            level='1',
-            stylename="Numbering_20_Text",
-            numsuffix='',
-            numprefix=bulletType,
-            numformat='')
-        numbering.addElement(listProps)
-        odtStyle.addElement(numbering)
-    else:
-        bullet = odf.text.ListLevelStyleBullet(
-            bulletchar=retrievedBullet,
-            level='1',
-            stylename="Standard",
-            bulletrelativesize='75%')
-        bullet.addElement(listProps)
-        odtStyle.addElement(bullet)
-
-    doc.automaticstyles.addElement(odtStyle)
+    return odtStyle
 
 
 class ParagraphStyle(directive.RMLDirective):
@@ -515,7 +447,84 @@ class BlockTableStyle(directive.RMLDirective):
         # Add style to the manager
         manager = attr.getManager(self)
         manager.document.automaticstyles.addElement(self.style)
-        manager.styles[self.styleID] = self.style
+        manager.odtStyles[self.styleID] = self.style
+        manager.styles[self.styleID] = self
+
+
+def registerListStyle(doc, name, rmlStyle, attributes=None):
+    if attributes is None:
+        attributes = {}
+    bulletType = attributes.get('start', rmlStyle.start)
+    bulletFormat = attributes.get('bulletFormat', rmlStyle.bulletFormat)
+    bulletDedent = attributes.get('bulletDedent', rmlStyle.bulletDedent)  # XXX use this!
+    numType = attributes.get('bulletType', rmlStyle.bulletType)
+
+    bulletDict = {
+        'bulletchar': u'\u2022',
+        'circle': u'\u25cf',
+        'square': u'\u25AA',
+        'diamond': u'\u2B29',
+        'darrowhead': u'\u2304',
+        'rarrowhead': u'\u27a4'
+    }
+
+    # Declare properties of the list style
+    odtStyle = odf.text.ListStyle(name=name)
+    listProps = odf.style.ListLevelProperties()
+
+    listProps.setAttribute('width', None)
+    listProps.setAttribute('height', None)
+    listProps.setAttribute('minlabelwidth', '0.25in')
+    listProps.setAttribute('minlabeldistance', '0.15in')
+    listProps.setAttribute('textalign', 'left')
+
+    if rmlStyle.bulletFontName is not None:
+        odf_font_name = rmlFont2odfFont(rmlStyle.bulletFontName)
+        doc.fontfacedecls.addElement(
+            odf.style.FontFace(
+                name=odf_font_name,
+                fontfamily=odf_font_name))
+        listProps.setAttribute('fontname', odf_font_name)
+
+    retrievedBullet = bulletDict.get(bulletType)
+
+    # A numType that is just one character (or None) means some sort of number
+    if bulletFormat is not None or (numType and len(numType) < 2):
+        if bulletFormat is not None:
+            pre, post = bulletFormat.split('%s')
+        else:
+            pre = post = ''
+
+        if numType and numType.lower() not in '1ai':
+            # ODF doesn't support fancy formats like '1st' or 'First'.
+            numType = '1'
+
+        numbering = odf.text.ListLevelStyleNumber(
+            level='1',
+            numsuffix=post,
+            numprefix=pre,
+            numformat=numType)
+        numbering.addElement(listProps)
+        odtStyle.addElement(numbering)
+
+    elif retrievedBullet is None:
+        numbering = odf.text.ListLevelStyleNumber(
+            level='1',
+            numsuffix='',
+            numprefix=bulletType,
+            numformat='')
+        numbering.addElement(listProps)
+        odtStyle.addElement(numbering)
+
+    else:
+        bullet = odf.text.ListLevelStyleBullet(
+            bulletchar=retrievedBullet,
+            level='1',
+            bulletrelativesize='75%')
+        bullet.addElement(listProps)
+        odtStyle.addElement(bullet)
+
+    doc.automaticstyles.addElement(odtStyle)
 
 
 class ListStyle(directive.RMLDirective):
@@ -523,17 +532,26 @@ class ListStyle(directive.RMLDirective):
 
     def process(self):
         kwargs = dict(self.getAttributeValues())
-        # I do not know the purpose of using a temporary reportlab style here.
-        # /regebro
-        parent = kwargs.pop(
-            'parent', reportlab.lib.styles.ListStyle(name=None))
-        style = copy.deepcopy(parent)
+        parent = kwargs.pop('parent', None)
+        if parent is not None:
+            # Get the style attribs from the parent
+            style_attrs = dict(self.getAttributeValues(includeMissing=True))
+            pkwargs = {att: getattr(parent, att)
+                       for att in style_attrs if
+                       hasattr(parent, att)}
+            # Override them with selfs.
+            pkwargs.update(kwargs)
+            # replace
+            kwargs = pkwargs
+
+        # Make a new style
+        style = reportlab.lib.styles.ListStyle(name=None)
         for name, value in kwargs.items():
             setattr(style, name, value)
-        attributeDict = dict(self.getAttributeValues())
-        document = self.parent.parent.document
-        RegisterListStyle(document, attributeDict, style, name)
-        attr.getManager(self).styles[style.name] = style
+
+        manager = attr.getManager(self)
+        manager.styles[style.name] = style
+        registerListStyle(manager.document, kwargs.get('name'), style, kwargs)
 
 
 class Stylesheet(directive.RMLDirective):

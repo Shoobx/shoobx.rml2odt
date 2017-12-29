@@ -468,15 +468,16 @@ def registerListStyle(doc, name, rmlStyle, attributes=None):
         'rarrowhead': u'\u27a4'
     }
 
-    # Declare properties of the list style
     odtStyle = odf.text.ListStyle(name=name)
+    # Declare properties of the list style
     listProps = odf.style.ListLevelProperties()
+    if bulletDedent == 'auto':
+        bulletDedent = '0.25in'
+    else:
+        bulletDedent = '%spt' % bulletDedent
 
-    listProps.setAttribute('width', None)
-    listProps.setAttribute('height', None)
-    listProps.setAttribute('minlabelwidth', '0.25in')
+    listProps.setAttribute('minlabelwidth', bulletDedent)
     listProps.setAttribute('minlabeldistance', '0.15in')
-    listProps.setAttribute('textalign', 'left')
 
     if rmlStyle.bulletFontName is not None:
         odf_font_name = rmlFont2odfFont(rmlStyle.bulletFontName)
@@ -499,30 +500,28 @@ def registerListStyle(doc, name, rmlStyle, attributes=None):
             # ODF doesn't support fancy formats like '1st' or 'First'.
             numType = '1'
 
-        numbering = odf.text.ListLevelStyleNumber(
+        lvl_style = odf.text.ListLevelStyleNumber(
             level='1',
             numsuffix=post,
             numprefix=pre,
             numformat=numType)
-        numbering.addElement(listProps)
-        odtStyle.addElement(numbering)
 
     elif retrievedBullet is None:
-        numbering = odf.text.ListLevelStyleNumber(
+        # The bullet is a text, such as "RESOLVED:" etc
+        lvl_style = odf.text.ListLevelStyleNumber(
             level='1',
             numsuffix='',
             numprefix=bulletType,
             numformat='')
-        numbering.addElement(listProps)
-        odtStyle.addElement(numbering)
 
     else:
-        bullet = odf.text.ListLevelStyleBullet(
+        lvl_style = odf.text.ListLevelStyleBullet(
             bulletchar=retrievedBullet,
             level='1',
             bulletrelativesize='75%')
-        bullet.addElement(listProps)
-        odtStyle.addElement(bullet)
+
+    lvl_style.addElement(listProps)
+    odtStyle.addElement(lvl_style)
 
     doc.automaticstyles.addElement(odtStyle)
 

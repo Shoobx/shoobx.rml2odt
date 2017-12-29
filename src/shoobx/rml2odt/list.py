@@ -164,7 +164,6 @@ class ListBase(flowable.Flowable):
                 select=self.styleAttributes, attrMapping=self.attrMapping))
             stylesheet.registerListStyle(manager.document, newstylename,
                                          newstyle, attrs)
-            #manager.document.automaticstyles.addElement(style)
         else:
             newstylename = None
         self.item = odf.text.List(stylename=newstylename)

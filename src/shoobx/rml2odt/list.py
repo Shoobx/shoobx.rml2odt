@@ -129,8 +129,6 @@ class ListBase(flowable.Flowable):
     factories = {'li': ListItem}
     attrMapping = {}
     styleAttributes = zope.schema.getFieldNames(rml_stylesheet.IMinimalListStyle)
-    # Stores list id and maps that to name of created style
-    createdStylesDict = {}
 
     def __init__(self, *args, **kw):
         super(ListBase, self).__init__(*args, **kw)
@@ -164,8 +162,13 @@ class ListBase(flowable.Flowable):
                 select=self.styleAttributes, attrMapping=self.attrMapping))
             stylesheet.registerListStyle(manager.document, newstylename,
                                          newstyle, attrs)
+            if isinstance(self, OrderedList):
+                newstylename = newstylename + '-ol'
+            else:
+                newstylename = newstylename + '-ul'
         else:
             newstylename = None
+
         self.item = odf.text.List(stylename=newstylename)
         self.parent.contents.addElement(self.item)
         # Add all list items.

@@ -451,109 +451,140 @@ class BlockTableStyle(directive.RMLDirective):
         manager.styles[self.styleID] = self
 
 
+BULLETS = {
+    'bulletchar': u'\u2022',
+    'circle': u'\u25cf',
+    'square': u'\u25AA',
+    'diamond': u'\u2B29',
+    'darrowhead': u'\u2304',
+    'rarrowhead': u'\u27a4'
+}
+
+
 def registerListStyle(doc, name, rmlStyle, attributes=None, ulol=None):
     """Registers an rmlStyle as ODF styles
 
     rmlStyles have information both for ordered and unordered lists,
     ODF styles do not, so we need to register two different, but similar lists.
     """
-
     if ulol is None:
-        # Register both the unordered and ordered lists:
-        registerListStyle(doc, name, rmlStyle, attributes=attributes, ulol='ul')
-        registerListStyle(doc, name, rmlStyle, attributes=attributes, ulol='ol')
+        # Register both the unordered and ordered lists. odf seem to only
+        # include the ones actually used anyway.
+        registerListStyle(doc, name, rmlStyle, attributes=attributes,
+                          ulol='ul')
+        registerListStyle(doc, name, rmlStyle, attributes=attributes,
+                          ulol='ol')
         return
 
     name = '%s-%s' % (name, ulol)
 
     if attributes is None:
         attributes = {}
-    start = attributes.get('start', rmlStyle.start)
+    start = attributes.get('start', getattr(rmlStyle, 'start', 1))
     if isinstance(start, int):
         bulletType = None
     else:
         bulletType = start
 
-    bulletFormat = attributes.get('bulletFormat', rmlStyle.bulletFormat)
-    bulletDedent = attributes.get('bulletDedent', rmlStyle.bulletDedent)  # XXX use this!
-    numType = attributes.get('bulletType', rmlStyle.bulletType)
+    numType = attributes.get('bulletType',
+                             getattr(rmlStyle, 'bulletType', None))
+    bulletFormat = attributes.get('bulletFormat',
+                                  getattr(rmlStyle, 'bulletFormat', None))
+    bulletDedent = attributes.get('bulletDedent',
+                                  getattr(rmlStyle, 'bulletDedent', 'auto'))
 
-    bulletDict = {
-        'bulletchar': u'\u2022',
-        'circle': u'\u25cf',
-        'square': u'\u25AA',
-        'diamond': u'\u2B29',
-        'darrowhead': u'\u2304',
-        'rarrowhead': u'\u27a4'
-    }
+    if bulletDedent is None or bulletDedent == 'auto':
+        bulletDedent = 18
+
+    if isinstance(bulletDedent, six.string_types):
+        units = {'in': reportlab.lib.units.inch,
+                 'cm': reportlab.lib.units.cm,
+                 'mm': reportlab.lib.units.mm,
+                 'pt': 1}
+
+        bulletDedent = float(bulletDedent[:-2]) * units[bulletDedent[-2:]]
 
     odtStyle = odf.text.ListStyle(name=name)
-    # Declare properties of the list style
-    listProps = odf.style.ListLevelProperties()
-    if bulletDedent == 'auto':
-        bulletDedent = '0.25in'
-    elif not isinstance(bulletDedent, six.string_types):
-        bulletDedent = '%spt' % bulletDedent
 
-    listProps.setAttribute('minlabelwidth', bulletDedent)
-    listProps.setAttribute('minlabeldistance', '0.15in')
+    # Add the level properties:
+    for level in range(1, 11):
 
-    if rmlStyle.bulletFontName is not None:
-        odf_font_name = rmlFont2odfFont(rmlStyle.bulletFontName)
-        doc.fontfacedecls.addElement(
-            odf.style.FontFace(
-                name=odf_font_name,
-                fontfamily=odf_font_name))
-        listProps.setAttribute('fontname', odf_font_name)
+        # Declare properties of the list style
+        listProps = odf.style.ListLevelProperties()
+        listProps.setAttribute('listlevelpositionandspacemode',
+                               'label-alignment')
+        if getattr(rmlStyle, 'bulletFontName', None) is not None:
+            odf_font_name = rmlFont2odfFont(rmlStyle.bulletFontName)
 
-    retrievedBullet = bulletDict.get(bulletType)
+            if odf_font_name not in [x.getAttribute('name')
+                                     for x in doc.fontfacedecls.childNodes]:
+                doc.fontfacedecls.addElement(
+                    odf.style.FontFace(
+                        name=odf_font_name,
+                        fontfamily=odf_font_name))
+                listProps.setAttribute('fontname', odf_font_name)
 
-    # Make the number (ol) style:
-    if ulol == 'ol':
-        # A numType that is just one character (or None) means some sort of number
-        if bulletFormat is not None:
-            pre, post = bulletFormat.split('%s')
-        else:
-            pre = post = ''
+        level_indent = (18 * (level-1)) + bulletDedent
+        label_align = odf.style.ListLevelLabelAlignment(
+            labelfollowedby="listtab",
+            listtabstopposition="%spt" % level_indent,
+            textindent="-%spt" % bulletDedent,
+            marginleft="%spt" % level_indent)
+        listProps.appendChild(label_align)
 
-        if numType and numType.lower() not in '1ai':
-            # ODF doesn't support fancy formats like '1st' or 'First'.
-            numType = '1'
+        retrievedBullet = BULLETS.get(bulletType)
 
-        lvl_style = odf.text.ListLevelStyleNumber(
-            level='1',
-            numsuffix=post,
-            numprefix=pre,
-            numformat=numType,
-            startvalue=start,
-        )
+        # Make the number (ol) style:
+        if ulol == 'ol':
+            # A numType that is just one character (or None) means some sort of number
+            if bulletFormat is not None:
+                pre, post = bulletFormat.split('%s')
+            else:
+                pre = post = ''
 
-    else:
-        if bulletType and retrievedBullet is None:
-            # The bullet is a text, such as "RESOLVED:" etc
+            if numType and numType.lower() not in '1ai':
+                # ODF doesn't support fancy formats like '1st' or 'First'.
+                numType = '1'
+
             lvl_style = odf.text.ListLevelStyleNumber(
-                level='1',
-                # A bug in the DOCX conversion removes the first character.
-                # A space first in the prefix and a space as suffix fixes that.
-                numprefix=' ' + bulletType,
-                numsuffix=' ',
-                numformat='')
+                level=level,
+                numsuffix=post,
+                numprefix=pre,
+                numformat=numType,
+                startvalue=start,
+            )
 
-            label_align = odf.style.ListLevelLabelAlignment(
-                labelfollowedby="listtab",
-                listtabstopposition="28.22mm",
-                textindent="-28.22mm",
-                marginleft="12.7mm")
-            listProps.appendChild(label_align)
         else:
-            # Make the bullet (ul) style:
-            lvl_style = odf.text.ListLevelStyleBullet(
-                bulletchar=retrievedBullet,
-                level='1',
-                bulletrelativesize='75%')
+            if bulletType and retrievedBullet is None:
+                # The bullet is a text, such as "RESOLVED:" etc
+                lvl_style = odf.text.ListLevelStyleNumber(
+                    level=level,
+                    # A bug in the DOCX conversion removes the first character.
+                    # A space first in the prefix and a space as suffix fixes that.
+                    numprefix=' ' + bulletType,
+                    numsuffix=' ',
+                    numformat='')
 
-    lvl_style.addElement(listProps)
-    odtStyle.addElement(lvl_style)
+            else:
+                # Make the bullet (ul) style:
+                if retrievedBullet is None:
+                    retrievedBullet = BULLETS['bulletchar']
+                lvl_style = odf.text.ListLevelStyleBullet(
+                    bulletchar=retrievedBullet,
+                    level=level,
+                    bulletrelativesize='75%')
+
+        lvl_style.addElement(listProps)
+        odtStyle.addElement(lvl_style)
+
+    pstyle = odf.style.Style(name='P%s' % name,
+                             parentstylename='Standard',
+                             liststylename=name,
+                             family='paragraph'
+                             )
+    doc.automaticstyles.addElement(pstyle)
+
+    # Add the style to the doc
     doc.automaticstyles.addElement(odtStyle)
 
 

@@ -43,8 +43,6 @@
         bulletFontName="Chalkduster"
         bulletFontSize="50pt"
         bulletFormat="%s:"
-        bulletDedent="100pt"
-        leftIndent="100pt"
         />
     <listStyle
         name="OrdinalEnum"
@@ -78,32 +76,31 @@
     <h1>Unordered lists</h1>
 
     <h2>Multi-level</h2>
-    <para>A lot of formatting that isn't yet supported.</para>
 
-    <ul bulletColor="orange" bulletFontName="Times-Roman">
-      <li bulletColor="gray" bulletFontName="Helvetica"><para>Welcome to RML 1</para></li>
+    <ul>
+      <li><para>Welcome to RML 1</para></li>
       <li>
-        <ul bulletColor="red" bulletFontName="Times-Roman" bulletFontSize="8">
-          <li value="disc" bulletFontName="Helvetica"><para>unordered 1</para></li>
-          <li value="square" bulletColor="blue"><para>unordered 2</para></li>
+        <ul>
+          <li value="disc"><para>unordered 1</para></li>
+          <li value="square"><para>unordered 2</para></li>
           <li>
             <ul>
               <li><para>Unordered - another one</para></li>
               <li><para>Unordered - another one</para></li>
             </ul>
           </li>
-          <li value="diamond" bulletColor="green"><para>unordered 3</para></li>
-          <li value="rarrowhead" bulletColor="yellow"><para>unordered 4</para></li>
+          <li value="diamond"><para>unordered 3</para></li>
+          <li value="rarrowhead"><para>unordered 4</para></li>
           <li><para>unordered 5</para></li>
           <li><para>unordered 6</para></li>
-          <li value="disc" bulletColor="green"><para>unordered 3</para></li>
-          <li bulletColor="yellow"><para>unordered 4</para></li>
+          <li value="disc"><para>unordered 3</para></li>
+          <li><para>unordered 4</para></li>
         </ul>
       </li>
       <li><para>Welcome to RML 2</para></li>
       <li><para>Welcome to RML 3</para></li>
-      <ul bulletColor="orange" bulletFontName="Times-Roman">
-        <li bulletColor="gray" bulletFontName="Chalkduster"><para>Item 1</para></li>
+      <ul>
+        <li><para>Item 1</para></li>
         <li><para>Item 2</para></li>
       </ul>
     </ul>
@@ -172,7 +169,7 @@
       <li><para>Three</para></li>
     </ol>
 
-    <ol style="OrderedList" bulletType="i">
+    <ol style="OrderedList" bulletType="i" bulletDedent="50pt">
       <li><para>One</para></li>
       <li><para>Two</para></li>
       <li><para>Three</para></li>
@@ -200,6 +197,36 @@
       <li><para>One</para></li>
       <li><para>Two</para></li>
       <li><para>Three</para></li>
+    </ol>
+
+    <para>Multiple levels</para>
+
+    <ol>
+      <li><para>Welcome to RML 1</para></li>
+      <li>
+        <ol bulletType="A">
+          <li><para>Ordered 1</para></li>
+          <li><para>Ordered 2</para></li>
+          <li>
+            <ol bulletType="i">
+              <li><para>Ordered - another one</para></li>
+              <li><para>Ordered - another one</para></li>
+              <li>
+                <ol style="MyEnum">
+                  <li><para>Item 1</para></li>
+                  <li><para>Item 2</para></li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li><para>Ordered 3</para></li>
+          <li><para>Ordered 4</para></li>
+          <li><para>Ordered 5</para></li>
+          <li><para>Ordered 6</para></li>
+        </ol>
+      </li>
+      <li><para>Welcome to RML 2</para></li>
+      <li><para>Welcome to RML 3</para></li>
     </ol>
 
   </story>

@@ -1,8 +1,8 @@
 CHANGES
 =======
 
-1.0 (unreleased)
-----------------
+0.3.0 (2018-01-12)
+------------------
 
 - Many many formatting fixes including an almost complete rewrite of
   list handling and list styles.

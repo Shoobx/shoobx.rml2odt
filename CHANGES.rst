@@ -1,10 +1,17 @@
 CHANGES
 =======
 
-1.0 (unreleased)
-----------------
+0.3.1 (unreleased)
+------------------
 
 - Nothing changed yet.
+
+
+0.3.0 (2018-01-12)
+------------------
+
+- Many many formatting fixes including an almost complete rewrite of
+  list handling and list styles.
 
 
 0.2.0 (2017-12-08)

@@ -258,7 +258,7 @@ class BlockTable(flowable.Flowable):
     }
 
     def addColumns(self):
-        cols = len(self.element[0])
+        cols = max(len(e) for e in self.element)
         rows = len(self.element)
         # Creates the colWidths and rowHeights if they do not already exist
         attribs = dict(self.getAttributeValues())

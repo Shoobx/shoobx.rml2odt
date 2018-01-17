@@ -164,6 +164,10 @@ class TableCell(flowable.Flow):
     def process(self):
         manager = attr.getManager(self)
 
+        col = len(self.parent.row.childNodes)
+        row = len([x for x in self.parent.parent.table.childNodes
+                  if x.tagName == u'table:table-row']) - 1
+
         # Cell creation and styling
         self.cellProps = odf.style.TableCellProperties()
         self.cellProps.setAttribute('shrinktofit', True)
@@ -171,9 +175,32 @@ class TableCell(flowable.Flow):
         self.cellStyle = odf.style.Style(
             name=self.cellStyleName,
             family='table-cell')
+
+        kw = {}
+        table_style = self.parent.parent.getAttributeValues(select=['style'])
+        if table_style:
+            table_style = table_style[0][1]
+
+            for blockspan in [x for x in table_style.element.getchildren()
+                              if x.tag == 'blockSpan']:
+                attribs = blockspan.attrib
+                start_col, start_row = map(int, attribs['start'].split(','))
+                end_col, end_row = map(int, attribs['stop'].split(','))
+                if end_col == -1:
+                    end_col = self.parent.parent.columns()
+                if end_row == -1:
+                    end_row = self.parent.parent.rows()
+
+                if (col >= start_col and col <= end_col and
+                    row >= start_row and row <= end_row):
+                    # This cell should span many cells
+                    kw = {'numbercolumnsspanned': end_col - col,
+                          'numberrowsspanned': end_row - row,}
+                    break
+
         self.cell = odf.table.TableCell(
             stylename=self.cellStyleName,
-            valuetype='string')
+            valuetype='string', **kw)
 
         # Cell Text styling
         self.cellContentStyleName = manager.getNextStyleName('CellContent')
@@ -258,7 +285,7 @@ class BlockTable(flowable.Flowable):
     }
 
     def addColumns(self):
-        cols = len(self.element[0])
+        cols = max(len(e) for e in self.element)
         rows = len(self.element)
         # Creates the colWidths and rowHeights if they do not already exist
         attribs = dict(self.getAttributeValues())
@@ -333,6 +360,14 @@ class BlockTable(flowable.Flowable):
         if not flag:
             self.addColumns()
         self.processSubDirectives()
+
+    def rows(self):
+        return len([e for e in self.element.getchildren()
+                    if e.tag == 'tr'])
+
+    def columns(self):
+        return max([len([e for e in row.getchildren() if e.tag == 'td'])
+                     for row in self.element.getchildren()])
 
 
 flowable.Flow.factories['blockTable'] = BlockTable

@@ -392,6 +392,9 @@ class BlockSpan(TableStyleCommand):
     signature = rml_stylesheet.IBlockSpan
     name = 'SPAN'
 
+    def process(self):
+        pass
+
 
 class LineStyle(TableStyleCommand):
     signature = rml_stylesheet.ILineStyle
@@ -420,7 +423,7 @@ class BlockTableStyle(directive.RMLDirective):
         'blockRowBackground': BlockRowBackground,
         'blockColBackground': BlockColBackground,
         'blockValign': BlockValign,
-        # 'blockSpan': BlockSpan,
+        'blockSpan': BlockSpan,
         # lineStyle': LineStyle,
     }
 

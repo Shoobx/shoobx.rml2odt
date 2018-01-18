@@ -464,7 +464,8 @@ BULLETS = {
 }
 
 
-def registerListStyle(doc, name, rmlStyle, attributes=None, ulol=None):
+def registerListStyle(doc, name, rmlStyle, attributes=None, ulol=None,
+                      parent_level=0):
     """Registers an rmlStyle as ODF styles
 
     rmlStyles have information both for ordered and unordered lists,
@@ -527,7 +528,7 @@ def registerListStyle(doc, name, rmlStyle, attributes=None, ulol=None):
                         fontfamily=odf_font_name))
                 listProps.setAttribute('fontname', odf_font_name)
 
-        level_indent = (18 * (level-1)) + bulletDedent
+        level_indent = (18 * (level-1+parent_level)) + bulletDedent
         label_align = odf.style.ListLevelLabelAlignment(
             labelfollowedby="listtab",
             listtabstopposition="%spt" % level_indent,

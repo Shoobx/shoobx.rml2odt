@@ -15,13 +15,13 @@
 """
 import copy
 import odf.text
-import lxml
 import re
 import reportlab.lib.styles
 import uuid
 import zope.interface
 import zope.schema
 
+from lxml import etree
 from odf.style import FontFace, ListLevelProperties, ParagraphProperties
 from odf.style import Style, TextProperties
 from odf.text import P, H, A, S, ListItem, ListStyle, ListLevelStyleBullet
@@ -33,6 +33,7 @@ from z3c.rml import list as rml_list
 from z3c.rml import stylesheet as rml_stylesheet
 from z3c.rml import flowable as rml_flowable
 from z3c.rml import attr, directive
+
 
 def fontNameKeyword(fontname):
     """A dict of ListProperties keywords for fontname
@@ -137,7 +138,83 @@ class ListItem(flowable.Flow):
         self.newStyleName = self.modifyStyle()
         self.parent.item.addElement(self.item)
         self.contents = self.item
-        super(ListItem, self).process()
+        self.processSubDirectives()
+
+    def processSubDirectives(self, select=None, ignore=None):
+        # Go through all children of the directive and try to process them.
+        for element in self.element.getchildren():
+            # Ignore all comments
+            if isinstance(element, etree._Comment):
+                continue
+
+            if element.tag == "blockTable":
+                # Make a list instead of a table
+
+                style = self.parent.getRootStyle()
+                numlevels = style.getElementsByType(odf.text.ListLevelStyleNumber)
+                bulletlevels = style.getElementsByType(odf.text.ListLevelStyleBullet)
+                levels = bulletlevels or numlevels
+
+            # Find the current level and get the indent
+                for levelstyle in levels:
+                    if int(levelstyle.getAttribute('level')) != self.parent.level:
+                        continue
+
+                    # This is the level
+                    props = levelstyle.getElementsByType(odf.style.ListLevelProperties)
+                    if not props:
+                        indent = 0
+                        break  # No properties in this level!?
+                    align = props[0].getElementsByType(odf.style.ListLevelLabelAlignment)
+                    if not align:
+                        indent = 0
+                        break  # No indent in this level!?
+                    indent = align[0].getAttribute('textindent')
+                    if indent[0] == '-':
+                        indent = indent[1:]
+                    else:
+                        indent = '-' + indent
+                    break  # done
+
+                manager = attr.getManager(self)
+                newstylename = manager.getNextStyleName('ListTable')
+                style_attrs = {'start': ' ', 'bulletDedent': indent}
+                stylesheet.registerListStyle(manager.document, newstylename,
+                                             None, style_attrs)
+
+                ol = odf.text.List(stylename=newstylename + '-ul')
+                self.contents.appendChild(ol)
+
+                # Retrieve the data
+                for row in element.getchildren():
+                    # Make a list item for each row
+                    olItem = odf.text.ListItem()
+                    ol.appendChild(olItem)
+                    p = odf.text.P()
+                    olItem.appendChild(p)
+
+                    for cell in row.getchildren():
+                        for text in cell.itertext():
+                            p.addText(text.strip())
+                        p.addElement(odf.text.Tab())
+                continue
+
+            # Raise an error/log any unknown directive.
+            if element.tag not in self.factories:
+                msg = "Directive %r could not be processed and was " \
+                    "ignored. %s" %(element.tag,
+                                    directive.getFileInfo(self, element))
+                # Record any tags/elements that could not be processed.
+                directive.logger.warning(msg)
+                if directive.ABORT_ON_INVALID_DIRECTIVE:
+                    raise ValueError(msg)
+                continue
+            if select is not None and element.tag not in select:
+                continue
+            if ignore is not None and element.tag in ignore:
+                continue
+            subdirective = self.factories[element.tag](element, self)
+            subdirective.process()
 
 
 class OrderedListItem(ListItem):
@@ -166,7 +243,7 @@ class ListBase(flowable.Flowable):
 
     def getRootStyle(self):
         parent = self
-        root = None
+        root = self
         while True:
             parent = parent.parent
             if isinstance(parent, ListItem):
@@ -242,15 +319,14 @@ class ListBase(flowable.Flowable):
                 # We must now find the correct level style, and modify it.
                 style = self.getRootStyle()
                 for levelstyle in style.childNodes:
-                    if not levelstyle.tagName.startswith('text:list-level-style'):
-                        # We only care about levels now
-                        continue
-                    if int(levelstyle.getAttribute('level')) != self.level:
-                        continue
 
                     # Modify this level
                     if levelstyle.tagName == 'text:list-level-style-number':
+
                         # Ordered list
+                        if int(levelstyle.getAttribute('level')) != self.level:
+                            # Not this level
+                            continue
 
                         if 'bulletType' in attrs:
                             bulletType = attrs['bulletType']
@@ -267,12 +343,19 @@ class ListBase(flowable.Flowable):
                             levelstyle.setAttribute('numprefix', pre)
                             levelstyle.setAttribute('numsuffix', post)
 
+                        break  # done
+
                     if levelstyle.tagName == 'text:list-level-style-bullet':
                         # Unordered list
+                        if int(levelstyle.getAttribute('level')) != self.level:
+                            continue
+
                         if 'bulletType' in attrs:
                             bulletType = attrs['bulletType']
                             bulletChar = stylesheet.BULLETS[bulletType]
                             levelstyle.setAttribute('bulletchar', bulletChar)
+
+                        break  # done
 
         self.parent.contents.addElement(self.item)
         # Add all list items.

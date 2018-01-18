@@ -31,6 +31,7 @@
     </blockTable>
 
     <ul>
+      <li>This is a list item.</li>
       <li>
         <blockTable>
           <tr>
@@ -41,6 +42,18 @@
           </tr>
         </blockTable>
       </li>
+      <li>This list item is between two tables</li>
+      <li>
+        <blockTable>
+          <tr>
+            <td>BlockTables</td>
+            <td>In lists</td>
+            <td>Enf up</td>
+            <td>After the list</td>
+          </tr>
+        </blockTable>
+      </li>
+
     </ul>
 
   </story>

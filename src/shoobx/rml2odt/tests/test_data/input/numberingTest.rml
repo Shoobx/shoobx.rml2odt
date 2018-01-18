@@ -392,5 +392,20 @@
     <li><para>Help out more at home</para></li>
   </ul>
 
+  <h2>MIXED LIST TYPES</h2>
+
+  <ol>
+    <li><para>Summat</para></li>
+    <li><para>Or odder</para></li>
+    <li>
+      <ul>
+        <li><para>Bullet</para></li>
+        <li><para>Ballet</para></li>
+      </ul>
+    </li>
+    <li><para>Something</para></li>
+    <li><para>Whatever</para></li>
+  </ol>
+
   </story>
 </document>

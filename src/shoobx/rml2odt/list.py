@@ -261,7 +261,8 @@ class ListBase(flowable.Flowable):
     def process(self):
         # Keeps track of the root list (in the case of nested lists)
         # Keeps track of the level of each list
-        if isinstance(self.parent, ListItem):
+        if (isinstance(self.parent, ListItem) and
+            isinstance(self.parent.parent, type(self))):
             parent_list = self.parent.parent
             self.level = parent_list.level + 1
             self.rootList = parent_list.rootList

@@ -72,7 +72,8 @@
     <listStyle name="Resolutions" bulletFontName="Times-Bold" bulletFontSize="12pt" bulletType="bullet" bulletDedent="80" leftIndent="80" start="RESOLVED:"/>
    <paraStyle name="ResolutionIndent" parent="Normal" leftIndent="80pt"/>
 
-    <listStyle name="Articles" bulletFontName="Times-Bold" bulletFontSize="12pt" bulletType="O" bulletFormat="%s:" />
+    <listStyle name="Articles" bulletFontName="Times-Bold" bulletFontSize="12pt" bulletType="O" bulletFormat="%s:"
+      bulletDedent="80" />
 
     <blockTableStyle id="SimpleTable">
       <blockFont start="0,0" stop="-1,-1" name="Times-Roman" size="12pt"/>

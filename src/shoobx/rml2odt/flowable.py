@@ -539,13 +539,19 @@ class Paragraph(Flowable):
             text = ''
         text = re.sub('\n\s+', ' ', text)
         text = re.sub('\s\s\s+', '', text)
-        text = re.sub('\t', '', text)
         return text
 
     def addSpan(self, text=None):
+
         if text is not None:
-            text = self._cleanText(text)
-        span = odf.text.Span(text=text)
+            parts = [self._cleanText(t) for t in text.split('\t')]
+
+        span = odf.text.Span()
+        for part in parts[:-1]:
+            span.addText(part)
+            span.addElement(odf.text.Tab())
+        span.addText(parts[-1])
+
         self.odtParagraph.addElement(span)
         manager = attr.getManager(self)
         styleName = manager.getNextStyleName('T')

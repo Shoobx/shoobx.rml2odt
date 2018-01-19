@@ -33,6 +33,7 @@ from z3c.rml import list as rml_list
 from z3c.rml import stylesheet as rml_stylesheet
 from z3c.rml import flowable as rml_flowable
 from z3c.rml import attr, directive
+from z3c.rml import num2words
 
 
 def fontNameKeyword(fontname):
@@ -52,26 +53,6 @@ class ListItem(flowable.Flow):
     styleAttributes = zope.schema.getFieldNames(rml_stylesheet.IMinimalListStyle)
     ListIDTracker = []
     attrMapping = {}
-
-    def modifyStyle(self):
-        attrs = self.getAttributeValues(
-            select=self.styleAttributes, attrMapping=self.attrMapping)
-        if not attrs:
-            # No style attributes, do nothing
-            return
-
-        # We just want the style name, not the style, and it can be None,
-        # so looking directly at the attributes makes sense here:
-        parent_style_name = self.parent.element.attrib.get('style', 'Normal')
-        manager = attr.getManager(self)
-        new_style_name = manager.getNextStyleName(parent_style_name)
-        new_style = ListStyle(name=new_style_name)
-
-        numStyle = ListLevelStyleNumber(
-            numformat='',
-            numsuffix=":",
-            level=str(self.parent.level),
-        )
 
     def _getParaStyle(self):
         # Any childnodes that are paragraphs must have a special style
@@ -129,13 +110,31 @@ class ListItem(flowable.Flow):
     def process(self):
         self._convertSimpleContent()
 
-        if not self.parent.item.childNodes:
-            attrs = {'startvalue': 1}
+        parent_style = self.parent.getRootStyle()
+        fancy_numbering = getattr(parent_style, 'fancy_numbering', False)
+        count = len(self.parent.item.childNodes) + 1
+        if count == 1:
+            # Restart the numbering at the start of each list
+            attrs = {'startvalue': count}
         else:
             attrs = {}
-        self.item = odf.text.ListItem(**attrs)
+        if fancy_numbering:
 
-        self.newStyleName = self.modifyStyle()
+            if parent_style.fancy_numbering in 'oO':
+                word = num2words.num2words(count)
+                if parent_style.fancy_numbering == 'O':
+                    word = word.upper()
+
+            for child in self.element.getchildren():
+                if child.tag == 'para':
+                    child.text = ''.join((parent_style.pre,
+                                          word,
+                                          parent_style.post,
+                                          '\t',
+                                          child.text.strip()))
+                    break
+
+        self.item = odf.text.ListItem(**attrs)
         self.parent.item.addElement(self.item)
         self.contents = self.item
         self.processSubDirectives()
@@ -331,11 +330,6 @@ class ListBase(flowable.Flowable):
 
                         if 'bulletType' in attrs:
                             bulletType = attrs['bulletType']
-                            if bulletType.lower() not in '1ai':
-                                # ODF doesn't support fancy formats like
-                                # '1st' or 'First'.
-                                bulletType = '1'
-
                             levelstyle.setAttribute('numformat', bulletType)
 
                         if 'bulletFormat' in attrs:

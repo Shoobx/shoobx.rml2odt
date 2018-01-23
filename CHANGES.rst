@@ -4,7 +4,21 @@ CHANGES
 0.3.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- More indentation fixes.
+
+- Added support for O format lists (First, Second, Third)
+
+- Add support to have bullet lists in numebr lists and vice versa
+
+- Convert tables in lists to lists in lists
+
+- Support for blockSpan in table styles.
+
+- Handle tail text of comments
+
+- Supporting RML blockSpan styles for tables
+
+- Take the maximum, not the first when calculating the number of columns
 
 
 0.3.0 (2018-01-12)

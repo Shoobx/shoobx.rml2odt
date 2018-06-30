@@ -14,6 +14,9 @@
 .. image:: https://img.shields.io/pypi/pyversions/shoobx.rml2odt.svg
     :target: https://pypi.python.org/pypi/shoobx.rml2odt/
 
+.. image:: https://api.codeclimate.com/v1/badges/9c462255ca85b7f77de8/maintainability
+   :target: https://codeclimate.com/github/Shoobx/shoobx.rml2odt/maintainability
+   :alt: Maintainability
 
 This library implements a converter from Reportlabs RML format to
 Libreoffices/Open Document Formats ODT format utilizing the ``z3c.rml``

@@ -600,19 +600,17 @@ class Paragraph(Flowable):
         styleName = self.determineStyle()
         self.odtParagraph.setAttribute('stylename', styleName)
 
-        previous = self.element
         for child in self.element.getchildren():
             if callable(child.tag):
-                # Usually a comment. It may have text as it's tail, which
-                # then needs to be added to the previous elements tail,
-                # since the comment is completely ignored.
-                previous.tail += child.tail
+                # Usually a comment. It may have text as it's tail.
+                # The comment is completely ignored.
+                # But we need to add the tail.
+                self.addSpan(child.tail)
             if child.tag == 'span':
                 regex = '[a-zA-Z0-9_]{7}-[a-zA-Z0-9_]{3}'
                 if re.findall(regex, child.text):
                     self.contents.setAttribute('numbercolumnsspanned', '2')
                 self.addSpan(child.text)
-            previous = child
 
         # Append new paragraph.
         self.contents.addElement(self.odtParagraph)

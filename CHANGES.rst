@@ -4,6 +4,8 @@ CHANGES
 0.4.1 (unreleased)
 ------------------
 
+- Fix: Text following a comment tag was discarded.
+
 - Fix: 3+ whitespace was replaced with nothing. Caused text to miss spaces.
 
 

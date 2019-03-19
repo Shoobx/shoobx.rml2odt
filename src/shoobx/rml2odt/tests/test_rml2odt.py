@@ -23,7 +23,6 @@ import unittest
 import zipfile
 from PIL import Image
 from zope.interface import verify
-from odf.element import Element
 
 from shoobx.rml2odt import interfaces, rml2odt
 

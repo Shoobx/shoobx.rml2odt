@@ -4,7 +4,7 @@ CHANGES
 0.4.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fix: 3+ whitespace was replaced with nothing. Caused text to miss spaces.
 
 
 0.4.0 (2018-01-23)

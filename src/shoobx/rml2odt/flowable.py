@@ -537,8 +537,9 @@ class Paragraph(Flowable):
     def _cleanText(self, text):
         if not text:
             text = ''
+        # squash lots of whitespace to a single space
         text = re.sub('\n\s+', ' ', text)
-        text = re.sub('\s\s\s+', '', text)
+        text = re.sub('\s\s+', ' ', text)
         return text
 
     def addSpan(self, text=None):

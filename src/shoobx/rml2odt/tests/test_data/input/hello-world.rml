@@ -11,6 +11,17 @@
 
   <story>
     <para>Hello <i>World</i>!</para>
+    <para>Lot      of
+    whitespace
+
+
+
+    <i>here</i>!
+
+
+    to    be
+
+    removed</para>
   </story>
 
 </document>

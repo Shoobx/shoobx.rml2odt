@@ -1,7 +1,7 @@
 CHANGES
 =======
 
-0.4.1 (unreleased)
+0.4.1 (2019-03-19)
 ------------------
 
 - Fix: Text following a comment tag was discarded.

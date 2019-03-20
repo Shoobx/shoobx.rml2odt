@@ -4,7 +4,7 @@ CHANGES
 0.4.2 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fix `span` tag handling. It literally discarded most text.
 
 
 0.4.1 (2019-03-19)

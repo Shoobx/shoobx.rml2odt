@@ -6,6 +6,7 @@ CHANGES
 
 - Fix: the `br` tag used a class variable to remember whether it added the
   style `BreakJustify`.
+- Fix `span` tag handling. It literally discarded most text.
 
 
 0.4.1 (2019-03-19)

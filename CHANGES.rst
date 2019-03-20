@@ -1,7 +1,7 @@
 CHANGES
 =======
 
-0.4.2 (unreleased)
+0.4.2 (2019-03-20)
 ------------------
 
 - Fix: the `br` tag used a class variable to remember whether it added the

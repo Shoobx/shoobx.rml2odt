@@ -22,21 +22,17 @@ import odf.style
 import odf.text
 import odf.draw
 import pyqrcode
-import copy
 import os
-import png
 import reportlab.lib.styles
 import re
 import six
 import zope.interface
 
-from reportlab.lib import styles, utils
+from z3c.rml import attr, interfaces, platypus
 from z3c.rml import directive, occurence
 from z3c.rml import flowable as rml_flowable
-from z3c.rml import template as rml_template
 from shoobx.rml2odt import stylesheet
 
-from z3c.rml import attr, directive, interfaces, platypus
 from shoobx.rml2odt.interfaces import IContentContainer
 
 
@@ -74,6 +70,31 @@ class Flowable(directive.RMLDirective):
         while not IContentContainer.providedBy(parent):
             parent = parent.parent
         return parent.contents
+
+    def processSubDirectives(self, select=None, ignore=None):
+        # Go through all children of the directive and try to process them.
+        for element in self.element.getchildren():
+            tag = element.tag
+            # in contrast to z3c.rml
+            # Process all comments, tag tail needs to be included as text!
+            # pain is that the element.tag is some weird method
+            if isinstance(element, lxml.etree._Comment):
+                tag = '__comment__'
+            # Raise an error/log any unknown directive.
+            if tag not in self.factories:
+                msg = "Directive %r could not be processed and was " \
+                      "ignored. %s" %(tag, directive.getFileInfo(self, element))
+                # Record any tags/elements that could not be processed.
+                directive.logger.warning(msg)
+                if directive.ABORT_ON_INVALID_DIRECTIVE:
+                    raise ValueError(msg)
+                continue
+            if select is not None and tag not in select:
+                continue
+            if ignore is not None and tag in ignore:
+                continue
+            handler = self.factories[tag](element, self)
+            handler.process()
 
     def inputImageIntoDoc(self):
         args = {
@@ -339,6 +360,26 @@ class Strike(ComplexSubParagraphDirective):
         self.setStyle('strike', True)
 
 
+class ISpan(IComplexSubParagraphDirective):
+    """Renders the text inside of a span."""
+
+
+class Span(ComplexSubParagraphDirective):
+    signature = ISpan
+
+
+class IComment(IComplexSubParagraphDirective):
+    """Ignores the comment itself, but renders the tail text."""
+
+
+class Comment(ComplexSubParagraphDirective):
+    signature = IComment
+
+    def process(self):
+        if self.element.tail:
+            self.paragraph.addSpan(self.element.tail)
+
+
 class IFont(IComplexSubParagraphDirective):
     """Renders the text inside as strike."""
 
@@ -483,6 +524,8 @@ ComplexSubParagraphDirective.factories = {
     'pageNumber': PageNumber,
     # Unsupported tags:
     # 'greek': Greek,
+    'span': Span,
+    '__comment__': Comment
 }
 
 IComplexSubParagraphDirective.setTaggedValue(
@@ -518,6 +561,8 @@ class Paragraph(Flowable):
         'a': Anchor,
         'br': Break,
         'pageNumber': PageNumber,
+        'span': Span,
+        '__comment__': Comment
         # Unsupported tags:
         # 'greek': Greek,
     }
@@ -600,24 +645,16 @@ class Paragraph(Flowable):
         styleName = self.determineStyle()
         self.odtParagraph.setAttribute('stylename', styleName)
 
-        for child in self.element.getchildren():
-            if callable(child.tag):
-                # Usually a comment. It may have text as it's tail.
-                # The comment is completely ignored.
-                # But we need to add the tail.
-                self.addSpan(child.tail)
-            if child.tag == 'span':
-                regex = '[a-zA-Z0-9_]{7}-[a-zA-Z0-9_]{3}'
-                if re.findall(regex, child.text):
-                    self.contents.setAttribute('numbercolumnsspanned', '2')
-                self.addSpan(child.text)
-
         # Append new paragraph.
         self.contents.addElement(self.odtParagraph)
         if self.element.text:
             self.addSpan(self.element.text)
 
         self.processSubDirectives()
+
+        if self.element.tail and self.element.tail.strip():
+            # just in case there is some non-whitespace text lurking in tail
+            self.addSpan(self.element.tail)
 
 
 class Preformatted(Paragraph):

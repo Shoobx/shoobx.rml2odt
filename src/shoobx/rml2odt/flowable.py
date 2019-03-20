@@ -441,18 +441,25 @@ class Sub(ComplexSubParagraphDirective):
 
 class Break(SubParagraphDirective):
     signature = rml_flowable.IBreak
-    createdStyle = False
+
+    def _hasStyle(self, document, styleName):
+        # ohwell odf.element has no find or xpath helper...
+        for el in document.automaticstyles.childNodes:
+            for name, value in el.attributes.items():
+                if name[1] == 'name' and value == styleName:
+                    return True
+        return False
 
     def process(self):
-        span = self.paragraph.odtParagraph.addElement(odf.text.LineBreak())
-        manager = attr.getManager(self)
-        if not Break.createdStyle:
-            odtStyle = odf.style.Style(name='BreakJustify', family='paragraph')
-            manager.document.automaticstyles.addElement(odtStyle)
+        self.paragraph.odtParagraph.addElement(odf.text.LineBreak())
+        document = attr.getManager(self).document
+        styleName = 'BreakJustify'
+        if not self._hasStyle(document, styleName):
+            odtStyle = odf.style.Style(name=styleName, family='paragraph')
             paraProps = odf.style.ParagraphProperties()
             paraProps.setAttribute('textalign', 'center')
             odtStyle.appendChild(paraProps)
-            Break.createdStyle = True
+            document.automaticstyles.addElement(odtStyle)
 
         if self.element.tail:
             self.paragraph.addSpan(self.element.tail.strip())

@@ -4,7 +4,8 @@ CHANGES
 0.4.2 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fix: the `br` tag used a class variable to remember whether it added the
+  style `BreakJustify`.
 
 
 0.4.1 (2019-03-19)

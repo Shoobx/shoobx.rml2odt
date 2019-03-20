@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="iso-8859-1" standalone="no"?>
+<!DOCTYPE document SYSTEM "rml.dtd">
+
+<document filename="tag-rml.pdf">
+  <template>
+    <pageTemplate id="main">
+      <frame id="first" x1="1cm" y1="1cm" width="19cm" height="26cm"/>
+    </pageTemplate>
+  </template>
+  <story>
+
+    <title><font face="Courier">&lt;br&gt;</font> Tag Demo</title>
+
+    <para>Some<br/>text.</para>
+    <para>Some<br/><br/>more<br/><br/>text.</para>
+    <para>Even<br/>more<br/>text.</para>
+
+  </story>
+</document>

@@ -381,7 +381,7 @@ class Comment(ComplexSubParagraphDirective):
 
 
 class IFont(IComplexSubParagraphDirective):
-    """Renders the text inside as strike."""
+    """Set font attributes."""
 
     face = attr.String(
         title=u'Font face',
@@ -442,24 +442,8 @@ class Sub(ComplexSubParagraphDirective):
 class Break(SubParagraphDirective):
     signature = rml_flowable.IBreak
 
-    def _hasStyle(self, document, styleName):
-        # ohwell odf.element has no find or xpath helper...
-        for el in document.automaticstyles.childNodes:
-            for name, value in el.attributes.items():
-                if name[1] == 'name' and value == styleName:
-                    return True
-        return False
-
     def process(self):
         self.paragraph.odtParagraph.addElement(odf.text.LineBreak())
-        document = attr.getManager(self).document
-        styleName = 'BreakJustify'
-        if not self._hasStyle(document, styleName):
-            odtStyle = odf.style.Style(name=styleName, family='paragraph')
-            paraProps = odf.style.ParagraphProperties()
-            paraProps.setAttribute('textalign', 'center')
-            odtStyle.appendChild(paraProps)
-            document.automaticstyles.addElement(odtStyle)
 
         if self.element.tail:
             self.paragraph.addSpan(self.element.tail.strip())

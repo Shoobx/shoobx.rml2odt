@@ -15,25 +15,17 @@
 """
 import copy
 import odf.text
-import re
-import reportlab.lib.styles
-import uuid
 import zope.interface
 import zope.schema
 
 from lxml import etree
-from odf.style import FontFace, ListLevelProperties, ParagraphProperties
-from odf.style import Style, TextProperties
-from odf.text import P, H, A, S, ListItem, ListStyle, ListLevelStyleBullet
-from odf.text import List, ListLevelStyleNumber, Span
-from reportlab.lib.sequencer import _type2formatter
+from reportlab.lib import sequencer
 from shoobx.rml2odt import flowable, stylesheet
 from shoobx.rml2odt.interfaces import IContentContainer
 from z3c.rml import list as rml_list
 from z3c.rml import stylesheet as rml_stylesheet
 from z3c.rml import flowable as rml_flowable
 from z3c.rml import attr, directive
-from z3c.rml import num2words
 
 
 def fontNameKeyword(fontname):
@@ -119,12 +111,12 @@ class ListItem(flowable.Flow):
         else:
             attrs = {}
         if fancy_numbering:
+            # ohwell, let's dig into reportlab internals...
+            # we don't want to reimplement all that bullet formatting
+            fmter = sequencer._type2formatter[fancy_numbering]
+            word = fmter(count)
 
-            if parent_style.fancy_numbering in 'oO':
-                word = num2words.num2words(count)
-                if parent_style.fancy_numbering == 'O':
-                    word = word.upper()
-
+            # DIY bullet: patch the bullet text into the child para tag's text
             for child in self.element.getchildren():
                 if child.tag == 'para':
                     child.text = ''.join((parent_style.pre,

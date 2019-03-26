@@ -344,7 +344,7 @@
 
     <ol style="Ordered" bulletType="r">
       <li><para>One</para></li>
-      <li><para>Two</para></li>
+      <li><para>Two <b>bold</b></para></li>
       <li><para>Three</para></li>
     </ol>
 
@@ -372,13 +372,7 @@
 
     <ol>
       <li value="5"><para>Five</para></li>
-      <li><para>Six</para></li>
-      <li><para>Seven</para></li>
-    </ol>
-
-    <ol style="Ordered" bulletType="r">
-      <li value="5"><para>Five</para></li>
-      <li><para>Six</para></li>
+      <li><para>Six <b>bold</b></para></li>
       <li><para>Seven</para></li>
     </ol>
 

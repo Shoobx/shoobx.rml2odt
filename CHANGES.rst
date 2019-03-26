@@ -4,7 +4,7 @@ CHANGES
 0.4.3 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fix: support all custom `li` bullets (l, L, o, O, r, R)
 
 
 0.4.2 (2019-03-20)

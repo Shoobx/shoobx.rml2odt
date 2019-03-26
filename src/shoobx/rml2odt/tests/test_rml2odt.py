@@ -136,9 +136,14 @@ class CompareODTTestCase(unittest.TestCase):
         test = Image.open(test_file).getdata()
         for i in range(len(base)):
             if (base[i] - test[i]) != 0:
-                self.fail(
-                    'Image is not the same: %s' % os.path.basename(baseImage)
-                )
+                msg = (
+                    'Image is not the same: %s\n\n'
+                    'If you have Imagemagick installed, you can compare with:'
+                    '\n\n'
+                    '  compare "%s" "%s" -compose src /tmp/difference.png'
+                    % (os.path.basename(baseImage), baseImage, testImage)
+                    )
+                self.fail(msg)
         base_file.close()
         test_file.close()
 

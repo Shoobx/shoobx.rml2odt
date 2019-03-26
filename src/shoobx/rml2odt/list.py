@@ -99,22 +99,44 @@ class ListItem(flowable.Flow):
         # Add paragraph to list item.
         self.element.append(para)
 
+    def _getStartValue(self, node, default=0):
+        for att, value in node.attributes.items():
+            if att[1] == 'start-value':
+                return value
+        return default
+
     def process(self):
         self._convertSimpleContent()
 
         parent_style = self.parent.getRootStyle()
         fancy_numbering = getattr(parent_style, 'fancy_numbering', False)
-        count = len(self.parent.item.childNodes) + 1
-        if count == 1:
-            # Restart the numbering at the start of each list
-            attrs = {'startvalue': count}
+        value = self.element.get('value')
+        attrs = {}
+        if value and value.isdigit():
+            # if there's a forced start number, use it
+            # ODT does not really support setting the bullet per paragraph
+            # which is also set by the value attribute, that's why we only
+            # accept digits here
+            index = int(value)
+            attrs = {'startvalue': index}
         else:
-            attrs = {}
+            count = len(self.parent.item.childNodes)
+            if count == 0:
+                # Restart the numbering at the start of each list
+                # otherwise the default start index is zero, why???
+                attrs = {'startvalue': 1}
+                index = 1
+            else:
+                # for fancy_numbering we need to keep track of the index
+                # ourselves, including the starting index
+                startvalue = self._getStartValue(self.parent.item.childNodes[0])
+                index = count + int(startvalue)
+
         if fancy_numbering:
             # ohwell, let's dig into reportlab internals...
             # we don't want to reimplement all that bullet formatting
             fmter = sequencer._type2formatter[fancy_numbering]
-            word = fmter(count)
+            word = fmter(index)
 
             # DIY bullet: patch the bullet text into the child para tag's text
             for child in self.element.getchildren():
@@ -215,13 +237,7 @@ class OrderedListItem(ListItem):
 class UnorderedListItem(ListItem):
     signature = rml_list.IUnorderedListItem
     styleAttributes = ListItem.styleAttributes + ['value']
-    bulletDict = {
-        'disc': u'\u25CF',
-        'square': u'\u25A0',
-        'diamond': u'\u25C6',
-        'rarrowhead': u'\u27A4',
-    }
-    bulletList = ['disc', 'square', 'diamond', 'rarrowhead']
+    # ODT does not really support setting the bullet per paragraph
 
 
 class ListBase(flowable.Flowable):

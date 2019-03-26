@@ -4,7 +4,7 @@ CHANGES
 0.4.3 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fix: bullet numbering ignored `value` as start
 
 
 0.4.2 (2019-03-20)

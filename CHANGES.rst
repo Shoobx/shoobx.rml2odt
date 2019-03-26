@@ -6,6 +6,8 @@ CHANGES
 
 - Fix: bullet numbering ignored `value` as start
 
+- Fix: support all custom `li` bullets (l, L, o, O, r, R)
+
 
 0.4.2 (2019-03-20)
 ------------------

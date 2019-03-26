@@ -1,7 +1,7 @@
 CHANGES
 =======
 
-0.4.3 (unreleased)
+0.4.3 (2019-03-26)
 ------------------
 
 - Fix: bullet numbering ignored `value` as start

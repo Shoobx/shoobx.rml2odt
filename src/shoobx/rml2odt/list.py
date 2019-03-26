@@ -145,7 +145,7 @@ class ListItem(flowable.Flow):
                                           word,
                                           parent_style.post,
                                           '\t',
-                                          child.text))
+                                          child.text.lstrip()))
                     break
 
         self.item = odf.text.ListItem(**attrs)

@@ -4,7 +4,7 @@ CHANGES
 0.4.4 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fix: Next paragraph text strip for custom bullets broken by 0.4.3.
 
 
 0.4.3 (2019-03-26)

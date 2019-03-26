@@ -372,8 +372,27 @@
 
     <ol>
       <li value="5"><para>Five</para></li>
-      <li><para>Six <b>bold</b></para></li>
-      <li><para>Seven</para></li>
+      <li>
+        <para>Six <b>bold</b></para>
+      </li>
+      <li>
+        <para> Spaced Seven</para>
+      </li>
+    </ol>
+
+    <ol style="Ordered" bulletType="R">
+      <li value="5"><para>Five</para></li>
+      <li>
+        <para>Six <b>bold</b></para>
+      </li>
+      <li>
+        <para> Spaced Seven</para>
+      </li>
+      <li>
+        <para>
+            Even more spaced
+        </para>
+      </li>
     </ol>
 
   </story>

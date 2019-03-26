@@ -4,6 +4,8 @@ CHANGES
 0.4.3 (unreleased)
 ------------------
 
+- Fix: bullet numbering ignored `value` as start
+
 - Fix: support all custom `li` bullets (l, L, o, O, r, R)
 
 

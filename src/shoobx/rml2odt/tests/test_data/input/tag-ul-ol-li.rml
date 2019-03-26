@@ -98,19 +98,19 @@
       <li><para>Welcome to RML 1</para></li>
       <li>
         <ul>
-          <li value="disc"><para>unordered 1</para></li>
-          <li value="square"><para>unordered 2</para></li>
+          <li value="disc"><para>unordered 1 - disc</para></li>
+          <li value="square"><para>unordered 2 - square</para></li>
           <li>
             <ul>
               <li><para>Unordered - another one</para></li>
               <li><para>Unordered - another one</para></li>
             </ul>
           </li>
-          <li value="diamond"><para>unordered 3</para></li>
-          <li value="rarrowhead"><para>unordered 4</para></li>
+          <li value="diamond"><para>unordered 3 - diamond</para></li>
+          <li value="rarrowhead"><para>unordered 4 - rarrowhead</para></li>
           <li><para>unordered 5</para></li>
           <li><para>unordered 6</para></li>
-          <li value="disc"><para>unordered 3</para></li>
+          <li value="disc"><para>unordered 3 - disc</para></li>
           <li><para>unordered 4</para></li>
         </ul>
       </li>
@@ -366,6 +366,20 @@
       <li><para>One</para></li>
       <li><para>Two</para></li>
       <li><para>Three</para></li>
+    </ol>
+
+    <h1>Starting with a given number</h1>
+
+    <ol>
+      <li value="5"><para>Five</para></li>
+      <li><para>Six</para></li>
+      <li><para>Seven</para></li>
+    </ol>
+
+    <ol style="Ordered" bulletType="r">
+      <li value="5"><para>Five</para></li>
+      <li><para>Six</para></li>
+      <li><para>Seven</para></li>
     </ol>
 
   </story>

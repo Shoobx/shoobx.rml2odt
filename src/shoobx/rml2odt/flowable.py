@@ -642,10 +642,9 @@ class Paragraph(Flowable):
             self.addSpan(self.element.text)
 
         self.processSubDirectives()
-
-        if self.element.tail and self.element.tail.strip():
-            # just in case there is some non-whitespace text lurking in tail
-            self.addSpan(self.element.tail)
+        # do not add element tail text here, reportlab also omits
+        # text that is NOT within a Flowable tag
+        # see z3c.rml text-not-in-tags.rml
 
 
 class Preformatted(Paragraph):

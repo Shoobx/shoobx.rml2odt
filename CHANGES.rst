@@ -4,7 +4,7 @@ CHANGES
 0.4.5 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fix: do not include flowable element tail text in output, introduced by 0.4.2.
 
 
 0.4.4 (2019-03-26)

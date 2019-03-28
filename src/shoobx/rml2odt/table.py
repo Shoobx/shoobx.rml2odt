@@ -328,9 +328,9 @@ class BlockTable(flowable.Flowable):
         if not rows:
             raise ValueError('Empty table')
 
-        try:
+        if 'style' in self.element.attrib:
             styleName = self.element.attrib.get('style')
-        except KeyError:
+        else:
             styleName = manager.getNextStyleName('Table')
             style = odf.style.Style(name=styleName, family='table')
             manager.document.automaticstyles.addElement(style)

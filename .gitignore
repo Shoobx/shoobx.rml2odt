@@ -5,6 +5,7 @@ LibreOffice*
 coverage.xml
 env
 ve/
+htmlcov/
 
 *.pyc
 src/shoobx/rml2odt/tests/test_data/expected/*.pdf

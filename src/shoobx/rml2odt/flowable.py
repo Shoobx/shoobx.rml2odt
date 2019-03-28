@@ -25,40 +25,17 @@ import pyqrcode
 import os
 import reportlab.lib.styles
 import re
-import six
 import zope.interface
 
-from z3c.rml import attr, interfaces, platypus
-from z3c.rml import directive, occurence
+from z3c.rml import attr, interfaces
+from z3c.rml import occurence
 from z3c.rml import flowable as rml_flowable
+from shoobx.rml2odt import directive
 from shoobx.rml2odt import stylesheet
-
 from shoobx.rml2odt.interfaces import IContentContainer
 
 
-def pygments2xpre(s, language="python"):
-    "Return markup suitable for XPreformatted"
-    try:
-        from pygments import highlight
-        from pygments.formatters import HtmlFormatter
-    except ImportError:
-        return s
-
-    from pygments.lexers import get_lexer_by_name
-
-    l = get_lexer_by_name(language)
-
-    h = HtmlFormatter()
-    out = six.StringIO()
-    highlight(s, l, h, out)
-    styles = [(cls, style.split(';')[0].split(':')[1].strip())
-              for cls, (style, ttype, level) in h.class2style.items()
-              if cls and style and style.startswith('color:')]
-    from reportlab.lib.pygments2xpre import _2xpre
-    return _2xpre(out.getvalue(), styles)
-
-
-class Flowable(directive.RMLDirective):
+class Flowable(directive.BaseDirective):
     klass = None
     attrMapping = None
 
@@ -71,30 +48,6 @@ class Flowable(directive.RMLDirective):
             parent = parent.parent
         return parent.contents
 
-    def processSubDirectives(self, select=None, ignore=None):
-        # Go through all children of the directive and try to process them.
-        for element in self.element.getchildren():
-            tag = element.tag
-            # in contrast to z3c.rml
-            # Process all comments, tag tail needs to be included as text!
-            # pain is that the element.tag is some weird method
-            if isinstance(element, lxml.etree._Comment):
-                tag = '__comment__'
-            # Raise an error/log any unknown directive.
-            if tag not in self.factories:
-                msg = "Directive %r could not be processed and was " \
-                      "ignored. %s" %(tag, directive.getFileInfo(self, element))
-                # Record any tags/elements that could not be processed.
-                directive.logger.warning(msg)
-                if directive.ABORT_ON_INVALID_DIRECTIVE:
-                    raise ValueError(msg)
-                continue
-            if select is not None and tag not in select:
-                continue
-            if ignore is not None and tag in ignore:
-                continue
-            handler = self.factories[tag](element, self)
-            handler.process()
 
     def inputImageIntoDoc(self):
         args = {
@@ -272,15 +225,7 @@ class Spacer(Flowable):
         self.contents.addElement(self.odtParagraph)
 
 
-class Illustration(Flowable):
-    signature = rml_flowable.IIllustration
-    klass = platypus.Illustration
-
-    def process(self):
-        args = dict(self.getAttributeValues())
-
-
-class SubParagraphDirective(directive.RMLDirective):
+class SubParagraphDirective(directive.BaseDirective):
 
     @lazy.lazy
     def paragraph(self):
@@ -513,10 +458,10 @@ ComplexSubParagraphDirective.factories = {
     'a': Anchor,
     'br': Break,
     'pageNumber': PageNumber,
+    'span': Span,
+    '__comment__': Comment,
     # Unsupported tags:
     # 'greek': Greek,
-    'span': Span,
-    '__comment__': Comment
 }
 
 IComplexSubParagraphDirective.setTaggedValue(
@@ -700,6 +645,11 @@ class Title(Paragraph):
 
 
 class Link(Flowable):
+    # XXX: this does NOT WORK
+    # 1. a link MUST contain a para tag
+    # 2. the link itself is not contained in a para tag
+    # 3. see the RML reference for attributes
+    # (destination, url, boxStrokeWidth, boxStrokeDashArray, boxStrokeColor)
     signature = rml_flowable.ILink
     attrMapping = {'destination': 'destinationname',
                    'boxStrokeWidth': 'thickness',
@@ -719,6 +669,10 @@ class Link(Flowable):
             self.element.append(newPara)
         flow = Flow(self.element, self.parent)
         flow.process()
+
+        # from z3c.rml:
+        # args = dict(self.getAttributeValues(attrMapping=self.attrMapping))
+        # self.parent.flow.append(platypus.Link(flow.flow, **args))
 
 
 class NextPage(Flowable):
@@ -757,7 +711,7 @@ class HorizontalRow(Flowable):
         self.parent.contents.addElement(hr)
 
 
-class Flow(directive.RMLDirective):
+class Flow(directive.BaseDirective):
     factories = {
         # Generic Flowables
         'pre': Preformatted,
@@ -778,10 +732,8 @@ class Flow(directive.RMLDirective):
         'nextPage': NextPage,
         'pageNumber': PageNumber,
         'spacer': Spacer,
-        # 'condPageBreak': ConditionalPageBreak
 
         # Graphic flowables
-        'illustration': Illustration,
         'barCodeFlowable': BarCodeFlowable,
         'img': Image,
     }

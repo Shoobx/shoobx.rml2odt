@@ -4,7 +4,10 @@ CHANGES
 0.4.5 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fix: `img` must be in a Paragraph otherwise LibreOffice will not show the
+  Image
+
+- Code cleanup and refactor
 
 
 0.4.4 (2019-03-26)

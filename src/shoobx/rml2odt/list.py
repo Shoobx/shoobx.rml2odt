@@ -18,7 +18,6 @@ import odf.text
 import zope.interface
 import zope.schema
 
-from lxml import etree
 from reportlab.lib import sequencer
 from shoobx.rml2odt import flowable, stylesheet
 from shoobx.rml2odt.interfaces import IContentContainer
@@ -80,8 +79,7 @@ class ListItem(flowable.Flow):
                 sub.attrib['style'] = para_style
 
         # If there is anything flowable here, we are done.
-        if any([sub.tag in flowable.Flow.factories
-                for sub in self.element]):
+        if any([sub.tag in self.factories for sub in self.element]):
             return
 
         if (self.element.text is not None and
@@ -110,6 +108,7 @@ class ListItem(flowable.Flow):
 
         parent_style = self.parent.getRootStyle()
         fancy_numbering = getattr(parent_style, 'fancy_numbering', False)
+        # either counter value or type of bullet character
         value = self.element.get('value')
         attrs = {}
         if value and value.isdigit():
@@ -153,81 +152,82 @@ class ListItem(flowable.Flow):
         self.contents = self.item
         self.processSubDirectives()
 
-    def processSubDirectives(self, select=None, ignore=None):
-        # Go through all children of the directive and try to process them.
-        for element in self.element.getchildren():
-            # Ignore all comments
-            if isinstance(element, etree._Comment):
+
+class BlockTableInList(directive.RMLDirective):
+
+    # this is a pain here, ODT does not allow a table in a list
+    # so we end up with doing a list of tab separated paragraphs for now
+    # the ideal solution (what LibreOffice does) is to break apart the list
+    # <text:list>
+    #     <text:list-item>
+    #         1. first item
+    #     </text:list-item>
+    # </text:list>
+    #
+    # <table:table>
+    #     ...
+    # </table:table>
+    #
+    # <text:list text:continue-numbering="true">
+    #     <text:list-item>
+    #         2. second item
+    #     </text:list-item>
+    # </text:list>
+
+    def process(self):
+        # Make a list instead of a table
+        style = self.parent.parent.getRootStyle()
+        numlevels = style.getElementsByType(odf.text.ListLevelStyleNumber)
+        bulletlevels = style.getElementsByType(odf.text.ListLevelStyleBullet)
+        levels = bulletlevels or numlevels
+
+        # Find the current level and get the indent
+        for levelstyle in levels:
+            if int(levelstyle.getAttribute('level')) != self.parent.parent.level:
                 continue
 
-            if element.tag == "blockTable":
-                # Make a list instead of a table
+            # This is the level
+            props = levelstyle.getElementsByType(odf.style.ListLevelProperties)
+            if not props:
+                indent = 0
+                break  # No properties in this level!?
+            align = props[0].getElementsByType(odf.style.ListLevelLabelAlignment)
+            if not align:
+                indent = 0
+                break  # No indent in this level!?
+            indent = align[0].getAttribute('textindent')
+            if indent[0] == '-':
+                indent = indent[1:]
+            else:
+                indent = '-' + indent
+            break  # done
 
-                style = self.parent.getRootStyle()
-                numlevels = style.getElementsByType(odf.text.ListLevelStyleNumber)
-                bulletlevels = style.getElementsByType(odf.text.ListLevelStyleBullet)
-                levels = bulletlevels or numlevels
+        manager = attr.getManager(self)
+        newstylename = manager.getNextStyleName('ListTable')
+        style_attrs = {'start': ' ', 'bulletDedent': indent}
+        stylesheet.registerListStyle(manager.document, newstylename,
+                                     None, style_attrs)
 
-            # Find the current level and get the indent
-                for levelstyle in levels:
-                    if int(levelstyle.getAttribute('level')) != self.parent.level:
-                        continue
+        ol = odf.text.List(stylename=newstylename + '-ul')
+        self.parent.contents.appendChild(ol)
 
-                    # This is the level
-                    props = levelstyle.getElementsByType(odf.style.ListLevelProperties)
-                    if not props:
-                        indent = 0
-                        break  # No properties in this level!?
-                    align = props[0].getElementsByType(odf.style.ListLevelLabelAlignment)
-                    if not align:
-                        indent = 0
-                        break  # No indent in this level!?
-                    indent = align[0].getAttribute('textindent')
-                    if indent[0] == '-':
-                        indent = indent[1:]
-                    else:
-                        indent = '-' + indent
-                    break  # done
+        # Retrieve the data
+        for row in self.element.getchildren():
+            # Make a list item for each row
+            olItem = odf.text.ListItem()
+            ol.appendChild(olItem)
+            p = odf.text.P()
+            olItem.appendChild(p)
 
-                manager = attr.getManager(self)
-                newstylename = manager.getNextStyleName('ListTable')
-                style_attrs = {'start': ' ', 'bulletDedent': indent}
-                stylesheet.registerListStyle(manager.document, newstylename,
-                                             None, style_attrs)
-
-                ol = odf.text.List(stylename=newstylename + '-ul')
-                self.contents.appendChild(ol)
-
-                # Retrieve the data
-                for row in element.getchildren():
-                    # Make a list item for each row
-                    olItem = odf.text.ListItem()
-                    ol.appendChild(olItem)
-                    p = odf.text.P()
-                    olItem.appendChild(p)
-
-                    for cell in row.getchildren():
-                        for text in cell.itertext():
-                            p.addText(text.strip())
-                        p.addElement(odf.text.Tab())
-                continue
-
-            # Raise an error/log any unknown directive.
-            if element.tag not in self.factories:
-                msg = "Directive %r could not be processed and was " \
-                    "ignored. %s" %(element.tag,
-                                    directive.getFileInfo(self, element))
-                # Record any tags/elements that could not be processed.
-                directive.logger.warning(msg)
-                if directive.ABORT_ON_INVALID_DIRECTIVE:
-                    raise ValueError(msg)
-                continue
-            if select is not None and element.tag not in select:
-                continue
-            if ignore is not None and element.tag in ignore:
-                continue
-            subdirective = self.factories[element.tag](element, self)
-            subdirective.process()
+            children = row.getchildren()
+            count = len(children)
+            for idx, cell in enumerate(children):
+                for text in cell.itertext():
+                    # XXX: no formatting here for now, need to think about it
+                    p.addText(text)
+                if idx < count - 1:
+                    # skip the tab after the last cell
+                    p.addElement(odf.text.Tab())
 
 
 class OrderedListItem(ListItem):
@@ -367,15 +367,18 @@ class ListBase(flowable.Flowable):
 
 class OrderedList(ListBase):
     signature = rml_list.IOrderedList
-    flowable.Flow.factories['li'] = OrderedListItem
     factories = {'li': OrderedListItem}
 
 
 class UnorderedList(ListBase):
     signature = rml_list.IUnorderedList
-    flowable.Flow.factories['li'] = UnorderedListItem
     factories = {'li': UnorderedListItem}
 
 
+# the order of patching factories here is pretty crucial!
+
 flowable.Flow.factories['ol'] = OrderedList
 flowable.Flow.factories['ul'] = UnorderedList
+
+ListItem.factories = flowable.Flow.factories.copy()
+ListItem.factories['blockTable'] = BlockTableInList

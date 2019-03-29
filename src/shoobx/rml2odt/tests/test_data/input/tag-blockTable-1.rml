@@ -30,31 +30,43 @@
       </tr>
     </blockTable>
 
-    <ul>
-      <li>This is a list item.</li>
-      <li>
-        <blockTable>
-          <tr>
-            <td>BlockTables</td>
-            <td>In lists</td>
-            <td>Need special</td>
-            <td>Handling in ODT</td>
-          </tr>
-        </blockTable>
-      </li>
-      <li>This list item is between two tables</li>
-      <li>
-        <blockTable>
-          <tr>
-            <td>BlockTables</td>
-            <td>In lists</td>
-            <td>Enf up</td>
-            <td>After the list</td>
-          </tr>
-        </blockTable>
-      </li>
+    <blockTable rowHeights = "20mm" colWidths="50mm">
+      <tr>
+        <td>
+            <para>one row less rowHeights and colWidths given in RML</para>
+        </td>
+        <td>
+            <para>blabla</para>
+        </td>
+      </tr>
+      <tr>
+        <td>
+            <para>blabla</para>
+        </td>
+        <td>
+            <para>blabla</para>
+        </td>
+      </tr>
+    </blockTable>
 
-    </ul>
+    <blockTable rowHeights = "20mm 20mm" colWidths="20mm 200mm">
+      <tr>
+        <td>
+            <para>blabla</para>
+        </td>
+        <td>
+            <para>blabla</para>
+        </td>
+      </tr>
+      <tr>
+        <td>
+            <para>blabla</para>
+        </td>
+        <td>
+            <para>blabla</para>
+        </td>
+      </tr>
+    </blockTable>
 
   </story>
 </document>

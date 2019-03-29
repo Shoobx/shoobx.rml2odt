@@ -47,7 +47,7 @@ CHANGES
 
 - Added support for O format lists (First, Second, Third)
 
-- Add support to have bullet lists in numebr lists and vice versa
+- Add support to have bullet lists in number lists and vice versa
 
 - Convert tables in lists to lists in lists
 

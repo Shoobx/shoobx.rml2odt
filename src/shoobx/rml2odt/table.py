@@ -13,6 +13,7 @@
 ##############################################################################
 """``blockTableStyle``, ``blockTable``, ``row``, ``tr``, and ``td`` directives.
 """
+import lazy
 import lxml.etree
 import odf.table
 import re
@@ -22,10 +23,8 @@ import zope.interface
 from z3c.rml import attr, directive
 from z3c.rml import flowable as rml_flowable
 
-from shoobx.rml2odt import flowable, stylesheet, list as lists
+from shoobx.rml2odt import flowable
 from shoobx.rml2odt.interfaces import IContentContainer
-
-DEFAULT_TABLE_UNIT = 'mm'
 
 
 @zope.interface.implementer(IContentContainer)
@@ -187,9 +186,9 @@ class TableCell(flowable.Flow):
                 start_col, start_row = map(int, attribs['start'].split(','))
                 end_col, end_row = map(int, attribs['stop'].split(','))
                 if end_col == -1:
-                    end_col = self.parent.parent.columns()
+                    end_col = self.parent.parent.columns
                 if end_row == -1:
-                    end_row = self.parent.parent.rows()
+                    end_row = self.parent.parent.rows
 
                 if (col >= start_col and col <= end_col and
                     row >= start_row and row <= end_row):
@@ -247,28 +246,31 @@ class TableBulkData(directive.RMLDirective):
 class TableRow(directive.RMLDirective):
     signature = rml_flowable.ITableRow
     factories = {'td': TableCell}
-    count = 0
 
     def styleRow(self):
         attribs = dict(self.parent.getAttributeValues(
             attrMapping=self.parent.attrMapping))
 
         rowProps = odf.style.TableRowProperties()
+        rowHeight = None
         if 'rowHeights' in attribs:
             rowHeights = attribs['rowHeights']
-            rowHeight = rowHeights[TableRow.count]
-            rowProps.setAttribute('rowheight', '%spt' % rowHeight)
-            # XXX is this needed? /lennart
-            self.element.attrib['rowHeight'] = '%spt' % rowHeight
-        else:
+            try:
+                rowHeight = rowHeights[self.parent.rowCount]
+            except IndexError:
+                # don't burp just in case RML specified less data
+                pass
+        if rowHeight is None:
             rowProps.setAttribute('useoptimalrowheight', True)
+        else:
+            rowProps.setAttribute('rowheight', '%spt' % rowHeight)
 
         manager = attr.getManager(self)
         self.styleName = manager.getNextStyleName('TableRow')
         style = odf.style.Style(name=self.styleName, family='table-row')
         manager.document.automaticstyles.addElement(style)
         style.addElement(rowProps)
-        TableRow.count += 1
+        self.parent.rowCount += 1
 
     def process(self):
         self.styleRow()
@@ -285,48 +287,45 @@ class BlockTable(flowable.Flowable):
     }
 
     def addColumns(self):
-        cols = max(len(e) for e in self.element)
-        rows = len(self.element)
-        # Creates the colWidths and rowHeights if they do not already exist
         attribs = dict(self.getAttributeValues())
-        if 'rowHeights' in attribs:
-            tempHeights = attribs['rowHeights']
-
         colWidths = attribs.get('colWidths', [])
 
         manager = attr.getManager(self)
-        for idx in range(cols):
-            # Create a style for each col.
+        for idx in range(self.columns):
+            # Create a style for each column
             styleName = manager.getNextStyleName('TableColumn')
             style = odf.style.Style(name=styleName, family='table-column')
             manager.document.automaticstyles.addElement(style)
             colProps = odf.style.TableColumnProperties()
-            style.addElement(colProps)
             # Apply the width if available.
             if colWidths:
-                colWidth = colWidths[idx]
-                if (isinstance(colWidth, six.string_types) and
-                   colWidth.endswith('%')):
-                    colProps.setAttribute('relcolumnwidth',
-                                          colWidth[:-1] + '*')
+                try:
+                    colWidth = colWidths[idx]
+                except IndexError:
+                    pass
                 else:
-                    colProps.setAttribute('columnwidth', colWidth)
+                    if (isinstance(colWidth, six.string_types) and
+                            colWidth.endswith('%')):
+                        colProps.setAttribute('relcolumnwidth',
+                                              colWidth[:-1] + '*')
+                    else:
+                        # PITA: LibreOffice ignores width given in absolute
+                        #       measurements like mm, does some relative width
+                        #       based on the values
+                        colProps.setAttribute('columnwidth', colWidth)
+            style.addElement(colProps)
 
             self.table.addElement(odf.table.TableColumn(stylename=styleName))
 
-    def convertBulkData(self):
-        # Checks if bulktable in tag and dynamically adds colWidths and
+    def haveBulkData(self):
+        # Checks if we a bulkData tag and dynamically adds colWidths and
         # rowHeights to the parent (blockTable)
         element = self.element.getchildren()[0]
         return element.tag == 'bulkData'
 
     def process(self):
-        TableRow.count = 0
-        # Naive way of determining the size of the table.
-        rows = len(self.element)
+        self.rowCount = 0
         manager = attr.getManager(self)
-        if not rows:
-            raise ValueError('Empty table')
 
         if 'style' in self.element.attrib:
             styleName = self.element.attrib.get('style')
@@ -334,37 +333,29 @@ class BlockTable(flowable.Flowable):
             styleName = manager.getNextStyleName('Table')
             style = odf.style.Style(name=styleName, family='table')
             manager.document.automaticstyles.addElement(style)
+            # XXX: not sure that we always want 100% width
             tableProps = odf.style.TableProperties(relwidth='100%')
             style.addElement(tableProps)
 
         self.table = odf.table.Table(stylename=styleName)
         if isinstance(self.parent, TableCell):
+            # a table in a table
             self.table.setAttribute('issubtable', 'true')
 
-        if isinstance(self.parent, lists.ListItem):
-            # ODT doesn't allow tables in list-items, so we add it to
-            # office:text. This means it will lack indentation, but I don't
-            # know how to get the indentation of the list-item, it's likely
-            # not calculated at this point anyway.
-            ob = self.parent.parent
-            while ob is not None:
-                if (getattr(getattr(ob, 'contents'), 'tagName') ==
-                   u'office:text'):
-                    break
-                ob = ob.parent
-            ob.contents.addElement(self.table)
-        else:
-            self.contents.addElement(self.table)
+        # ODT doesn't allow tables in list-items
+        # handling a blockTable in a ListItem is done with
+        # shoobx.rml2odt.list.BlockTableInList
+        self.contents.addElement(self.table)
 
-        flag = self.convertBulkData()
-        if not flag:
+        if not self.haveBulkData():
             self.addColumns()
         self.processSubDirectives()
 
+    @lazy.lazy
     def rows(self):
-        return len([e for e in self.element.getchildren()
-                    if e.tag == 'tr'])
+        return len([e for e in self.element.getchildren() if e.tag == 'tr'])
 
+    @lazy.lazy
     def columns(self):
         return max([len([e for e in row.getchildren() if e.tag == 'td'])
                      for row in self.element.getchildren()])

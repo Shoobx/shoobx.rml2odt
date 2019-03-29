@@ -230,11 +230,11 @@ class SubParagraphDirective(directive.BaseDirective):
 
 
 class IComplexSubParagraphDirective(interfaces.IRMLDirectiveSignature):
-    """A sub-paragraph directive that can contian further elements."""
+    """A sub-paragraph directive that can contain further elements."""
 
 
 class ComplexSubParagraphDirective(SubParagraphDirective):
-    """A sub-paragraph directive that can contian further elements."""
+    """A sub-paragraph directive that can contain further elements."""
     signature = IComplexSubParagraphDirective
     factories = {}
 

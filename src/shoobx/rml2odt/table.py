@@ -37,8 +37,7 @@ class TableCell(flowable.Flow):
         # 1. Is there text in the element?
         # 2. Are any of the children valid Flow elements?
         if (self.element.text is None or not self.element.text.strip() or
-            any([sub.tag in flowable.Flow.factories
-                 for sub in self.element])):
+            any([sub.tag in self.factories for sub in self.element])):
             return
 
         # Create a <para> element.
@@ -46,6 +45,7 @@ class TableCell(flowable.Flow):
 
         # Transfer text.
         para.text = self.element.text
+        # Nuke text instead of removing the current element
         self.element.text = None
 
         # Transfer children.
@@ -223,26 +223,6 @@ class TableCell(flowable.Flow):
         manager.document.automaticstyles.addElement(self.contentStyle)
 
 
-class TableBulkData(directive.RMLDirective):
-    signature = rml_flowable.ITableBulkData
-
-    def process(self):
-        # Retrieves the text in the bulkData tag.
-        contents = self.element.text.strip().split('\n')
-        contents = [x.strip() for x in contents]
-        # Converts the retrieved text into table row and cell objects
-        for rowData in contents:
-            newRow = lxml.etree.Element('tr')
-            for cell in range(len(rowData.split(','))):
-                newCell = lxml.etree.Element('td')
-                newCell.text = rowData.split(',')[cell]
-                newRow.append(newCell)
-            self.parent.element.append(newRow)
-        # Removes bulkData object so that recursion loop does not occur
-        self.parent.element.remove(self.element)
-        self.parent.process()
-
-
 class TableRow(directive.RMLDirective):
     signature = rml_flowable.ITableRow
     factories = {'td': TableCell}
@@ -277,6 +257,28 @@ class TableRow(directive.RMLDirective):
         self.row = odf.table.TableRow(stylename=self.styleName)
         self.parent.table.addElement(self.row)
         self.processSubDirectives()
+
+
+class TableBulkData(directive.RMLDirective):
+    signature = rml_flowable.ITableBulkData
+
+    def process(self):
+        # Retrieves the text in the bulkData tag.
+        lines = [x.strip() for x in self.element.text.splitlines()]
+        # Converts the retrieved text into tr and td tags
+        for rowData in lines:
+            newRow = lxml.etree.Element('tr')
+            cells = rowData.split(',')
+            for cell in cells:
+                newCell = lxml.etree.Element('td')
+                newCell.text = cell
+                newRow.append(newCell)
+            self.parent.element.append(newRow)
+        # Removes bulkData object so that recursion loop does not occur
+        self.parent.element.remove(self.element)
+        # Cheating: reprocess the blockTable again,
+        # that we added the rows and columns above
+        self.parent.process()
 
 
 class BlockTable(flowable.Flowable):
@@ -324,30 +326,34 @@ class BlockTable(flowable.Flowable):
         return element.tag == 'bulkData'
 
     def process(self):
-        self.rowCount = 0
-        manager = attr.getManager(self)
-
-        if 'style' in self.element.attrib:
-            styleName = self.element.attrib.get('style')
-        else:
-            styleName = manager.getNextStyleName('Table')
-            style = odf.style.Style(name=styleName, family='table')
-            manager.document.automaticstyles.addElement(style)
-            # XXX: not sure that we always want 100% width
-            tableProps = odf.style.TableProperties(relwidth='100%')
-            style.addElement(tableProps)
-
-        self.table = odf.table.Table(stylename=styleName)
-        if isinstance(self.parent, TableCell):
-            # a table in a table
-            self.table.setAttribute('issubtable', 'true')
-
-        # ODT doesn't allow tables in list-items
-        # handling a blockTable in a ListItem is done with
-        # shoobx.rml2odt.list.BlockTableInList
-        self.contents.addElement(self.table)
-
+        # if we have a bulkData tag, let's have first TableBulkData
+        # process the data by adding tr and td tags
+        # XXX: might be simpler to grasp if this would be done here
+        #      and we'd just drop the bulkData child tag
         if not self.haveBulkData():
+            self.rowCount = 0
+            manager = attr.getManager(self)
+
+            if 'style' in self.element.attrib:
+                styleName = self.element.attrib.get('style')
+            else:
+                styleName = manager.getNextStyleName('Table')
+                style = odf.style.Style(name=styleName, family='table')
+                manager.document.automaticstyles.addElement(style)
+                # XXX: not sure that we always want 100% width
+                tableProps = odf.style.TableProperties(relwidth='100%')
+                style.addElement(tableProps)
+
+            self.table = odf.table.Table(stylename=styleName)
+            if isinstance(self.parent, TableCell):
+                # a table in a table
+                self.table.setAttribute('issubtable', 'true')
+
+            # ODT doesn't allow tables in list-items
+            # handling a blockTable in a ListItem is done with
+            # shoobx.rml2odt.list.BlockTableInList
+            self.contents.addElement(self.table)
+
             self.addColumns()
         self.processSubDirectives()
 

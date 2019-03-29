@@ -32,12 +32,24 @@ class TableCell(flowable.Flow):
     signature = rml_flowable.ITableCell
     styleAttributesMapping = rml_flowable.TableCell.styleAttributesMapping
 
+    allowedCellProperties = ['backbackgroundcolor', 'paddingtop',
+                             'paddingbottom', 'paddingleft',
+                             'paddingright', 'padding',
+                             'textbackgroundcolor', 'verticalalign']
+    allowedTableProperties = ['align']
+    allowedColProperties = ['blockColBackground']
+    allowedRowProperties = ['backgroundcolors']
+    allowedTextProperties = ['fontname', 'fontsize']
+    allowedParaProperties = ['leading']
+
     def _convertSimpleContent(self):
         # Check whether we need to create a para element.
-        # 1. Is there text in the element?
-        # 2. Are any of the children valid Flow elements?
-        if (self.element.text is None or not self.element.text.strip() or
-            any([sub.tag in self.factories for sub in self.element])):
+        # Do we have any children which need a Paragraph?
+        haveSub = any([sub.tag in flowable.Paragraph.factories
+                       for sub in self.element])
+        # Is there text in the element?
+        haveText = self.element.text is not None and self.element.text.strip()
+        if (not haveText and not haveSub):
             return
 
         # Create a <para> element.
@@ -49,44 +61,41 @@ class TableCell(flowable.Flow):
         self.element.text = None
 
         # Transfer children.
-        for sub in tuple(self.element):
+        for sub in tuple(self.element.getchildren()):
             para.append(sub)
 
         # Add paragraph to table cell.
         self.element.append(para)
 
-    def searchStyle(self, tableStyleName):
-        manager = attr.getManager(self)
-        try:
-            style = manager.document.getStyleByName(
-                six.text_type(tableStyleName))
-            return style
-        except AssertionError:
-            return None
-
     def processStyle(self):
-        rows = len(self.parent.parent.element)
+        manager = attr.getManager(self)
+
         cols = len(self.parent.parent.element[0])
-        allowedCellProperties = ['backbackgroundcolor', 'paddingtop',
-                                 'paddingbottom', 'paddingleft',
-                                 'paddingright', 'padding',
-                                 'textbackgroundcolor', 'verticalalign']
-        allowedTableProperties = ['align']
-        allowedColProperties = ['blockColBackground']
-        allowedRowProperties = ['backgroundcolors']
-        allowedTextProperties = ['fontname', 'fontsize']
-        allowedParaProperties = ['leading']
+
+        self.cellProps = odf.style.TableCellProperties()
+        self.cellProps.setAttribute('shrinktofit', True)
+        self.cellStyleName = manager.getNextStyleName('TableCell')
+        self.cellStyle = odf.style.Style(
+            name=self.cellStyleName,
+            family='table-cell')
+
+        # XXX: Has textalign, justifysingleword
+        self.paraProps = odf.style.ParagraphProperties()
+        # XXX: Has color (text color)
+        self.textProps = odf.style.TextProperties()
 
         # Again we just want the style name or None, not the actual style
         tableStyleName = self.parent.parent.element.attrib.get('style')
         if tableStyleName is not None:
             stylesCollection = dict()
-            desiredStyle = self.searchStyle(tableStyleName)
+            desiredStyle = manager.document.getStyleByName(
+                six.text_type(tableStyleName))
             if desiredStyle is not None:
                 for child in desiredStyle.childNodes:
                     childAttrs = child.attributes
                     attrDict = {x[1]: childAttrs[x] for x in childAttrs}
                     for key in attrDict:
+                        # XXX: revisit this conversion later
                         # 'backgroundcolor' is processed by cellProps
                         # 'backgroundcolor' passed in by 'rowProperties' is
                         # modified to 'backgroundcolors' for later distinction
@@ -106,11 +115,11 @@ class TableCell(flowable.Flow):
                 key = key.replace('-', '')
 
                 # Column Properties
-                if key in allowedColProperties:
+                if key in self.allowedColProperties:
                     pass
 
                 # Cell Properties
-                elif key in allowedCellProperties:
+                elif key in self.allowedCellProperties:
                     if key == 'textbackgroundcolor':
                         self.textProps.setAttribute('color', value)
                     elif key == 'backbackgroundcolor':
@@ -119,7 +128,7 @@ class TableCell(flowable.Flow):
                         self.cellProps.setAttribute(key, value)
 
                 # Table Properties
-                elif key in allowedTableProperties:
+                elif key in self.allowedTableProperties:
                     if key == 'align':
                         self.paraProps.setAttribute('textalign', value)
                     else:
@@ -127,15 +136,15 @@ class TableCell(flowable.Flow):
                         self.paraProps.setAttribute(key, value)
 
                 # Paragraph Properties
-                elif key in allowedParaProperties:
+                elif key in self.allowedParaProperties:
                     self.paraProps.setAttribute(key, value)
 
                 # Text Properties
-                elif key in allowedTextProperties:
+                elif key in self.allowedTextProperties:
                     self.textProps.setAttribute(key, value)
 
                 # Row Properties
-                elif key in allowedRowProperties:
+                elif key in self.allowedRowProperties:
                     if key == 'backgroundcolors':
                         # Alternating rows
                         color1, color2 = value[2:9], value[13:20]
@@ -157,23 +166,22 @@ class TableCell(flowable.Flow):
                                 self.cellProps.setAttribute(key[:-1], color2)
 
         self.cellStyle.addElement(self.cellProps)
+
+        # Cell Text styling
+        self.cellContentStyleName = manager.getNextStyleName('CellContent')
+        self.contentStyle = odf.style.Style(
+            name=self.cellContentStyleName,
+            family='paragraph')
         self.contentStyle.addElement(self.textProps)
         self.contentStyle.addElement(self.paraProps)
 
-    def process(self):
-        manager = attr.getManager(self)
+        manager.document.automaticstyles.addElement(self.cellStyle)
+        manager.document.automaticstyles.addElement(self.contentStyle)
 
+    def process(self):
         col = len(self.parent.row.childNodes)
         row = len([x for x in self.parent.parent.table.childNodes
                   if x.tagName == u'table:table-row']) - 1
-
-        # Cell creation and styling
-        self.cellProps = odf.style.TableCellProperties()
-        self.cellProps.setAttribute('shrinktofit', True)
-        self.cellStyleName = manager.getNextStyleName('TableCell')
-        self.cellStyle = odf.style.Style(
-            name=self.cellStyleName,
-            family='table-cell')
 
         kw = {}
         table_style = self.parent.parent.getAttributeValues(select=['style'])
@@ -197,31 +205,16 @@ class TableCell(flowable.Flow):
                           'numberrowsspanned': end_row - row,}
                     break
 
+        self.processStyle()
+
         self.cell = odf.table.TableCell(
             stylename=self.cellStyleName,
             valuetype='string', **kw)
 
-        # Cell Text styling
-        self.cellContentStyleName = manager.getNextStyleName('CellContent')
-        self.contentStyle = odf.style.Style(
-            name=self.cellContentStyleName,
-            family='paragraph')
-
-        # XXX: Has textalign, justifysingleword
-        self.paraProps = odf.style.ParagraphProperties()
-        # XXX: Has color (text color)
-        self.textProps = odf.style.TextProperties()
-        self.contentStyle.addElement(self.paraProps)
-
         self._convertSimpleContent()
-        self.processStyle()
         self.parent.row.addElement(self.cell)
         self.contents = self.cell
         super(TableCell, self).process()
-
-        manager.document.automaticstyles.addElement(self.cellStyle)
-        manager.document.automaticstyles.addElement(self.contentStyle)
-
 
 class TableRow(directive.RMLDirective):
     signature = rml_flowable.ITableRow

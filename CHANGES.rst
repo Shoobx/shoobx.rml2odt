@@ -4,7 +4,12 @@ CHANGES
 0.4.5 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fix: `img` must be in a Paragraph otherwise LibreOffice will not show the
+  Image
+
+- Code cleanup and refactor
+
+- Lots of fixes, cleanup, tests added
 
 
 0.4.4 (2019-03-26)
@@ -44,7 +49,7 @@ CHANGES
 
 - Added support for O format lists (First, Second, Third)
 
-- Add support to have bullet lists in numebr lists and vice versa
+- Add support to have bullet lists in number lists and vice versa
 
 - Convert tables in lists to lists in lists
 

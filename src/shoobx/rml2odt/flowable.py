@@ -25,40 +25,17 @@ import pyqrcode
 import os
 import reportlab.lib.styles
 import re
-import six
 import zope.interface
 
-from z3c.rml import attr, interfaces, platypus
-from z3c.rml import directive, occurence
+from z3c.rml import attr, interfaces
+from z3c.rml import occurence
 from z3c.rml import flowable as rml_flowable
+from shoobx.rml2odt import directive
 from shoobx.rml2odt import stylesheet
-
 from shoobx.rml2odt.interfaces import IContentContainer
 
 
-def pygments2xpre(s, language="python"):
-    "Return markup suitable for XPreformatted"
-    try:
-        from pygments import highlight
-        from pygments.formatters import HtmlFormatter
-    except ImportError:
-        return s
-
-    from pygments.lexers import get_lexer_by_name
-
-    l = get_lexer_by_name(language)
-
-    h = HtmlFormatter()
-    out = six.StringIO()
-    highlight(s, l, h, out)
-    styles = [(cls, style.split(';')[0].split(':')[1].strip())
-              for cls, (style, ttype, level) in h.class2style.items()
-              if cls and style and style.startswith('color:')]
-    from reportlab.lib.pygments2xpre import _2xpre
-    return _2xpre(out.getvalue(), styles)
-
-
-class Flowable(directive.RMLDirective):
+class Flowable(directive.BaseDirective):
     klass = None
     attrMapping = None
 
@@ -71,44 +48,72 @@ class Flowable(directive.RMLDirective):
             parent = parent.parent
         return parent.contents
 
-    def processSubDirectives(self, select=None, ignore=None):
-        # Go through all children of the directive and try to process them.
-        for element in self.element.getchildren():
-            tag = element.tag
-            # in contrast to z3c.rml
-            # Process all comments, tag tail needs to be included as text!
-            # pain is that the element.tag is some weird method
-            if isinstance(element, lxml.etree._Comment):
-                tag = '__comment__'
-            # Raise an error/log any unknown directive.
-            if tag not in self.factories:
-                msg = "Directive %r could not be processed and was " \
-                      "ignored. %s" %(tag, directive.getFileInfo(self, element))
-                # Record any tags/elements that could not be processed.
-                directive.logger.warning(msg)
-                if directive.ABORT_ON_INVALID_DIRECTIVE:
-                    raise ValueError(msg)
-                continue
-            if select is not None and tag not in select:
-                continue
-            if ignore is not None and tag in ignore:
-                continue
-            handler = self.factories[tag](element, self)
-            handler.process()
+
+class Image(Flowable):
+    signature = rml_flowable.IImage
+    klass = reportlab.platypus.flowables.Image
+    attrMapping = {'src': 'filename', 'align': 'hAlign'}
+
+    def process(self):
+        manager = attr.getManager(self)
+        attrs = dict(self.getAttributeValues(attrMapping=self.attrMapping))
+        binary = self.element.attrib['src']
+        if ',' in binary:
+            # Embedded image
+            metaData, imageString = binary.split(',', 1)
+        else:
+            # File image
+            filename, ext = os.path.splitext(binary)
+            rawdata = attrs['filename'].getvalue()
+            imageString = base64.b64encode(rawdata).decode()
+
+        self.addBase64Image(manager, attrs, 'ImageFrame', imageString)
+
+    def addBase64Image(self, manager, attrs, styleName, b64Image):
+        self.align = attrs.get('align', 'left')
+        self.frameName = manager.getNextStyleName(styleName)
+        self.frameWidth = attrs.get('width')
+        self.frameHeight = attrs.get('height')
+        self.binaryImage = odf.office.BinaryData()
+        self.binaryImage.addText(b64Image)
+
+        self.image = odf.draw.Image(
+            type='simple',
+            show='embed',
+            actuate='onLoad')
+        self.image.appendChild(self.binaryImage)
+
+        if self.parent.element.tag != 'td':
+            self.inputImageIntoDoc()
+        else:
+            self.inputImageIntoCell()
 
     def inputImageIntoDoc(self):
         args = {
             'id': self.frameName,
             'anchortype': 'as-char',
         }
+        # XXX: PITA, if width and height is not set, ODF assumes some
+        #      weird defaults... not sure we want to get into the business of
+        #      trying to get the default image size
         if self.frameWidth is not None:
             args['width'] = '%spt' % self.frameWidth
         if self.frameHeight is not None:
             args['height'] = '%spt' % self.frameHeight
 
-        self.frame = odf.draw.Frame(**args)
-        self.frame.appendChild(self.image)
-        self.contents.addElement(self.frame)
+        # according to tests, the Frame must be in a Paragraph
+        # otherwise LibreOffice will not show the Image
+        # pain is that an img can appear on the story and on the para level
+        frame = odf.draw.Frame(**args)
+        frame.appendChild(self.image)
+        if self.parent.element.tag == 'para':
+            # if we're in a Paragraph anyway, add it there
+            self.parent.odtParagraph.addElement(frame)
+        else:
+            # otherwise we need to add a Paragraph on our own
+            odtParagraph = odf.text.P()
+            odtParagraph.addElement(frame)
+            self.contents.addElement(odtParagraph)
 
     def inputImageIntoCell(self):
         manager = attr.getManager(self)
@@ -143,7 +148,6 @@ class Flowable(directive.RMLDirective):
         firstFrameStyle.appendChild(graphicsProperties)
         manager.document.automaticstyles.addElement(firstFrameStyle)
 
-
         args = {
             'name': firstFrameID,
             'anchortype': 'as-char',
@@ -174,82 +178,25 @@ class Flowable(directive.RMLDirective):
         textBox.appendChild(para2)
         firstFrame.appendChild(textBox)
         para.appendChild(firstFrame)
-        self.contents.setAttribute('numbercolumnsspanned', '2')
-        if isinstance(self, BarCodeFlowable):
-            self.contents.setAttribute('numberrowsspanned', '2')
         self.contents.addElement(para)
 
 
-class Image(Flowable):
-    signature = rml_flowable.IImage
-    klass = reportlab.platypus.flowables.Image
-    attrMapping = {'src': 'filename', 'align': 'hAlign'}
-
-    def process(self):
-        manager = attr.getManager(self)
-        attrs = dict(self.getAttributeValues(attrMapping=self.attrMapping))
-        # Filetype isn't preserved by getAttributeValues, so we pick it
-        # directly from the element.
-        binary = self.element.attrib['src']
-        if ',' in binary:
-            # Embedded image
-            metaData, imageString = binary.split(',', 1)
-            fileType = metaData[metaData.find('/') + 1:metaData.find(';')]
-        else:
-            # File image
-            filename, ext = os.path.splitext(binary)
-            fileType = ext[1:]
-            rawdata = attrs['filename'].getvalue()
-            imageString = base64.b64encode(rawdata).decode()
-
-        self.align = attrs.get('align', 'left')
-        self.frameName = manager.getNextStyleName('ImageFrame')
-        self.frameWidth = attrs.get('width')
-        self.frameHeight = attrs.get('height')
-        self.binaryImage = odf.office.BinaryData()
-        self.binaryImage.addText(imageString)
-
-        self.image = odf.draw.Image(
-            type='simple',
-            show='embed',
-            actuate='onLoad')
-        self.image.appendChild(self.binaryImage)
-
-        if self.parent.element.tag != 'td':
-            self.inputImageIntoDoc()
-        else:
-            self.inputImageIntoCell()
-
-
-class BarCodeFlowable(Flowable):
+class BarCodeFlowable(Image):
     signature = rml_flowable.IBarCodeFlowable
     klass = staticmethod(reportlab.graphics.barcode.createBarcodeDrawing)
     attrMapping = {'code': 'codeName'}
 
     def process(self):
         attrs = dict(self.getAttributeValues(attrMapping=self.attrMapping))
-        codeType = attrs.get('code')
-        url = attrs.get('value', 'https://www.shoobx.com')
-        if codeType == 'QR':
-            qrCode = pyqrcode.create(url)
-            qrAscii = qrCode.png_as_base64_str(scale=5)
-            manager = attr.getManager(self)
-            self.align = attrs.get('alignment', 'right').lower()
-            self.frameName = manager.getNextStyleName('BarcodeFrame')
-            self.frameWidth = attrs['width']
-            self.frameHeight = attrs['height']
-            self.binaryImage = odf.office.BinaryData()
-            self.binaryImage.addText(qrAscii)
-            self.image = odf.draw.Image(
-                type='simple',
-                show='embed',
-                actuate='onLoad')
-            self.image.appendChild(self.binaryImage)
+        codeName = attrs.get('codeName')
 
-            if self.parent.element.tag != 'td':
-                self.inputImageIntoDoc()
-            else:
-                self.inputImageIntoCell()
+        if codeName == 'QR':
+            url = attrs.get('value', 'https://www.shoobx.com')
+            qrCode = pyqrcode.create(url)
+            qrB64 = qrCode.png_as_base64_str(scale=5)
+            manager = attr.getManager(self)
+
+            self.addBase64Image(manager, attrs, 'BarcodeFrame', qrB64)
 
 
 class Spacer(Flowable):
@@ -272,15 +219,7 @@ class Spacer(Flowable):
         self.contents.addElement(self.odtParagraph)
 
 
-class Illustration(Flowable):
-    signature = rml_flowable.IIllustration
-    klass = platypus.Illustration
-
-    def process(self):
-        args = dict(self.getAttributeValues())
-
-
-class SubParagraphDirective(directive.RMLDirective):
+class SubParagraphDirective(directive.BaseDirective):
 
     @lazy.lazy
     def paragraph(self):
@@ -291,11 +230,11 @@ class SubParagraphDirective(directive.RMLDirective):
 
 
 class IComplexSubParagraphDirective(interfaces.IRMLDirectiveSignature):
-    """A sub-paragraph directive that can contian further elements."""
+    """A sub-paragraph directive that can contain further elements."""
 
 
 class ComplexSubParagraphDirective(SubParagraphDirective):
-    """A sub-paragraph directive that can contian further elements."""
+    """A sub-paragraph directive that can contain further elements."""
     signature = IComplexSubParagraphDirective
     factories = {}
 
@@ -513,10 +452,10 @@ ComplexSubParagraphDirective.factories = {
     'a': Anchor,
     'br': Break,
     'pageNumber': PageNumber,
+    'span': Span,
+    '__comment__': Comment,
     # Unsupported tags:
     # 'greek': Greek,
-    'span': Span,
-    '__comment__': Comment
 }
 
 IComplexSubParagraphDirective.setTaggedValue(
@@ -553,7 +492,10 @@ class Paragraph(Flowable):
         'br': Break,
         'pageNumber': PageNumber,
         'span': Span,
-        '__comment__': Comment
+        '__comment__': Comment,
+        # Graphic flowables
+        'barCodeFlowable': BarCodeFlowable,
+        'img': Image,
         # Unsupported tags:
         # 'greek': Greek,
     }
@@ -700,6 +642,11 @@ class Title(Paragraph):
 
 
 class Link(Flowable):
+    # XXX: this does NOT WORK
+    # 1. a link MUST contain a para tag
+    # 2. the link itself is not contained in a para tag
+    # 3. see the RML reference for attributes
+    # (destination, url, boxStrokeWidth, boxStrokeDashArray, boxStrokeColor)
     signature = rml_flowable.ILink
     attrMapping = {'destination': 'destinationname',
                    'boxStrokeWidth': 'thickness',
@@ -719,6 +666,10 @@ class Link(Flowable):
             self.element.append(newPara)
         flow = Flow(self.element, self.parent)
         flow.process()
+
+        # from z3c.rml:
+        # args = dict(self.getAttributeValues(attrMapping=self.attrMapping))
+        # self.parent.flow.append(platypus.Link(flow.flow, **args))
 
 
 class NextPage(Flowable):
@@ -757,7 +708,7 @@ class HorizontalRow(Flowable):
         self.parent.contents.addElement(hr)
 
 
-class Flow(directive.RMLDirective):
+class Flow(directive.BaseDirective):
     factories = {
         # Generic Flowables
         'pre': Preformatted,
@@ -778,10 +729,8 @@ class Flow(directive.RMLDirective):
         'nextPage': NextPage,
         'pageNumber': PageNumber,
         'spacer': Spacer,
-        # 'condPageBreak': ConditionalPageBreak
 
         # Graphic flowables
-        'illustration': Illustration,
         'barCodeFlowable': BarCodeFlowable,
         'img': Image,
     }

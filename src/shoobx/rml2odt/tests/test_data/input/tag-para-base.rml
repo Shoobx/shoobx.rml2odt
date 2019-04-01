@@ -110,7 +110,7 @@
       <li><para><b>Numbered List 3</b></para></li>
     </ol>
 
-    <para><a href="http://www.google.com">Google</a></para>
+    <para><a href="http://www.google.com" name="google">Google</a></para>
 
     <spacer length="2in" />
 
@@ -128,6 +128,13 @@
         the paragraph text.
     </para>
 
-    <para> <pageNumber/> </para>
+    <para>
+        <font face="Courier">Courier</font>
+        <font face="Courier" size="24pt">Courier 24pt</font>
+        <font size="24pt">just 24pt</font>
+        <font size="24pt" color="green">24pt green</font>
+    </para>
+
+    <para> page number: <pageNumber/> </para>
   </story>
 </document>

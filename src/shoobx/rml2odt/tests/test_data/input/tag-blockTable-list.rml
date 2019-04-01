@@ -1,0 +1,61 @@
+<!DOCTYPE document SYSTEM "rml.dtd">
+<document>
+
+  <template>
+    <pageTemplate id="main">
+      <frame id="first" x1="72" y1="72" width="451" height="698"/>
+    </pageTemplate>
+  </template>
+
+  <story>
+    <title><font face="Courier">&lt;blockTable&gt;</font> in lists</title>
+    <ul>
+      <li>This is a list item.</li>
+      <li>
+        <blockTable>
+          <tr>
+            <td>BlockTables</td>
+            <td>In lists</td>
+            <td>Need special</td>
+            <td>Handling in ODT</td>
+          </tr>
+          <tr>
+            <td>A1</td>
+            <td>next cell is empty</td>
+            <td></td>
+            <td>D4</td>
+          </tr>
+          <tr>
+            <td>A2</td>
+            <td>some <b>formatting</b></td>
+            <td>here <i>and</i> there</td>
+            <td>no formatting supported for now</td>
+          </tr>
+          <tr>
+            <td>A3</td>
+            <td><para>some <b>formatting</b></para></td>
+            <td><para>here <i>and</i> there</para></td>
+            <td>but at least don't eat the text</td>
+          </tr>
+        </blockTable>
+      </li>
+      <li>This list item is between two tables</li>
+      <li>
+        <blockTable>
+          <tr>
+            <td>BlockTables</td>
+            <td>In lists</td>
+            <td>Would
+                End
+                up
+            </td>
+            <td>After the list</td>
+          </tr>
+        </blockTable>
+      </li>
+
+    </ul>
+
+
+  </story>
+</document>

@@ -14,13 +14,11 @@
 """Style Related Element Processing
 """
 import odf
-import six
 import zope.interface
 
-from z3c.rml import directive, attr, interfaces, occurence
+from z3c.rml import directive, attr
 from z3c.rml import template as rml_template
 from shoobx.rml2odt import flowable
-from shoobx.rml2odt.directive import NotImplementedDirective
 from shoobx.rml2odt.interfaces import IContentContainer
 
 
@@ -50,7 +48,6 @@ class Footer(Header):
 
 class PageTemplate(directive.RMLDirective):
     signature = rml_template.IPageTemplate
-    attrMapping = {'id': 'name'}
     factories = {
         'header': Header,
         'footer': Footer,
@@ -60,49 +57,51 @@ class PageTemplate(directive.RMLDirective):
         manager = attr.getManager(self)
         styleName = manager.getNextStyleName('Mpm')
 
-        attrMapping = {'bottomMargin': 'marginbottom',
-                       'topMargin': 'margintop',
-                       'leftMargin': 'marginleft',
-                       'rightMargin': 'marginright',
-                       'pagesize': 'pagesize',
-                       'showBoundary': 'border',
-                       }
-        args = dict(self.parent.getAttributeValues(attrMapping=attrMapping))
-        allowed = attrMapping.values()
-        styleArgs = {}
-        for arg in args:
-            if arg not in allowed:
-                continue
-            if arg == 'pagesize':
-                styleArgs['pagewidth'] = '%spt' % args[arg][0]
-                styleArgs['pageheight'] = '%spt' % args[arg][1]
-            elif arg == 'border':
-                if args[arg]:
-                    styleArgs[arg] = "3pt"
-                else:
-                    styleArgs[arg] = "0pt"
-            else:
-                styleArgs[arg] = '%spt' % args[arg]
-
+        pageLayoutProps = odf.style.PageLayoutProperties(
+            **self.parent.styleArgs)
         pageLayout = odf.style.PageLayout(name=styleName)
-        pageLayoutProps = odf.style.PageLayoutProperties(**styleArgs)
-
         pageLayout.addElement(pageLayoutProps)
         manager.document.automaticstyles.addElement(pageLayout)
 
-        args = dict(self.getAttributeValues(attrMapping=self.attrMapping))
-        self.content = odf.style.MasterPage(name=args['name'],
-                                            pagelayoutname=styleName)
+        args = dict(self.getAttributeValues())
+        self.content = odf.style.MasterPage(
+            name=args['id'], pagelayoutname=styleName)
         self.parent.parent.document.masterstyles.addElement(self.content)
         self.processSubDirectives()
 
 
 class Template(directive.RMLDirective):
     signature = rml_template.ITemplate
-
+    attrMapping = {'bottomMargin': 'marginbottom',
+                   'topMargin': 'margintop',
+                   'leftMargin': 'marginleft',
+                   'rightMargin': 'marginright',
+                   'pagesize': 'pagesize',
+                   'showBoundary': 'border',
+                   }
     factories = {
         'pageTemplate': PageTemplate,
     }
 
     def process(self):
+        # determine style attributes to be used in PageTemplate
+        args = dict(self.getAttributeValues(attrMapping=self.attrMapping))
+        allowed = self.attrMapping.values()
+        styleArgs = {}
+        for argName, argValue in args.items():
+            if argName not in allowed:
+                continue
+            if argName == 'pagesize':
+                styleArgs['pagewidth'] = '%spt' % argValue[0]
+                styleArgs['pageheight'] = '%spt' % argValue[1]
+            elif argName == 'border':
+                if argValue:
+                    styleArgs[argName] = "3pt"
+                else:
+                    styleArgs[argName] = "0pt"
+            else:
+                styleArgs[argName] = '%spt' % argValue
+        
+        self.styleArgs = styleArgs
+
         self.processSubDirectives()

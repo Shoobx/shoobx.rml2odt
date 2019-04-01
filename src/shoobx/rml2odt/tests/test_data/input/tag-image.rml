@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE document SYSTEM "rml.dtd">
 
-<document filename="tag-image-mask.pdf">
+<document filename="tag-image.pdf">
 
   <template>
     <pageTemplate id="main">
@@ -10,6 +10,9 @@
   </template>
 
   <story>
+
+    <barCodeFlowable code="QR" alignment="RIGHT" width="45" height="45" barBorder="0" value="http://google.com"/>
+    <img src="[shoobx.rml2odt]/tests/test_data/input/shoobx.png" />
     <img src="[shoobx.rml2odt]/tests/test_data/input/shoobx.png" width="50mm" height="20mm"/>
 
     <blockTable rowHeights = "40mm">
@@ -22,5 +25,24 @@
         </td>
       </tr>
     </blockTable>
+
+    <para>Images on the story level:</para>
+
+    <img src="[shoobx.rml2odt]/tests/test_data/input/shoobx.png" />
+    <img src="[shoobx.rml2odt]/tests/test_data/input/shoobx.png" />
+    <img src="[shoobx.rml2odt]/tests/test_data/input/shoobx.png" />
+
+    <barCodeFlowable code="QR" alignment="RIGHT" width="45" height="45" barBorder="0" value="http://google.com"/>
+    <barCodeFlowable code="QR" alignment="RIGHT" width="45" height="45" barBorder="0" value="http://google.com"/>
+
+    <para>
+        Images on the paragraph level:
+        <img src="[shoobx.rml2odt]/tests/test_data/input/shoobx.png" />
+        <img src="[shoobx.rml2odt]/tests/test_data/input/shoobx.png" />
+        <img src="[shoobx.rml2odt]/tests/test_data/input/shoobx.png" />
+
+        <barCodeFlowable code="QR" alignment="RIGHT" width="45" height="45" barBorder="0" value="http://google.com"/>
+        <barCodeFlowable code="QR" alignment="RIGHT" width="45" height="45" barBorder="0" value="http://google.com"/>
+    </para>
   </story>
 </document>

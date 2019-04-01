@@ -87,7 +87,7 @@ class Rml2OdtConverterTest(unittest.TestCase):
   </story>
 
 </document>"""
-        result = rml2odt.convertString(instr)
+        result = rml2odt.convertString(instr, filename='<unknown>')
         # The resulting output is indeed a zip file, so the conversion
         # succeeded.
         self.assertEqual(result.getvalue()[:2], b'PK')

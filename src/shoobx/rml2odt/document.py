@@ -47,24 +47,6 @@ class ColorDefinition(directive.RMLDirective):
         manager.colors[attrs['id']] = attrs['value']
 
 
-class RegisterTTFont(directive.RMLDirective):
-    signature = rml_document.IRegisterTTFont
-
-    def process(self):
-        fontName, location = self.getAttributeValues(valuesOnly=True)
-
-        font = FontFace(name=fontName, fontfamily=fontName,
-                        fontfamilygeneric='modern', fontpitch='variable')
-
-        source = FontFaceSrc()
-        urn = FontFaceUri(href=location, actuate='onRequest', type='simple')
-        source.appendChild(urn)
-        defSource = DefinitionSrc(href=location, actuate='onRequest')
-        font.appendChild(source)
-        # font.appendChild(defSource)
-        self.parent.parent.document.fontfacedecls.addElement(font)
-
-
 class DocInit(directive.RMLDirective):
     signature = rml_document.IDocInit
     factories = {
@@ -72,7 +54,9 @@ class DocInit(directive.RMLDirective):
         'color': ColorDefinition,
         # 'registerType1Face': RegisterType1Face,
         # 'registerFont': RegisterFont,
-        'registerTTFont': RegisterTTFont,
+        # there are some vague comments that ODF supports font embedding, but
+        # chasing that seems not to be good idea
+        # 'registerTTFont': RegisterTTFont,
         # 'registerCidFont': RegisterCidFont,
         # 'registerFontFamily': RegisterFontFamily,
         # 'addMapping': AddMapping,

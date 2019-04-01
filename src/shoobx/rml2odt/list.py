@@ -27,17 +27,6 @@ from z3c.rml import flowable as rml_flowable
 from z3c.rml import attr, directive
 
 
-def fontNameKeyword(fontname):
-    """A dict of ListProperties keywords for fontname
-
-    This helper method will create a keyword dict with the fontname
-    parameter if a fontname was specified. This is because fontname=None
-    will be rendered as fontname="None" in the ODT"""
-    if fontname:
-        return {'fontname': fontname}
-    return {}
-
-
 @zope.interface.implementer(IContentContainer)
 class ListItem(flowable.Flow):
     signature = rml_flowable.IParagraph
@@ -82,8 +71,7 @@ class ListItem(flowable.Flow):
         if any([sub.tag in self.factories for sub in self.element]):
             return
 
-        if (self.element.text is not None and
-           not self.element.text.strip(' \t\r\n')):
+        if (self.element.text is not None and not self.element.text.strip()):
             return
 
         # The tag has text in it, create a <para> element.
@@ -317,6 +305,7 @@ class ListBase(flowable.Flowable):
                 # We only care about these right now:
                 newattrs = {'bulletType': newstyle.bulletType,
                             'bulletFormat': newstyle.bulletFormat,
+                            'start': newstyle.start,
                             }
                 # Get any local overrides
                 newattrs.update(attrs)
@@ -325,17 +314,19 @@ class ListBase(flowable.Flowable):
 
             if attrs:
                 # We must now find the correct level style, and modify it.
+                # with ODF we can NOT have different bullet styles on the same
+                # level
+                # XXX: might need to join with the code of
+                #      stylesheet.registerListStyle
                 style = self.getRootStyle()
                 for levelstyle in style.childNodes:
+                    if int(levelstyle.getAttribute('level')) != self.level:
+                        # Not this level
+                        continue
 
                     # Modify this level
                     if levelstyle.tagName == 'text:list-level-style-number':
-
-                        # Ordered list
-                        if int(levelstyle.getAttribute('level')) != self.level:
-                            # Not this level
-                            continue
-
+                        # Ordered list / ol
                         if 'bulletType' in attrs:
                             bulletType = attrs['bulletType']
                             levelstyle.setAttribute('numformat', bulletType)
@@ -349,14 +340,19 @@ class ListBase(flowable.Flowable):
                         break  # done
 
                     if levelstyle.tagName == 'text:list-level-style-bullet':
-                        # Unordered list
-                        if int(levelstyle.getAttribute('level')) != self.level:
-                            continue
+                        # Unordered list / ul / bullet
+                        if 'start' in attrs:
+                            start = attrs['start']
+                            if isinstance(start, int):
+                                bulletType = None
+                            else:
+                                bulletType = start
 
-                        if 'bulletType' in attrs:
-                            bulletType = attrs['bulletType']
-                            bulletChar = stylesheet.BULLETS[bulletType]
-                            levelstyle.setAttribute('bulletchar', bulletChar)
+                            bulletchar = stylesheet.BULLETS.get(bulletType)
+                            if bulletchar is None:
+                                bulletchar = stylesheet.BULLETS['bulletchar']
+
+                            levelstyle.setAttribute('bulletchar', bulletchar)
 
                         break  # done
 

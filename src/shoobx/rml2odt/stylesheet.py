@@ -534,11 +534,9 @@ def registerListStyle(doc, name, rmlStyle, attributes=None, ulol=None):
             marginleft="%spt" % level_indent)
         listProps.appendChild(label_align)
 
-        retrievedBullet = BULLETS.get(bulletType)
-
         # Make the number (ol) style:
         if ulol == 'ol':
-            # A numType that is just one character (or None) means some sort of number
+            # if numType is just one character (or None) means some sort of number
             if bulletFormat is not None:
                 pre, post = bulletFormat.split('%s')
             else:
@@ -560,8 +558,9 @@ def registerListStyle(doc, name, rmlStyle, attributes=None, ulol=None):
                 numformat=numType,
                 startvalue=start,
             )
-
         else:
+            # bullet / ul style
+            retrievedBullet = BULLETS.get(bulletType)
             if bulletType and retrievedBullet is None:
                 # The bullet is a text, such as "RESOLVED:" etc
                 lvl_style = odf.text.ListLevelStyleNumber(
@@ -571,7 +570,6 @@ def registerListStyle(doc, name, rmlStyle, attributes=None, ulol=None):
                     numprefix=' ' + bulletType,
                     numsuffix=' ',
                     numformat='')
-
             else:
                 # Make the bullet (ul) style:
                 if retrievedBullet is None:

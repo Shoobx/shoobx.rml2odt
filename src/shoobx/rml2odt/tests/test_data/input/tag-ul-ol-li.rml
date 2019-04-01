@@ -102,16 +102,22 @@
           <li value="square"><para>unordered 2 - square</para></li>
           <li>
             <ul>
-              <li><para>Unordered - another one</para></li>
-              <li><para>Unordered - another one</para></li>
+              <li><para>Unordered 2.2 - another one</para></li>
+              <li><para>Unordered 2.3- another one</para></li>
             </ul>
           </li>
-          <li value="diamond"><para>unordered 3 - diamond</para></li>
+          <li value="diamond"><para>unordered 3 - diamond - no chance for per item style</para></li>
           <li value="rarrowhead"><para>unordered 4 - rarrowhead</para></li>
           <li><para>unordered 5</para></li>
           <li><para>unordered 6</para></li>
           <li value="disc"><para>unordered 3 - disc</para></li>
           <li><para>unordered 4</para></li>
+          <li>
+            <ul style="SquareList">
+              <li><para>Unordered - another now square styled</para></li>
+              <li><para>changes also 2.2 and 2.3 to square</para></li>
+            </ul>
+          </li>
         </ul>
       </li>
       <li><para>Welcome to RML 2</para></li>
@@ -392,6 +398,18 @@
         <para>
             Even more spaced
         </para>
+      </li>
+    </ol>
+
+    <h1>No para list items</h1>
+
+    <ol>
+      <li value="5"><i>Fifth item</i></li>
+      <li>
+        Six <b>bold</b>
+      </li>
+      <li>
+        Spaced Seven
       </li>
     </ol>
 

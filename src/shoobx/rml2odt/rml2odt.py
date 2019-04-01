@@ -14,9 +14,7 @@
 """RML to ODT Converter"""
 import argparse
 import lxml.etree
-import os
 import six
-import sys
 import zope.interface
 
 from shoobx.rml2odt import document, interfaces
@@ -25,7 +23,7 @@ zope.interface.moduleProvides(interfaces.IRML2ODT)
 
 
 def convertString(rml, remove_encoding=True, filename=None):
-    if isinstance(rml, six.text_type) and remove_encoding:
+    if isinstance(rml, six.string_types) and remove_encoding:
         # RML is a unicode string, but oftentimes documents declare their
         # encoding using <?xml ...>. Unfortuantely, I cannot tell lxml to
         # ignore that directive. Thus we remove it.

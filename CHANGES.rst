@@ -11,6 +11,10 @@ CHANGES
 
 - Lots of fixes, cleanup, tests added
 
+- Fix: blockSpan handling was completely broken
+
+- Fix: Removed whitespace from `para` left text,
+  removed tail text of `para` tag
 
 0.4.4 (2019-03-26)
 ------------------

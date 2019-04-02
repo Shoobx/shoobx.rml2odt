@@ -581,13 +581,11 @@ class Paragraph(Flowable):
         # Append new paragraph.
         self.contents.addElement(self.odtParagraph)
         if self.element.text:
-            self.addSpan(self.element.text)
+            self.addSpan(self.element.text.lstrip())
 
         self.processSubDirectives()
-
-        if self.element.tail and self.element.tail.strip():
-            # just in case there is some non-whitespace text lurking in tail
-            self.addSpan(self.element.tail)
+        # don't add element.tail here, text outside of a para tag
+        # is not supported
 
 
 class Preformatted(Paragraph):

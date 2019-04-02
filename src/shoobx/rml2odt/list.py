@@ -14,6 +14,7 @@
 """``ul``, ``ol``, and ``li`` directives.
 """
 import copy
+import lxml
 import odf.text
 import zope.interface
 import zope.schema
@@ -125,14 +126,21 @@ class ListItem(flowable.Flow):
             fmter = sequencer._type2formatter[fancy_numbering]
             word = fmter(index)
 
-            # DIY bullet: patch the bullet text into the child para tag's text
-            for child in self.element.getchildren():
+            # DIY bullet: patch the bullet text into the child para tag
+            for child in list(self.element.getchildren()):
                 if child.tag == 'para':
-                    child.text = ''.join((parent_style.pre,
-                                          word,
-                                          parent_style.post,
-                                          '\t',
-                                          child.text.lstrip()))
+                    # add the numbering
+                    newSpan = lxml.etree.Element('span')
+                    newSpan.text = parent_style.pre + word + parent_style.post
+                    child.insert(0, newSpan)
+                    # add a tab
+                    child.insert(1, lxml.etree.Element('tab'))
+                    # and the text
+                    newSpan = lxml.etree.Element('span')
+                    newSpan.text = child.text.lstrip()
+                    child.insert(2, newSpan)
+                    # nuke the child text, otherwise it would get added as first
+                    child.text = ''
                     break
 
         self.item = odf.text.ListItem(**attrs)

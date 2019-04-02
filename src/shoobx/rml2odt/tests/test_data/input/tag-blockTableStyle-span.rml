@@ -1,6 +1,6 @@
 <!DOCTYPE document SYSTEM "rml.dtd">
 <document
-    filename="tag-blockTableStyle.pdf"
+    filename="tag-blockTableStyle-span.pdf"
     xmlns:doc="http://namespaces.zope.org/rml/doc">
 
   <template>

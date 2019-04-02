@@ -440,6 +440,20 @@ class PageNumber(Flowable):
         self.parent.odtParagraph.addElement(odf.text.PageNumber())
 
 
+class ITab(IComplexSubParagraphDirective):
+    """Adds a tab to the ODF text.
+
+    Technically required for out custom numbering ListItem.
+    Otherwise not supported by reportlab/RML"""
+
+
+class Tab(SubParagraphDirective):
+    signature = ITab
+
+    def process(self):
+        self.paragraph.odtParagraph.addElement(odf.text.Tab())
+
+
 ComplexSubParagraphDirective.factories = {
     'i': Italic,
     'b': Bold,
@@ -453,6 +467,7 @@ ComplexSubParagraphDirective.factories = {
     'br': Break,
     'pageNumber': PageNumber,
     'span': Span,
+    'tab': Tab,
     '__comment__': Comment,
     # Unsupported tags:
     # 'greek': Greek,
@@ -471,6 +486,7 @@ IComplexSubParagraphDirective.setTaggedValue(
      occurence.ZeroOrMore('sub', ISub),
      occurence.ZeroOrMore('a', IAnchor),
      occurence.ZeroOrMore('br', rml_flowable.IBreak),
+     occurence.ZeroOrMore('tab', ITab),
      )
 )
 
@@ -492,6 +508,7 @@ class Paragraph(Flowable):
         'br': Break,
         'pageNumber': PageNumber,
         'span': Span,
+        'tab': Tab,
         '__comment__': Comment,
         # Graphic flowables
         'barCodeFlowable': BarCodeFlowable,
@@ -516,6 +533,7 @@ class Paragraph(Flowable):
         if not text:
             text = ''
         # squash lots of whitespace to a single space
+        text = text.replace('\t', ' ')
         text = re.sub('\n\s+', ' ', text)
         text = re.sub('\s\s+', ' ', text)
         return text
@@ -523,15 +541,12 @@ class Paragraph(Flowable):
     def addSpan(self, text=None):
 
         if text is not None:
-            parts = [self._cleanText(t) for t in text.split('\t')]
+            text = self._cleanText(text)
+            # parts = [self._cleanText(t) for t in text.split('\t')]
 
-        span = odf.text.Span()
-        for part in parts[:-1]:
-            span.addText(part)
-            span.addElement(odf.text.Tab())
-        span.addText(parts[-1])
-
+        span = odf.text.Span(text=text)
         self.odtParagraph.addElement(span)
+
         manager = attr.getManager(self)
         styleName = manager.getNextStyleName('T')
         style = odf.style.Style(name=styleName, family='text')

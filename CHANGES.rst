@@ -18,6 +18,9 @@ CHANGES
 
 - Fix: `NextPage` did not work, it added no page break
 
+- Fix: Do not add tabs to the ODT output, reportlab does not either.
+  There's a special `tab` tag that is used by our custom numbering.
+
 
 0.4.4 (2019-03-26)
 ------------------

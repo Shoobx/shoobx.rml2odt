@@ -682,11 +682,11 @@ class NextPage(Flowable):
             family='paragraph',
             parentstylename='Footer')
         prop = odf.style.ParagraphProperties()
-        prop.setAttribute('breakbefore', 'page')
+        # need to set breakafter here, breakbefore is a pain with ODF
+        prop.setAttribute('breakafter', 'page')
         pageBreakStyle.addElement(prop)
         manager.document.automaticstyles.addElement(pageBreakStyle)
-        self.para = odf.text.P()
-        self.para.setAttribute('stylename', pageBreakStyleName)
+        self.para = odf.text.P(stylename = pageBreakStyleName)
         self.contents.addElement(self.para)
 
 

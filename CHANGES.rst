@@ -16,6 +16,9 @@ CHANGES
 - Fix: Removed whitespace from `para` left text,
   removed tail text of `para` tag
 
+- Fix: `NextPage` did not work, it added no page break
+
+
 0.4.4 (2019-03-26)
 ------------------
 

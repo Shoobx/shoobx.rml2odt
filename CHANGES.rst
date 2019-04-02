@@ -21,6 +21,7 @@ CHANGES
 - Fix: Do not add tabs to the ODT output, reportlab does not either.
   There's a special `tab` tag that is used by our custom numbering.
 
+- Fix: Do not fail on missing `value` of the `color` tag
 
 0.4.4 (2019-03-26)
 ------------------

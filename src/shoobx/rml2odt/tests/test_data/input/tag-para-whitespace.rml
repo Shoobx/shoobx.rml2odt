@@ -15,16 +15,35 @@
   </template>
 
   <stylesheet>
+		<paraStyle name="code"
+				   fontName="Courier"
+				   fontSize="8"
+				   leftIndent="36"
+				   />
   </stylesheet>
 
   <story>
 
     <title><font face="Courier">&lt;paraStyle&gt;</font> Tag Demo</title>
     <para>
-      This is a paragraph     has losta 			weird   white
+      This is a paragraph     has lotsa 			weird   white
 			spacing. Also TABS! Do NOT remove those!
     Those shall be squashed to single space.
     </para>
+    <para>
+        Unless the spaces are in a pre or xpre tag
+    </para>
+    <pre style="code">Preformatted <b>text</b> only.  </pre>
+    <xpre >Preformatted with <i>markup</i>.</xpre>
+
+    <pre style="code"><![CDATA[<paraStyle name=" style.Heading1"]]></pre>
+    <pre style="code"><![CDATA[    parent="  style.Heading1"]]></pre>
+    <pre style="code"><![CDATA[    textColor="red    "]]></pre>
+    <pre style="code"><![CDATA[/>]]></pre>
+    <xpre style="code"><![CDATA[<paraStyle name=" style.Heading1"]]></xpre>
+    <xpre style="code"><![CDATA[    parent="  style.Heading1"]]></xpre>
+    <xpre style="code"><![CDATA[    textColor="red    "]]></xpre>
+    <xpre style="code"><![CDATA[/>]]></xpre>
 
   </story>
 </document>

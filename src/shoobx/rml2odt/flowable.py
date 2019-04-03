@@ -528,6 +528,7 @@ class Paragraph(Flowable):
     subscript = None
 
     overrideStyle = None
+    cleanText = True
 
     def _cleanText(self, text):
         if not text:
@@ -538,13 +539,58 @@ class Paragraph(Flowable):
         text = re.sub('\s\s+', ' ', text)
         return text
 
+    def _addSpaceHolders(self, text):
+        # ODF also squashes plain spaces, because it's XML
+        # need to add text:S tags to keep more than 1 space intact
+        # this is required for pre and xpre tags
+        span = odf.text.Span()
+
+        if '  ' not in text:
+            # shortcut if there's nothing to process
+            span.addText(text)
+            return span
+
+        spaceCount = 0
+        nonspace = ''
+
+        def _addNonSpace(nonspace):
+            if nonspace:
+                span.addText(nonspace)
+                nonspace = ''
+            return nonspace
+
+        def _addSpace(nonspace, spaceCount):
+            if spaceCount == 1:
+                # a single space will be attached to the span text
+                nonspace += ' '
+                spaceCount = 0
+            if spaceCount > 1:
+                # more than 1 space gets converted to text:S
+                span.addElement(odf.text.S(c='%s' % spaceCount))
+                spaceCount = 0
+            return nonspace, spaceCount
+
+        for char in text:
+            if char == ' ':
+                nonspace = _addNonSpace(nonspace)
+                spaceCount += 1
+            else:
+                nonspace, spaceCount = _addSpace(nonspace, spaceCount)
+                nonspace += char
+
+        _addSpace(nonspace, spaceCount)
+        _addNonSpace(nonspace)
+
+        return span
+
     def addSpan(self, text=None):
-
         if text is not None:
-            text = self._cleanText(text)
-            # parts = [self._cleanText(t) for t in text.split('\t')]
+            if self.cleanText:
+                text = self._cleanText(text)
+                span = odf.text.Span(text=text)
+            else:
+                span = self._addSpaceHolders(text)
 
-        span = odf.text.Span(text=text)
         self.odtParagraph.addElement(span)
 
         manager = attr.getManager(self)
@@ -596,7 +642,10 @@ class Paragraph(Flowable):
         # Append new paragraph.
         self.contents.addElement(self.odtParagraph)
         if self.element.text:
-            self.addSpan(self.element.text.lstrip())
+            if self.cleanText:
+                self.addSpan(self.element.text.lstrip())
+            else:
+                self.addSpan(self.element.text)
 
         self.processSubDirectives()
         # don't add element.tail here, text outside of a para tag
@@ -606,9 +655,10 @@ class Paragraph(Flowable):
 class Preformatted(Paragraph):
     signature = rml_flowable.IPreformatted
     klass = reportlab.platypus.Preformatted
+    cleanText = False
 
 
-class XPreformatted(Paragraph):
+class XPreformatted(Preformatted):
     signature = rml_flowable.IXPreformatted
     klass = reportlab.platypus.XPreformatted
 
@@ -737,6 +787,8 @@ class Flow(directive.BaseDirective):
         'title': Title,
         'hr': HorizontalRow,
         'link': Link,
+        'pre': Preformatted,
+        'xpre': XPreformatted,
 
         # Page-Level Flowables
         'nextPage': NextPage,

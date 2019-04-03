@@ -23,6 +23,8 @@ CHANGES
 
 - Fix: Do not fail on missing `value` of the `color` tag
 
+- Fix: Support `pre` and `xpre` tags, make sure whitespace is not squashed
+
 0.4.4 (2019-03-26)
 ------------------
 

@@ -204,6 +204,11 @@ class BlockTableInList(directive.RMLDirective):
         stylesheet.registerListStyle(manager.document, newstylename,
                                      None, style_attrs)
 
+        # need to add a Paragraph, otherwise the bullet does NOT show up
+        # will place the table on the next line, but what else to do?
+        newPara = odf.text.P()
+        self.parent.contents.appendChild(newPara)
+
         ol = odf.text.List(stylename=newstylename + '-ul')
         self.parent.contents.appendChild(ol)
 

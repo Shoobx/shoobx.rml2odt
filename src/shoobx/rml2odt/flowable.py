@@ -555,7 +555,15 @@ class Paragraph(Flowable):
 
         def _addNonSpace(nonspace):
             if nonspace:
-                span.addText(nonspace)
+                if '\n' in nonspace:
+                    # also need to handle newlines, mostly for pre tags
+                    parts = nonspace.split('\n')
+                    for ptext in parts[:-1]:
+                        span.addText(ptext)
+                        span.addElement(odf.text.LineBreak())
+                    span.addText(parts[-1])
+                else:
+                    span.addText(nonspace)
                 nonspace = ''
             return nonspace
 

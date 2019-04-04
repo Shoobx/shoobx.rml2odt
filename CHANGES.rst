@@ -25,6 +25,11 @@ CHANGES
 
 - Fix: Support `pre` and `xpre` tags, make sure whitespace is not squashed
 
+- Fix: Copy the `main` or `Main` pageTemplate to `Standard` to make ODT
+  at least somehow happy. Reportlab uses `main` as conventional default.
+  This is still just a workaround. Supporting custom templates set in a story
+  will take more efforts.
+
 0.4.4 (2019-03-26)
 ------------------
 

@@ -11,6 +11,19 @@ CHANGES
 
 - Lots of fixes, cleanup, tests added
 
+- Fix: blockSpan handling was completely broken
+
+- Fix: Removed whitespace from `para` left text,
+  removed tail text of `para` tag
+
+- Fix: `NextPage` did not work, it added no page break
+
+- Fix: Do not add tabs to the ODT output, reportlab does not either.
+  There's a special `tab` tag that is used by our custom numbering.
+
+- Fix: Do not fail on missing `value` of the `color` tag
+
+- Fix: Support `pre` and `xpre` tags, make sure whitespace is not squashed
 
 0.4.4 (2019-03-26)
 ------------------

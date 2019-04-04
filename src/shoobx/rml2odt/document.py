@@ -14,18 +14,11 @@
 """RML ``document`` element
 """
 
-import odf
-from odf.svg import FontFaceUri
-from odf.svg import DefinitionSrc
 from reportlab.lib import styles
-import reportlab
 import zope.interface
 
 from odf.opendocument import OpenDocumentText
-from odf.style import FontFace
-from odf.svg import FontFaceSrc
-from reportlab.pdfbase import pdfmetrics, ttfonts, cidfonts
-from z3c.rml import attr, directive, canvas
+from z3c.rml import attr, directive
 from z3c.rml import document as rml_document, interfaces as rml_interfaces
 
 # Import modules, so their directives get registered.
@@ -44,7 +37,12 @@ class ColorDefinition(directive.RMLDirective):
     def process(self):
         attrs = dict(self.getAttributeValues())
         manager = attr.getManager(self)
-        manager.colors[attrs['id']] = attrs['value']
+        if 'value' in attrs:
+            manager.colors[attrs['id']] = attrs['value']
+        if 'RGB' in attrs:
+            manager.colors[attrs['id']] = attrs['RGB']
+        if 'CMYK' in attrs:
+            manager.colors[attrs['id']] = attrs['CMYK']
 
 
 class DocInit(directive.RMLDirective):

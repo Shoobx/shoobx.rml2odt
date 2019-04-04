@@ -143,7 +143,8 @@
 
   </stylesheet>
 
-  <template pagesize="(8.5in, 11in)" rotation="0" leftMargin="1in" rightMargin="1in" topMargin="1in" bottomMargin="1in" showBoundary="false" allowSplitting="true">
+  <template pagesize="letter" showBoundary="0" leftMargin="2.0cm"
+            topMargin="2.0cm" rightMargin="2.0cm" bottomMargin="2.0cm">
 
     <pageTemplate id="FirstPage">
       <frame id="main" x1="1.0in" y1="1.5in" width="6.5in" height="7.5in"/>

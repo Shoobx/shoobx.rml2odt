@@ -180,41 +180,31 @@ class TableCell(flowable.Flow):
 
     def process(self):
         col = len(self.parent.row.childNodes)
-        row = len([x for x in self.parent.parent.table.childNodes
-                  if x.tagName == u'table:table-row']) - 1
-
-        kw = {}
-        table_style = self.parent.parent.getAttributeValues(select=['style'])
-        if table_style:
-            table_style = table_style[0][1]
-
-            for blockspan in [x for x in table_style.element.getchildren()
-                              if x.tag == 'blockSpan']:
-                attribs = blockspan.attrib
-                start_col, start_row = map(int, attribs['start'].split(','))
-                end_col, end_row = map(int, attribs['stop'].split(','))
-                if end_col == -1:
-                    end_col = self.parent.parent.columns
-                if end_row == -1:
-                    end_row = self.parent.parent.rows
-
-                if (col >= start_col and col <= end_col and
-                    row >= start_row and row <= end_row):
-                    # This cell should span many cells
-                    kw = {'numbercolumnsspanned': end_col - col,
-                          'numberrowsspanned': end_row - row,}
-                    break
+        row = self.parent.parent.rowCount - 1
 
         self.processStyle()
 
-        self.cell = odf.table.TableCell(
-            stylename=self.cellStyleName,
-            valuetype='string', **kw)
+        spanmap = self.parent.parent.spanmap
+        cellspan = spanmap[col][row]
+        if cellspan:
+            if isinstance(cellspan, dict):
+                kw = cellspan
+            else:
+                kw = {}
+            self.cell = odf.table.TableCell(
+                stylename=self.cellStyleName,
+                valuetype='string', **kw)
+            self._convertSimpleContent()
+            process = True
+        elif cellspan is False:
+            self.cell = odf.table.CoveredTableCell()
+            # do NOT add any content to a CoveredTableCell
+            process = False
 
-        self._convertSimpleContent()
         self.parent.row.addElement(self.cell)
         self.contents = self.cell
-        super(TableCell, self).process()
+        if process:
+            super(TableCell, self).process()
 
 class TableRow(directive.RMLDirective):
     signature = rml_flowable.ITableRow
@@ -280,6 +270,55 @@ class BlockTable(flowable.Flowable):
         'tr': TableRow,
         'bulkData': TableBulkData,
     }
+
+    @lazy.lazy
+    def spanmap(self):
+        # prepare a map of spanned cells
+        # ODF expects `numbercolumnsspanned` or `numberrowsspanned` on
+        # the cell that spans more columns/rows
+        # ODF also expects `table:covered-table-cell`
+        # instead of a table:table-cell when a cell should not be 'displayed'
+        spanmap = [
+            [True for r in range(self.rows)] for c in range(self.columns)]
+        table_style = self.getAttributeValues(select=['style'])
+        if table_style:
+            table_style = table_style[0][1]
+
+            for blockspan in [x for x in table_style.element.getchildren()
+                              if x.tag == 'blockSpan']:
+                attribs = blockspan.attrib
+                start_col, start_row = map(int, attribs['start'].split(','))
+                end_col, end_row = map(int, attribs['stop'].split(','))
+                # negative indexes are like python lists, count from right
+                # also sort on the index
+                cols = sorted([col if col >= 0 else self.columns+col
+                               for col in [start_col, end_col]])
+                start_col = cols[0]
+                end_col = cols[1]
+                rows = sorted([row if row >= 0 else self.rows+row
+                               for row in [start_row, end_row]])
+                start_row = rows[0]
+                end_row = rows[1]
+
+                columnsspanned = end_col - start_col + 1
+                rowsspanned = end_row - start_row + 1
+
+                if columnsspanned == 1 and rowsspanned == 1:
+                    continue
+
+                # mark all spanned cells
+                for col in range(start_col, end_col+1):
+                    for row in range(start_row, end_row+1):
+                        spanmap[col][row] = False
+                # only the top left cell needs the span info
+                spaninfo = {}
+                # and only spans > 1 need to be added to the ODF
+                if columnsspanned > 1:
+                    spaninfo['numbercolumnsspanned'] = columnsspanned
+                if rowsspanned > 1:
+                    spaninfo['numberrowsspanned'] = rowsspanned
+                spanmap[start_col][start_row] = spaninfo
+        return spanmap
 
     def addColumns(self):
         attribs = dict(self.getAttributeValues())

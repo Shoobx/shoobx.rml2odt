@@ -440,6 +440,20 @@ class PageNumber(Flowable):
         self.parent.odtParagraph.addElement(odf.text.PageNumber())
 
 
+class ITab(IComplexSubParagraphDirective):
+    """Adds a tab to the ODF text.
+
+    Technically required for out custom numbering ListItem.
+    Otherwise not supported by reportlab/RML"""
+
+
+class Tab(SubParagraphDirective):
+    signature = ITab
+
+    def process(self):
+        self.paragraph.odtParagraph.addElement(odf.text.Tab())
+
+
 ComplexSubParagraphDirective.factories = {
     'i': Italic,
     'b': Bold,
@@ -453,6 +467,7 @@ ComplexSubParagraphDirective.factories = {
     'br': Break,
     'pageNumber': PageNumber,
     'span': Span,
+    'tab': Tab,
     '__comment__': Comment,
     # Unsupported tags:
     # 'greek': Greek,
@@ -471,6 +486,7 @@ IComplexSubParagraphDirective.setTaggedValue(
      occurence.ZeroOrMore('sub', ISub),
      occurence.ZeroOrMore('a', IAnchor),
      occurence.ZeroOrMore('br', rml_flowable.IBreak),
+     occurence.ZeroOrMore('tab', ITab),
      )
 )
 
@@ -492,6 +508,7 @@ class Paragraph(Flowable):
         'br': Break,
         'pageNumber': PageNumber,
         'span': Span,
+        'tab': Tab,
         '__comment__': Comment,
         # Graphic flowables
         'barCodeFlowable': BarCodeFlowable,
@@ -511,27 +528,79 @@ class Paragraph(Flowable):
     subscript = None
 
     overrideStyle = None
+    cleanText = True
 
     def _cleanText(self, text):
         if not text:
             text = ''
         # squash lots of whitespace to a single space
+        text = text.replace('\t', ' ')
         text = re.sub('\n\s+', ' ', text)
         text = re.sub('\s\s+', ' ', text)
         return text
 
-    def addSpan(self, text=None):
-
-        if text is not None:
-            parts = [self._cleanText(t) for t in text.split('\t')]
-
+    def _addSpaceHolders(self, text):
+        # ODF also squashes plain spaces, because it's XML
+        # need to add text:S tags to keep more than 1 space intact
+        # this is required for pre and xpre tags
         span = odf.text.Span()
-        for part in parts[:-1]:
-            span.addText(part)
-            span.addElement(odf.text.Tab())
-        span.addText(parts[-1])
+
+        if '  ' not in text:
+            # shortcut if there's nothing to process
+            span.addText(text)
+            return span
+
+        spaceCount = 0
+        nonspace = ''
+
+        def _addNonSpace(nonspace):
+            if nonspace:
+                if '\n' in nonspace:
+                    # also need to handle newlines, mostly for pre tags
+                    parts = nonspace.split('\n')
+                    for ptext in parts[:-1]:
+                        span.addText(ptext)
+                        span.addElement(odf.text.LineBreak())
+                    span.addText(parts[-1])
+                else:
+                    span.addText(nonspace)
+                nonspace = ''
+            return nonspace
+
+        def _addSpace(nonspace, spaceCount):
+            if spaceCount == 1:
+                # a single space will be attached to the span text
+                nonspace += ' '
+                spaceCount = 0
+            if spaceCount > 1:
+                # more than 1 space gets converted to text:S
+                span.addElement(odf.text.S(c='%s' % spaceCount))
+                spaceCount = 0
+            return nonspace, spaceCount
+
+        for char in text:
+            if char == ' ':
+                nonspace = _addNonSpace(nonspace)
+                spaceCount += 1
+            else:
+                nonspace, spaceCount = _addSpace(nonspace, spaceCount)
+                nonspace += char
+
+        _addSpace(nonspace, spaceCount)
+        _addNonSpace(nonspace)
+
+        return span
+
+    def addSpan(self, text=None):
+        if text is not None:
+            if self.cleanText:
+                text = self._cleanText(text)
+                span = odf.text.Span(text=text)
+            else:
+                span = self._addSpaceHolders(text)
 
         self.odtParagraph.addElement(span)
+
         manager = attr.getManager(self)
         styleName = manager.getNextStyleName('T')
         style = odf.style.Style(name=styleName, family='text')
@@ -581,21 +650,23 @@ class Paragraph(Flowable):
         # Append new paragraph.
         self.contents.addElement(self.odtParagraph)
         if self.element.text:
-            self.addSpan(self.element.text)
+            if self.cleanText:
+                self.addSpan(self.element.text.lstrip())
+            else:
+                self.addSpan(self.element.text)
 
         self.processSubDirectives()
-
-        if self.element.tail and self.element.tail.strip():
-            # just in case there is some non-whitespace text lurking in tail
-            self.addSpan(self.element.tail)
+        # don't add element.tail here, text outside of a para tag
+        # is not supported
 
 
 class Preformatted(Paragraph):
     signature = rml_flowable.IPreformatted
     klass = reportlab.platypus.Preformatted
+    cleanText = False
 
 
-class XPreformatted(Paragraph):
+class XPreformatted(Preformatted):
     signature = rml_flowable.IXPreformatted
     klass = reportlab.platypus.XPreformatted
 
@@ -684,11 +755,11 @@ class NextPage(Flowable):
             family='paragraph',
             parentstylename='Footer')
         prop = odf.style.ParagraphProperties()
-        prop.setAttribute('breakbefore', 'page')
+        # need to set breakafter here, breakbefore is a pain with ODF
+        prop.setAttribute('breakafter', 'page')
         pageBreakStyle.addElement(prop)
         manager.document.automaticstyles.addElement(pageBreakStyle)
-        self.para = odf.text.P()
-        self.para.setAttribute('stylename', pageBreakStyleName)
+        self.para = odf.text.P(stylename = pageBreakStyleName)
         self.contents.addElement(self.para)
 
 
@@ -724,6 +795,8 @@ class Flow(directive.BaseDirective):
         'title': Title,
         'hr': HorizontalRow,
         'link': Link,
+        'pre': Preformatted,
+        'xpre': XPreformatted,
 
         # Page-Level Flowables
         'nextPage': NextPage,

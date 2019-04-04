@@ -1,0 +1,80 @@
+<!DOCTYPE document SYSTEM "rml.dtd">
+<document
+    filename="tag-blockTableStyle-span.pdf"
+    xmlns:doc="http://namespaces.zope.org/rml/doc">
+
+  <template pagesize="letter" showBoundary="0" leftMargin="2.0cm"
+            topMargin="2.0cm" rightMargin="2.0cm" bottomMargin="2.0cm">
+    <pageTemplate id="main">
+      <frame id="first" x1="72" y1="72" width="451" height="698"/>
+    </pageTemplate>
+  </template>
+
+  <stylesheet>
+
+    <blockTableStyle id="span001">
+        <blockAlignment value="center"/>
+        <blockValign value="middle" start="-1,0" stop="-1,-1"/>
+        <blockSpan start="0,0" stop="2,0"/>
+        <blockSpan start="-1,0" stop="-1,-1"/>
+        <lineStyle kind="GRID" colorName="black" start="0,1" stop="-2,-1"/>
+        <lineStyle kind="GRID" colorName="black" start="3,0" stop="3,0"/>
+        <lineStyle kind="OUTLINE" colorName="black" thickness="2"/>
+    </blockTableStyle>
+
+  </stylesheet>
+
+  <story>
+    <title><font face="Courier">&lt;blockTableStyle&gt;</font> Tag Demo</title>
+
+    <blockTable colWidths="3cm,3cm,3cm,3cm,3cm" rowHeights="1cm,1cm,1cm,1cm,1cm" style="span001">
+        <tr>
+            <td>
+                <para>This should span the first 3 cells in the top row. It's ordinary left aligned
+            text but could be centred if you want.</para>
+            </td>
+            <td>B</td>
+            <td>C</td>
+            <td>D</td>
+            <td>
+                <para>This should span all five cells in the right column.  We vertically centred the
+            text to make it look sensible using a separate stylesheet command.</para>
+                <hr spaceBefore="5"/>
+                <para>some more text</para>
+            </td>
+        </tr>
+        <tr>
+            <td>A</td>
+            <td>B</td>
+            <td>C</td>
+            <td>DB</td>
+            <td>E</td>
+        </tr>
+        <tr>
+            <td>A</td>
+            <td>B</td>
+            <td>C</td>
+            <td>DB</td>
+            <td>E</td>
+        </tr>
+        <tr>
+            <td>A</td>
+            <td>B</td>
+            <td>C</td>
+            <td>DB</td>
+            <td>E</td>
+        </tr>
+        <tr>
+            <td>A</td>
+            <td>B</td>
+            <td>C</td>
+            <td>DB</td>
+            <td>E</td>
+        </tr>
+    </blockTable>
+
+	<spacer length="24"/>
+
+  </story>
+
+</document>

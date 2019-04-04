@@ -3,7 +3,8 @@
 
 <document filename="tag-para.pdf">
 
-  <template>
+  <template pagesize="letter" showBoundary="0" leftMargin="2.0cm"
+            topMargin="2.0cm" rightMargin="2.0cm" bottomMargin="2.0cm">
     <pageTemplate id="main">
       <frame id="first" x1="2cm" y1="2cm" width="9cm" height="6cm"/>
       <pageGraphics>

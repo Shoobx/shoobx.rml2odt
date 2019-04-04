@@ -13,8 +13,10 @@
 ##############################################################################
 """Style Related Element Processing
 """
+import copy
 import odf
 import zope.interface
+from odf.namespaces import STYLENS
 
 from z3c.rml import directive, attr
 from z3c.rml import template as rml_template
@@ -66,6 +68,7 @@ class PageTemplate(directive.RMLDirective):
         args = dict(self.getAttributeValues())
         self.content = odf.style.MasterPage(
             name=args['id'], pagelayoutname=styleName)
+        self.parent.pageTemplateNames.append(args['id'])
         self.parent.parent.document.masterstyles.addElement(self.content)
         self.processSubDirectives()
 
@@ -82,6 +85,12 @@ class Template(directive.RMLDirective):
     factories = {
         'pageTemplate': PageTemplate,
     }
+
+    def _getNodeName(self, node):
+        for att, value in node.attributes.items():
+            if att[1] == 'name':
+                return value
+        return None
 
     def process(self):
         # determine style attributes to be used in PageTemplate
@@ -103,5 +112,35 @@ class Template(directive.RMLDirective):
                 styleArgs[argName] = '%spt' % argValue
         
         self.styleArgs = styleArgs
+        self.pageTemplateNames = []
 
         self.processSubDirectives()
+
+        haveMain = (
+            'main' in self.pageTemplateNames or
+            'Main' in self.pageTemplateNames)
+        if haveMain and 'Standard' not in self.pageTemplateNames:
+            # LibreOffice is picky and expects a 'Standard' pageTemplate
+            # as default if nothing specified in the story tag
+            # OTOH reportlab standard is 'main'
+            # let's make a copy of 'main' as 'Standard'
+            mainPT = None
+            for pt in self.parent.document.masterstyles.childNodes:
+                if pt.tagName == 'style:master-page':
+                    if self._getNodeName(pt).lower() == 'main':
+                        mainPT = pt
+            if mainPT is not None:
+                newPT = copy.deepcopy(mainPT)
+                newPT.setAttrNS(STYLENS, 'name', 'Standard')
+                newPT.setAttrNS(STYLENS, 'display-name', 'Standard')
+
+                self.parent.document.masterstyles.addElement(newPT)
+
+        # but all that is just a workaround for now
+        # how ODT handles page styles/pageTemplate:
+        # the style of the para on the previous page should have
+        #   fo:break-after="page"
+        # to make the page break
+        # the style of the first para on the page gets
+        #   style:master-page-name="First_20_Page"
+        # which then refers to the style:page-layout

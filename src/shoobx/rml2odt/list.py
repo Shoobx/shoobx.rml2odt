@@ -369,6 +369,13 @@ class ListBase(flowable.Flowable):
 
                         break  # done
 
+        if self.parent.parent.element.tag == 'ol':
+            # edge case, when a ul is contained in a ol
+            # we need to add a Paragraph otherwise the ol's number does not
+            # appear
+            newPara = odf.text.P()
+            self.parent.contents.addElement(newPara)
+        
         self.parent.contents.addElement(self.item)
         # Add all list items.
         self.processSubDirectives()

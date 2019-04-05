@@ -13,4 +13,11 @@ src/shoobx/rml2odt/tests/test_data/expected/*.png
 src/shoobx/rml2odt/tests/test_data/output/*.odt
 src/shoobx/rml2odt/tests/test_data/output/*.pdf
 src/shoobx/rml2odt/tests/test_data/output/*.png
+
+src/shoobx/rml2odt/tests/z3c_rml_tests/expected/*.pdf
+src/shoobx/rml2odt/tests/z3c_rml_tests/expected/*.png
+src/shoobx/rml2odt/tests/z3c_rml_tests/output/*.odt
+src/shoobx/rml2odt/tests/z3c_rml_tests/output/*.pdf
+src/shoobx/rml2odt/tests/z3c_rml_tests/output/*.png
+
 src/shoobx.rml2odt.egg-info

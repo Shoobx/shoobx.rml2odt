@@ -104,6 +104,8 @@ class Image(Flowable):
         # according to tests, the Frame must be in a Paragraph
         # otherwise LibreOffice will not show the Image
         # pain is that an img can appear on the story and on the para level
+        # it's even worse if just one dimension is given, the other will
+        # be set by LibreOffice to 0.04cm, making the image almost invisible
         frame = odf.draw.Frame(**args)
         frame.appendChild(self.image)
         if self.parent.element.tag == 'para':
@@ -665,10 +667,26 @@ class Preformatted(Paragraph):
     klass = reportlab.platypus.Preformatted
     cleanText = False
 
+    def process(self):
+        children = self.element.getchildren()
+        if children:
+            # lxml parses the pre content as XML but we need all the contained
+            # text as text
+            xml = lxml.etree.tostring(self.element).strip()
+            # remove <pre> and </pre>
+            xml = xml[5:-6]
+            self.element.text = xml
 
-class XPreformatted(Preformatted):
+            for ch in children:
+                self.element.remove(ch)
+
+        super(Preformatted, self).process()
+
+
+class XPreformatted(Paragraph):
     signature = rml_flowable.IXPreformatted
     klass = reportlab.platypus.XPreformatted
+    cleanText = False
 
 
 class Heading1(Paragraph):

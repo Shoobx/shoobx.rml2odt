@@ -1,7 +1,7 @@
 CHANGES
 =======
 
-0.4.5 (unreleased)
+0.5.0 (2019-04-05)
 ------------------
 
 - Fix: `img` must be in a Paragraph otherwise LibreOffice will not show the

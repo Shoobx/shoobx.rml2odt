@@ -11,6 +11,8 @@ recursive-include src *
 recursive-include ci *
 recursive-exclude src/shoobx/rml2odt/tests/test_data/output *
 recursive-exclude src/shoobx/rml2odt/tests/test_data/expected *.pdf *.png
+recursive-exclude src/shoobx/rml2odt/tests/z3c_rml_tests/output *
+recursive-exclude src/shoobx/rml2odt/tests/z3c_rml_tests/expected *.pdf *.png
 
 global-exclude *.pyc
 

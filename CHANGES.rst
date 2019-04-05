@@ -30,6 +30,8 @@ CHANGES
   This is still just a workaround. Supporting custom templates set in a story
   will take more efforts.
 
+- Copied all z3c.rml RML test inputs, blacklisted a lot, listed shortcomings.
+
 0.4.4 (2019-03-26)
 ------------------
 

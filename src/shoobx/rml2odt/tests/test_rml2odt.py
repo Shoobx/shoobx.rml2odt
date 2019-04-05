@@ -15,6 +15,7 @@
 """
 from __future__ import absolute_import
 
+import glob
 import os
 import re
 import subprocess
@@ -32,6 +33,130 @@ OUTPUT_DIR = os.path.join(
     os.path.dirname(__file__), 'test_data', 'output')
 EXPECT_DIR = os.path.join(
     os.path.dirname(__file__), 'test_data', 'expected')
+
+Z3C_RML_INPUT_DIR = os.path.join(
+    os.path.dirname(__file__), 'z3c_rml_tests', 'input')
+Z3C_RML_OUTPUT_DIR = os.path.join(
+    os.path.dirname(__file__), 'z3c_rml_tests', 'output')
+Z3C_RML_EXPECT_DIR = os.path.join(
+    os.path.dirname(__file__), 'z3c_rml_tests', 'expected')
+
+Z3C_RML_BLACKLIST = (
+    'printScaling.rml',
+    'rml-examples-000-simple.rml',
+    'rml-examples-001-cmbox.rml',
+    'rml-examples-003-frames.rml',
+    'rml-examples-004-fpt-templates.rml',
+    'rml-examples-004-templates.rml',
+    'rml-examples-005-fonts.rml',
+    'rml-examples-006-barcodes.rml',
+    'rml-examples-009-splitting.rml',
+    'rml-examples-010-linkURL.rml',
+    'rml-examples-017-outlines.rml',
+    'rml-examples-029-keepinframe.rml',
+    'rml-examples-032-images.rml',
+    'rml-examples-034-cmyk.rml',
+    'rml-examples-035-numbering.rml',
+    'rml-examples-036-numbering-contd.rml',
+    'rml-examples-037-plugingraphic.rml',
+    'rml-examples-038-rect-href.rml',
+    'rml-examples-039-doc-programming.rml',
+    'rml-examples-041-masking.rml',
+    'rml-examples-042-longdoc.rml',
+    'rml-examples-044-codesnippets.rml',
+    'rml-examples-045-cmyk.rml',
+    'rml-examples-047-condPageBreak.rml',
+    'rml-examples-048-paragraph-flow-controls.rml',
+    'rml-guide-example-01.rml',
+    'rml-guide-example-02.rml',
+    'rml-guide-example-03.rml',
+    'rml-guide-example-04.rml',
+    'rml-guide-example-05.rml',
+    'rml-guide-example-06.rml',
+    'rml-guide-example-07.rml',
+    'rml-guide-example-08.rml',
+    'rml-guide-example-09.rml',
+    'rml-guide-example-10.rml',
+    'rml-guide-example-11.rml',
+    'rml-guide-example-12.rml',
+    'special-text.rml',
+    'symbols-set.rml',
+    'tag-alias.rml',
+    'tag-barChart.rml',
+    'tag-barChart3d.rml',
+    'tag-barcode.rml',
+    'tag-buttonField.rml',
+    'tag-circle.rml',
+    'tag-codesnippet.rml',
+    'tag-color.rml',
+    'tag-condPageBreak.rml',
+    'tag-cropMarks.rml',
+    'tag-curves.rml',
+    'tag-doc.rml',
+    'tag-document-pageDrawing.rml',
+    'tag-drawAlignedString.rml',
+    'tag-drawString.rml',
+    'tag-drawRightString.rml',
+    'tag-drawCenteredString.rml',
+    'tag-ellipse.rml',
+    'tag-fill.rml',
+    'tag-fixedSize.rml',
+    'tag-grid.rml',
+    'tag-illustration.rml',
+    'tag-image.rml',
+    'tag-image-1.rml',
+    'tag-image-data-uri.rml',
+    'tag-image-mask.rml',
+    'tag-image-svg.rml',
+    'tag-imageAndFlowables.rml',
+    'tag-imageAndFlowables-svg.rml',
+    'tag-includePdfPages.rml',
+    'tag-indent.rml',
+    'tag-index.rml',
+    'tag-keepInFrame.rml',
+    'tag-keepTogether.rml',
+    'tag-lines.rml',
+    'tag-lineMode.rml',
+    'tag-linePlot.rml',
+    'tag-linePlot3D.rml',
+    'tag-log.rml',
+    'tag-mergePage.rml',
+    'tag-name.rml',
+    'tag-nextFrame.rml',
+    'tag-outlineAdd.rml',
+    'tag-pageGraphics.rml',
+    'tag-pageInfo.rml',
+    'tag-pageInfo-2.rml',
+    'tag-pageNumber.rml',
+    'tag-para-wordWrap.rml',
+    'tag-path.rml',
+    'tag-pieChart.rml',
+    'tag-pieChart3d.rml',
+    'tag-place.rml',
+    'tag-plugInFlowable.rml',
+    'tag-plugInGraphic.rml',
+    'tag-pto.rml',
+    'tag-rectange.rml',
+    'tag-registerCidFont.rml',
+    'tag-registerTTFont.rml',
+    'tag-registerType1Face.rml',
+    'tag-rotate.rml',
+    'tag-saveState-restoreState.rml',
+    'tag-scale.rml',
+    'tag-selectField.rml',
+    'tag-setFont.rml',
+    'tag-setFontSize.rml',
+    'tag-setNextFrame.rml',
+    'tag-setNextTemplate.rml',
+    'tag-skew.rml',
+    'tag-spiderChart.rml',
+    'tag-storyPlace.rml',
+    'tag-stroke.rml',
+    'tag-textAnnotation.rml',
+    'tag-textField.rml',
+    'tag-transform.rml',
+    'tag-translate.rml',
+)
 
 LOG_FILE = os.path.join(os.path.dirname(__file__), 'render.log')
 
@@ -122,6 +247,8 @@ class Rml2OdtConverterFileTest(unittest.TestCase):
 
 class CompareODTTestCase(unittest.TestCase):
 
+    # NOTE: this test relies on the output of Rml2OdtConverterFileTest
+    #       if those are NOT RUN, expect outdated results!
     level = 2
 
     def __init__(self, basePath, testPath):
@@ -156,6 +283,14 @@ class CompareODTTestCase(unittest.TestCase):
         # If the base ODT has not been converted to PDF yet, then
         # let's do that now.
         basePdfPath = self._basePath.rsplit('.', 1)[0] + '.pdf'
+
+        if os.path.exists(basePdfPath):
+            odtModTime = os.path.getmtime(self._basePath)
+            pdfModTime = os.path.getmtime(basePdfPath)
+            if odtModTime > pdfModTime:
+                # nuke PDF is ODT is newer to recreate PDF
+                os.remove(basePdfPath)
+
         if not os.path.exists(basePdfPath):
             command = unoconv_command(self._basePath)
             status = subprocess.Popen(command).wait()
@@ -163,6 +298,10 @@ class CompareODTTestCase(unittest.TestCase):
                 raise ValueError(
                     'Base ODT -> PDF conversion failed: %i\n'
                     'Command line %s' % (status, ' '.join(command)))
+            # nuke all PNGs to recreate
+            pngstar= self._basePath.rsplit('.', 1)[0] + '*.png'
+            for fname in glob.glob(pngstar):
+                os.remove(fname)
 
         # If the base PDF isn't converted into images, do that now:
         basePNGPath = self._basePath.rsplit('.', 1)[0] + '.[Page-1].png'
@@ -207,32 +346,42 @@ class CompareODTTestCase(unittest.TestCase):
             n += 1
 
 
-def test_suite():
-    suite = unittest.TestSuite((
-        unittest.makeSuite(Rml2OdtConverterTest),
-    ))
+def addTests(suite, prefix, inputDir, expectedDir, outputDir, blackList):
+    if not os.path.exists(outputDir):
+        os.mkdir(outputDir)
 
-    if not os.path.exists(OUTPUT_DIR):
-        os.mkdir(OUTPUT_DIR)
-
-    for inputFilename in os.listdir(INPUT_DIR):
+    for inputFilename in os.listdir(inputDir):
         if not inputFilename.endswith('.rml'):
             continue
+        if inputFilename in blackList:
+            continue
 
-        inputPath = os.path.join(INPUT_DIR, inputFilename)
-        outputPath = os.path.join(OUTPUT_DIR, inputFilename[:-3] + 'odt')
-        expectPath = os.path.join(EXPECT_DIR, inputFilename[:-3] + 'odt')
+        inputPath = os.path.join(inputDir, inputFilename)
+        outputPath = os.path.join(outputDir, inputFilename[:-3] + 'odt')
+        expectPath = os.path.join(expectedDir, inputFilename[:-3] + 'odt')
 
-        # ** Test RML to ODT rednering! **
-        testName = 'rml2odt-' + inputFilename[:-4]
+        # ** Test RML to ODT rendering! **
+        testName = prefix + '-' + inputFilename[:-4]
         TestCase = type(testName, (Rml2OdtConverterFileTest,), {})
         case = TestCase(inputPath, outputPath, expectPath)
         suite.addTest(case)
 
         # ** Test ODT rendering correctness **
-        testName = 'compare-'+inputFilename[:-4]
+        testName = prefix + '-compare-'+inputFilename[:-4]
         TestCase = type(testName, (CompareODTTestCase,), {})
         case = TestCase(expectPath, outputPath)
         suite.addTest(case)
+
+
+def test_suite():
+    suite = unittest.TestSuite((
+        unittest.makeSuite(Rml2OdtConverterTest),
+    ))
+
+    addTests(suite, 'rml2odt',
+             INPUT_DIR, EXPECT_DIR, OUTPUT_DIR, ())
+    addTests(suite, 'z3c_rml',
+             Z3C_RML_INPUT_DIR, Z3C_RML_EXPECT_DIR, Z3C_RML_OUTPUT_DIR,
+             Z3C_RML_BLACKLIST)
 
     return suite

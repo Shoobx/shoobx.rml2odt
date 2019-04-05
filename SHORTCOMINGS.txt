@@ -1,0 +1,78 @@
+Unsupported tags and/or attributes:
+
+- docinit printScaling
+- paragraph bullet style not working (paragraph, not ul/li)
+- imageAndFlowables tag
+- illustration tag
+- various barcodes
+- table formatting and borders
+- seq tag
+- docAssign, docIf, docElse, docWhile, etc
+- codesnippet tag
+- evalString tag
+- name, getName tag
+- stylesheet alias
+- stylesheet color
+- greek tag
+- condPageBreak tag
+- document annotations (title, subject, author...)
+- fixedSize
+- grid tag
+- hr tag styling
+- indent tag
+- index tag
+- keepTogether tag
+- lineMode tag
+- logging
+- mergePage tag
+- outlineAdd tag
+- place tag
+- pageInfo tag
+- blockTable repeatRows attribute
+- stylesheet spanStyle tag
+- para border attributes
+- plugInFlowable tag
+- plugInGraphic tag
+- pto tag
+- registerCidFont tag
+- registerTTFont tag
+- registerType1Face tag
+- saveState and restoreState tag
+- selectField tag
+- setFont tag
+- setFontSize tag
+- setNextTemplate tag
+- storyPlace tag
+- ul bulletColor, bulletFontName, bulletFontSize attributes
+- ul/li per-item number/bullet format
+- textAnnotation tag
+- textField tag
+- translate tag
+
+Frames:
+- frame, nextFrame tag
+- keepInFrame tag
+- setNextFrame tag
+
+Any chart related tag:
+- linePlot tag
+- linePlot3D tag
+- pieChart tag
+- pieChart3D tag
+- spiderChart tag
+
+Any drawing related tag:
+- pageGraphics tag
+- circle tag
+- curves tag
+- drawString, drawAlignedString, drawCenteredString, drawRightString tag
+- ellipse tag
+- fill tag
+- lines tag
+- path tag
+- rect tag
+- rotate tag
+- scale tag
+- skew tag
+- stroke tag
+- transform tag

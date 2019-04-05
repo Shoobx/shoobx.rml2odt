@@ -218,6 +218,29 @@
       <li><para>Three</para></li>
     </ol>
 
+    <ol bulletColor="orange" bulletFontName="Times-Roman">
+      <li bulletColor="gray" bulletFontName="Helvetica">
+        <para>Welcome to RML 1</para>
+      </li>
+      <li>
+        <ul bulletColor="red" bulletFontName="Times-Roman" bulletFontSize="8"
+            rightIndent="10" bulletOffsetY="-1">
+          <li value="disc" bulletFontName="Helvetica">
+            <para>unordered 1</para>
+          </li>
+          <li value="square" bulletColor="blue">
+            <para>unordered 2</para>
+          </li>
+          <li value="diamond" bulletColor="green">
+            <para>unordered 3</para>
+          </li>
+          <li value="rarrowhead" bulletColor="yellow">
+            <para>unordered 4</para>
+          </li>
+        </ul>
+      </li>
+    </ol>
+
   </story>
 
 </document>

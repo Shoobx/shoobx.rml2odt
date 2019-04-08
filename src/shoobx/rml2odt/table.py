@@ -16,7 +16,6 @@
 import lazy
 import lxml.etree
 import odf.table
-import re
 import six
 import zope.interface
 
@@ -24,25 +23,70 @@ from z3c.rml import attr, directive
 from z3c.rml import flowable as rml_flowable
 
 from shoobx.rml2odt import flowable
+from shoobx.rml2odt import stylesheet
 from shoobx.rml2odt.interfaces import IContentContainer
+
+
+def _styleCell():
+    sc = dict(
+        cellProps=odf.style.TableCellProperties(),
+        paraProps=odf.style.ParagraphProperties(),
+        textProps=odf.style.TextProperties())
+    # reportlab vertically aligns cells to the bottom, ODT to the top
+    # make sure ODT gets the bottom alignment as default
+    sc['cellProps'].setAttribute('verticalalign', 'bottom')
+    return sc
+
+
+def _prepCellStyle(manager, cell):
+    # Cell styling
+    cell['cellStyleName'] = manager.getNextStyleName('TableCell')
+    cell['cellStyle'] = odf.style.Style(
+        name=cell['cellStyleName'],
+        family='table-cell')
+    cell['cellStyle'].addElement(cell['cellProps'])
+
+    # Cell Text styling
+    cell['cellContentStyleName'] = manager.getNextStyleName('CellContent')
+    cell['contentStyle'] = odf.style.Style(
+        name=cell['cellContentStyleName'],
+        family='paragraph')
+    cell['contentStyle'].addElement(cell['textProps'])
+    cell['contentStyle'].addElement(cell['paraProps'])
+
+    manager.document.automaticstyles.addElement(cell['cellStyle'])
+    manager.document.automaticstyles.addElement(cell['contentStyle'])
 
 
 @zope.interface.implementer(IContentContainer)
 class TableCell(flowable.Flow):
     signature = rml_flowable.ITableCell
-    styleAttributesMapping = rml_flowable.TableCell.styleAttributesMapping
 
-    allowedCellProperties = ['backbackgroundcolor', 'paddingtop',
-                             'paddingbottom', 'paddingleft',
-                             'paddingright', 'padding',
-                             'textbackgroundcolor', 'verticalalign']
-    allowedTableProperties = ['align']
-    allowedColProperties = ['blockColBackground']
-    allowedRowProperties = ['backgroundcolors']
-    allowedTextProperties = ['fontname', 'fontsize']
-    allowedParaProperties = ['leading']
+    styleAttributesMapping = {
+        'fontName': ('textProps', 'fontname', None),
+        'fontSize': ('textProps', 'fontsize', stylesheet.pt),
+        'fontColor': ('textProps', 'color', stylesheet.hexColor),
+        'leading': ('paraProps', 'linespacing', stylesheet.pt),
+        'leftPadding': ('cellProps', 'paddingleft', stylesheet.pt),
+        'rightPadding': ('cellProps', 'paddingright', stylesheet.pt),
+        'topPadding': ('cellProps', 'paddingtop', stylesheet.pt),
+        'bottomPadding': ('cellProps', 'paddingbottom', stylesheet.pt),
+        'background': ('cellProps', 'backgroundcolor', stylesheet.hexColor),
+        'align': ('paraProps', 'textalign', stylesheet.convertAlignment),
+        'vAlign': ('cellProps', 'verticalalign', lambda v: v.lower()),
+        # ('LINEBELOW', ('lineBelowThickness', 'lineBelowColor',
+        #                'lineBelowCap', 'lineBelowCount', 'lineBelowSpace')),
+        # ('LINEABOVE', ('lineAboveThickness', 'lineAboveColor',
+        #                'lineAboveCap', 'lineAboveCount', 'lineAboveSpace')),
+        # ('LINEBEFORE', ('lineLeftThickness', 'lineLeftColor',
+        #                 'lineLeftCap', 'lineLeftCount', 'lineLeftSpace')),
+        # ('LINEAFTER', ('lineRightThickness', 'lineRightColor',
+        #                'lineRightCap', 'lineRightCount', 'lineRightSpace')),
+        # ('HREF', ('href': ('', ''),
+        # ('DESTINATION', ('destination': ('', ''),
+        }
 
-    def _convertSimpleContent(self):
+    def _convertSimpleContent(self, contentStyle):
         # Check whether we need to create a para element.
         # Do we have any children which need a Paragraph?
         haveSub = any([sub.tag in flowable.Paragraph.factories
@@ -53,9 +97,11 @@ class TableCell(flowable.Flow):
             return
 
         # Create a <para> element.
-        para = lxml.etree.Element('para', style=self.cellContentStyleName)
+        para = lxml.etree.Element('para', style=contentStyle)
 
         # Transfer text.
+        # XXX: as it looks reportlab adds newlines in td tags
+        #      when there are newlines in the XML!
         para.text = self.element.text
         # Nuke text instead of removing the current element
         self.element.text = None
@@ -67,134 +113,47 @@ class TableCell(flowable.Flow):
         # Add paragraph to table cell.
         self.element.append(para)
 
-    def processStyle(self):
-        manager = attr.getManager(self)
-
-        cols = len(self.parent.parent.element[0])
-
-        self.cellProps = odf.style.TableCellProperties()
-        self.cellProps.setAttribute('shrinktofit', True)
-        self.cellStyleName = manager.getNextStyleName('TableCell')
-        self.cellStyle = odf.style.Style(
-            name=self.cellStyleName,
-            family='table-cell')
-
-        # XXX: Has textalign, justifysingleword
-        self.paraProps = odf.style.ParagraphProperties()
-        # XXX: Has color (text color)
-        self.textProps = odf.style.TextProperties()
-
-        # Again we just want the style name or None, not the actual style
-        tableStyleName = self.parent.parent.element.attrib.get('style')
-        if tableStyleName is not None:
-            stylesCollection = dict()
-            desiredStyle = manager.document.getStyleByName(
-                six.text_type(tableStyleName))
-            if desiredStyle is not None:
-                for child in desiredStyle.childNodes:
-                    childAttrs = child.attributes
-                    attrDict = {x[1]: childAttrs[x] for x in childAttrs}
-                    for key in attrDict:
-                        # XXX: revisit this conversion later
-                        # 'backgroundcolor' is processed by cellProps
-                        # 'backgroundcolor' passed in by 'rowProperties' is
-                        # modified to 'backgroundcolors' for later distinction
-                        if child.tagName == u'style:table-row-properties':
-                            stylesCollection[str(key)+'s'] = str(attrDict[key])
-
-                        elif key == u'background-color':
-                            tmpval = str(attrDict[key])
-                            identifier = tmpval[13:17]
-                            stylesCollection[identifier+str(key)] = tmpval[2:9]
-
-                        else:
-                            stylesCollection[str(key)] = str(attrDict[key])
-
-            for key in stylesCollection:
-                value = stylesCollection[key]
-                key = key.replace('-', '')
-
-                # Column Properties
-                if key in self.allowedColProperties:
-                    pass
-
-                # Cell Properties
-                elif key in self.allowedCellProperties:
-                    if key == 'textbackgroundcolor':
-                        self.textProps.setAttribute('color', value)
-                    elif key == 'backbackgroundcolor':
-                        self.cellProps.setAttribute('backgroundcolor', value)
-                    else:
-                        self.cellProps.setAttribute(key, value)
-
-                # Table Properties
-                elif key in self.allowedTableProperties:
-                    if key == 'align':
-                        self.paraProps.setAttribute('textalign', value)
-                    else:
-                        # XXX: come back to this
-                        self.paraProps.setAttribute(key, value)
-
-                # Paragraph Properties
-                elif key in self.allowedParaProperties:
-                    self.paraProps.setAttribute(key, value)
-
-                # Text Properties
-                elif key in self.allowedTextProperties:
-                    self.textProps.setAttribute(key, value)
-
-                # Row Properties
-                elif key in self.allowedRowProperties:
-                    if key == 'backgroundcolors':
-                        # Alternating rows
-                        color1, color2 = value[2:9], value[13:20]
-                        regex = '[0-9]+'
-                        cellNo = int(re.findall(regex, self.cellStyleName)[0])
-
-                        # Checks if this applies to alternating row colors
-                        if 'row' in value:
-                            if ((cellNo-1) // cols) % 2 == 0:
-                                self.cellProps.setAttribute(key[:-1], color1)
-                            else:
-                                self.cellProps.setAttribute(key[:-1], color2)
-
-                        # Checks if this applies to alternating columns
-                        elif 'col' in value:
-                            if ((cellNo - 1) % cols) % 2 == 0:
-                                self.cellProps.setAttribute(key[:-1], color1)
-                            else:
-                                self.cellProps.setAttribute(key[:-1], color2)
-
-        self.cellStyle.addElement(self.cellProps)
-
-        # Cell Text styling
-        self.cellContentStyleName = manager.getNextStyleName('CellContent')
-        self.contentStyle = odf.style.Style(
-            name=self.cellContentStyleName,
-            family='paragraph')
-        self.contentStyle.addElement(self.textProps)
-        self.contentStyle.addElement(self.paraProps)
-
-        manager.document.automaticstyles.addElement(self.cellStyle)
-        manager.document.automaticstyles.addElement(self.contentStyle)
-
+    def _copyCellStyle(self, frm):
+        # pretty lame attribute copy, but deepcopy fails
+        newCellStyle = _styleCell()
+        for prop in ('cellProps', 'paraProps', 'textProps'):
+            newCellStyle[prop].attributes = dict(frm[prop].attributes)
+        return newCellStyle
+    
     def process(self):
         col = len(self.parent.row.childNodes)
         row = self.parent.parent.rowCount - 1
 
-        self.processStyle()
+        styleMap = self.parent.parent.styleMap
+        cellStyle = styleMap[col][row]
 
-        spanmap = self.parent.parent.spanmap
-        cellspan = spanmap[col][row]
+        attrs = dict(self.getAttributeValues(ignore=('content',)))
+        if attrs:
+            # the cell has local formatting, need to patch that into the style
+            cellStyle = self._copyCellStyle(cellStyle)
+
+            for aname, avalue in attrs.items():
+                if aname in self.styleAttributesMapping:
+                    targetProp, targetAttr, converter = \
+                        self.styleAttributesMapping[aname]
+                    if converter is not None:
+                        avalue = converter(avalue)
+                    cellStyle[targetProp].setAttribute(targetAttr, avalue)
+
+            manager = attr.getManager(self)
+            _prepCellStyle(manager, cellStyle)
+
+        spanMap = self.parent.parent.spanMap
+        cellspan = spanMap[col][row]
         if cellspan:
             if isinstance(cellspan, dict):
                 kw = cellspan
             else:
                 kw = {}
             self.cell = odf.table.TableCell(
-                stylename=self.cellStyleName,
+                stylename=cellStyle['cellStyleName'],
                 valuetype='string', **kw)
-            self._convertSimpleContent()
+            self._convertSimpleContent(cellStyle['cellContentStyleName'])
             process = True
         elif cellspan is False:
             self.cell = odf.table.CoveredTableCell()
@@ -269,10 +228,93 @@ class BlockTable(flowable.Flowable):
     factories = {
         'tr': TableRow,
         'bulkData': TableBulkData,
+        # processed in self.haveBlockTableStyle
+        # 'blockTableStyle': stylesheet.BlockTableStyle
     }
 
-    @lazy.lazy
-    def spanmap(self):
+    def _getStartEndPos(self, attrs):
+        start_col, start_row = attrs['start']
+        end_col, end_row = attrs['stop']
+
+        # negative indexes are like python lists, count from right
+        # also sort on the index
+        cols = sorted([col if col >= 0 else self.columns+col
+                       for col in [start_col, end_col]])
+        start_col = cols[0]
+        end_col = cols[1]
+        rows = sorted([row if row >= 0 else self.rows+row
+                       for row in [start_row, end_row]])
+        start_row = rows[0]
+        end_row = rows[1]
+
+        return start_col, start_row, end_col, end_row
+
+    def _doZebraRows(self, stylemap, attrs):
+        start_col, start_row, end_col, end_row = self._getStartEndPos(attrs)
+        colors = attrs['cellProps']['backgroundcolors']
+        for col in range(start_col, end_col+1):
+            idx = 0
+            for row in range(start_row, end_row+1):
+                cell = stylemap[col][row]
+                if colors[idx]:
+                    cell['cellProps'].setAttribute(
+                        'backgroundcolor', colors[idx])
+                idx += 1
+                if idx >= len(colors):
+                    idx = 0
+
+    def _doZebraCols(self, stylemap, attrs):
+        start_col, start_row, end_col, end_row = self._getStartEndPos(attrs)
+        colors = attrs['cellProps']['backgroundcolors']
+        idx = 0
+        for col in range(start_col, end_col+1):
+            for row in range(start_row, end_row+1):
+                cell = stylemap[col][row]
+                if colors[idx]:
+                    cell['cellProps'].setAttribute(
+                        'backgroundcolor', colors[idx])
+            idx += 1
+            if idx >= len(colors):
+                idx = 0
+
+    def _doStyleMap(self, stylemap, attrs):
+        start_col, start_row, end_col, end_row = self._getStartEndPos(attrs)
+        for col in range(start_col, end_col+1):
+            for row in range(start_row, end_row+1):
+                cell = stylemap[col][row]
+
+                for attrKey in ('cellProps', 'paraProps', 'textProps'):
+                    for aname, avalue in attrs[attrKey].items():
+                        cell[attrKey].setAttribute(aname, avalue)
+
+    def getStyleMap(self):
+        # prepare a map of styles for each cell in the table
+        stylemap = [
+            [_styleCell()
+             for r in range(self.rows)] for c in range(self.columns)]
+        table_style = self.getAttributeValues(select=['style'])
+        if table_style:
+            table_style = table_style[0][1]
+
+            for name, styleCommands in table_style.collector.items():
+                for styleCommand in styleCommands:
+                    attrs = styleCommand.getStyleProps()
+
+                    if name == 'blockRowBackground':
+                        self._doZebraRows(stylemap, attrs)
+                    elif name == 'blockColBackground':
+                        self._doZebraCols(stylemap, attrs)
+                    else:
+                        self._doStyleMap(stylemap, attrs)
+
+        manager = attr.getManager(self)
+        for row in stylemap:
+            for cell in row:
+                _prepCellStyle(manager, cell)
+
+        return stylemap
+
+    def getSpanMap(self):
         # prepare a map of spanned cells
         # ODF expects `numbercolumnsspanned` or `numberrowsspanned` on
         # the cell that spans more columns/rows
@@ -284,21 +326,9 @@ class BlockTable(flowable.Flowable):
         if table_style:
             table_style = table_style[0][1]
 
-            for blockspan in [x for x in table_style.element.getchildren()
-                              if x.tag == 'blockSpan']:
-                attribs = blockspan.attrib
-                start_col, start_row = map(int, attribs['start'].split(','))
-                end_col, end_row = map(int, attribs['stop'].split(','))
-                # negative indexes are like python lists, count from right
-                # also sort on the index
-                cols = sorted([col if col >= 0 else self.columns+col
-                               for col in [start_col, end_col]])
-                start_col = cols[0]
-                end_col = cols[1]
-                rows = sorted([row if row >= 0 else self.rows+row
-                               for row in [start_row, end_row]])
-                start_row = rows[0]
-                end_row = rows[1]
+            for blockspan in table_style.collector['blockSpan']:
+                attrs = dict(blockspan.getAttributeValues())
+                start_col, start_row, end_col, end_row = self._getStartEndPos(attrs)
 
                 columnsspanned = end_col - start_col + 1
                 rowsspanned = end_row - start_row + 1
@@ -354,8 +384,17 @@ class BlockTable(flowable.Flowable):
     def haveBulkData(self):
         # Checks if we a bulkData tag and dynamically adds colWidths and
         # rowHeights to the parent (blockTable)
-        element = self.element.getchildren()[0]
-        return element.tag == 'bulkData'
+        for element in self.element.getchildren():
+            if element.tag == 'bulkData':
+                return True
+        return False
+
+    def haveBlockTableStyle(self):
+        for element in self.element.getchildren():
+            if element.tag == 'blockTableStyle':
+                bts = stylesheet.BlockTableStyle(element, self)
+                bts.process()
+                self.element.attrib['style'] = element.attrib['id']
 
     def process(self):
         # if we have a bulkData tag, let's have first TableBulkData
@@ -363,6 +402,9 @@ class BlockTable(flowable.Flowable):
         # XXX: might be simpler to grasp if this would be done here
         #      and we'd just drop the bulkData child tag
         if not self.haveBulkData():
+            self.haveBlockTableStyle()
+            self.spanMap = self.getSpanMap()
+            self.styleMap = self.getStyleMap()
             self.rowCount = 0
             manager = attr.getManager(self)
 

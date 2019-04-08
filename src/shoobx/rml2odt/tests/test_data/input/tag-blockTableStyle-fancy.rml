@@ -1,0 +1,111 @@
+<!DOCTYPE document SYSTEM "rml.dtd">
+<document
+    filename="tag-blockTableStyle.pdf"
+    xmlns:doc="http://namespaces.zope.org/rml/doc">
+
+  <template pagesize="letter" showBoundary="0" leftMargin="2.0cm"
+            topMargin="2.0cm" rightMargin="2.0cm" bottomMargin="2.0cm">
+    <pageTemplate id="main">
+      <frame id="first" x1="72" y1="72" width="451" height="698"/>
+    </pageTemplate>
+  </template>
+
+  <stylesheet>
+
+    <blockTableStyle id="table">
+      <blockAlignment
+          start="0,0" stop="-1,1" value="right"
+          />
+      <blockAlignment
+          start="-2,-2" stop="-1,-1" value="center"
+          />
+      <blockValign
+          start="0,0" stop="0,2" value="top"
+          />
+      <blockValign
+          start="1,0" stop="1,2" value="middle"
+          />
+      <blockValign
+          start="2,0" stop="2,2" value="bottom"
+          />
+      <blockBackground
+          start="1,1" stop="-2,-2"
+          colorName="gray"
+          />
+      <blockBackground
+          start="2,2" stop="2,2"
+          colorName="purple"
+          />
+      <blockRightPadding
+          start="0,0" stop="-1,1"
+          length="0.3in"
+          />
+      <blockBottomPadding
+          start="0,0" stop="-1,1"
+          length="0.5in"
+          />
+      <blockLeftPadding
+          start="0,0" stop="-1,1"
+          length="0.2in"
+          />
+      <blockTopPadding
+          start="0,0" stop="-1,1"
+          length="0.4in"
+          />
+      <blockFont
+          start="0,0" stop="1,-1"
+          name="Courier" size="14" leading="0.5in"
+          />
+      <blockFont
+          start="-1,-1" stop="-1,-1"
+          name="Arial" size="20" leading="0.5in"
+          />
+      <blockTextColor
+          start="0,0" stop="1,-1"
+          colorName="green"
+          />
+      <blockLeading
+          start="4,2" stop="4,2"
+          length="18"
+          />
+    </blockTableStyle>
+
+  </stylesheet>
+
+  <story>
+    <title><font face="Courier">&lt;blockTableStyle&gt;</font> Tag Demo</title>
+
+    <blockTable style="table">
+      <tr>
+        <td>00</td>
+        <td>01</td>
+        <td>02</td>
+        <td>03</td>
+        <td>04<br/>04</td>
+      </tr>
+      <tr>
+        <td>10</td>
+        <td>11</td>
+        <td>12</td>
+        <td>13</td>
+        <td>14<br/>14</td>
+      </tr>
+      <tr>
+        <td>20</td>
+        <td>21</td>
+        <td>22</td>
+        <td>23</td>
+        <td>24<br/>24<br/>24<br/>24</td>
+      </tr>
+      <tr>
+        <td>30</td>
+        <td>31</td>
+        <td>32</td>
+        <td>33</td>
+        <td>34<br/>34</td>
+      </tr>
+    </blockTable>
+
+  </story>
+
+</document>

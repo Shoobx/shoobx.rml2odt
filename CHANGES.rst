@@ -4,7 +4,7 @@ CHANGES
 0.5.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Complete overhaul of blockTableStyle processing, all styling less borders
 
 
 0.5.0 (2019-04-05)

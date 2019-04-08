@@ -17,6 +17,7 @@ from __future__ import absolute_import
 
 import lxml
 import unittest
+from odf.opendocument import OpenDocumentText
 
 from shoobx.rml2odt import document
 from shoobx.rml2odt import table
@@ -88,40 +89,42 @@ EXPECTED3 = """
 
 class BlockTableTests(unittest.TestCase):
 
-    def test_spanmap_1(self):
+    def test_getSpanMap_1(self):
         tbl = self._getTable(STYLE1)
         tbl.rows = 9
         tbl.columns = 10
-        res = tbl.spanmap
+        res = tbl.getSpanMap()
 
         out = self._processResult(res, 10, 9)
 
         self.assertEqual(out, EXPECTED1.strip())
 
-    def test_spanmap_2(self):
+    def test_getSpanMap_2(self):
         tbl = self._getTable(STYLE2)
         tbl.rows = 4
         tbl.columns = 5
-        res = tbl.spanmap
+        res = tbl.getSpanMap()
 
         out = self._processResult(res, 5, 4)
 
         self.assertEqual(out, EXPECTED2.strip())
 
-    def test_spanmap_3(self):
+    def test_getSpanMap_3(self):
         tbl = self._getTable(STYLE3)
         tbl.rows = 4
         tbl.columns = 5
-        res = tbl.spanmap
+        res = tbl.getSpanMap()
 
         out = self._processResult(res, 5, 4)
 
         self.assertEqual(out, EXPECTED3.strip())
 
     def _getTable(self, style):
-        btsroot = lxml.etree.fromstring(style)
-        bts = stylesheet.BlockTableStyle(btsroot, None)
         doc = document.Document(None)
+        doc.document = OpenDocumentText()
+        btsroot = lxml.etree.fromstring(style)
+        bts = stylesheet.BlockTableStyle(btsroot, doc)
+        bts.process()
         doc.styles['table'] = bts
         element = ElementMock(style='table')
         element.sourceline = 123

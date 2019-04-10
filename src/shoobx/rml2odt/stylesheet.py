@@ -14,12 +14,14 @@
 """Style Related Element Processing
 """
 import copy
+import lazy
 import odf.style
 import odf.text
 import reportlab.lib.styles
 import reportlab.lib.enums
 import reportlab.platypus
 import six
+from collections import defaultdict
 
 from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT, TA_JUSTIFY
 from z3c.rml import attr, directive, SampleStyleSheet, special
@@ -35,6 +37,12 @@ RML2ODT_ALIGNMENTS = {
 
 def pt(pt):
     return '%ipt' % pt
+
+
+def hexColor(color):
+    if color is None:
+        return color
+    return '#%s' % color.hexval()[2:]
 
 
 class Initialize(directive.RMLDirective):
@@ -233,177 +241,229 @@ class ParagraphStyle(directive.RMLDirective):
 
 
 class TableStyleCommand(directive.RMLDirective):
-    name = None
-    cellProps = {}
-    colProps = {}
-    tableProps = {}
-    rowProps = {}
-    textProps = {}
-    paraProps = {}
+    collectorKey = None
 
     def process(self):
-        raise NotImplementedError(self.__class__)
+        self.parent.collector[self.collectorKey].append(self)
+
+    @lazy.lazy
+    def _cachedAttributeValues(self):
+        return dict(self.getAttributeValues())
+
+    def getStyleProps(self):
+        attrs = self._cachedAttributeValues
+
+        result = dict(
+            start=attrs['start'],
+            stop=attrs['stop'],
+            textProps={},
+            paraProps={},
+            cellProps={},
+        )
+        return result
 
 
 class BlockFont(TableStyleCommand):
     signature = rml_stylesheet.IBlockFont
-    name = 'FONT'
-    attrMapping = {
-        'name':'fontname',
-        'size':'fontsize',
-        'leading': 'linespacing',
-    }
+    collectorKey = 'blockFont'
 
-    def process(self):
-        attrs = dict(self.getAttributeValues())
-        odf_font_name = rmlFont2odfFont(attrs['name'])
-        manager = attr.getManager(self)
-        manager.document.fontfacedecls.addElement(
-            odf.style.FontFace(
-                name=odf_font_name,
-                fontfamily=odf_font_name))
+    def getStyleProps(self):
+        result = super(BlockFont, self).getStyleProps()
 
+        attrs = self._cachedAttributeValues
         for key, val in attrs.items():
             if key == 'name':
-                self.parent.textProps.setAttribute(
-                    'fontname', val)
+                result['textProps']['fontname'] = val
             elif key == 'size':
-                self.parent.textProps.setAttribute(
-                    'fontsize', '%spt' % val)
+                result['textProps']['fontsize'] = pt(val)
             elif key == 'leading':
-                self.parent.paraProps.setAttribute(
-                    'linespacing', '%spt' % val)
+                result['paraProps']['linespacing'] = pt(val)
+
+        return result
 
 
 class BlockLeading(TableStyleCommand):
     signature = rml_stylesheet.IBlockLeading
-    name = 'LEADING'
+    collectorKey = 'blockLeading'
+
+    def getStyleProps(self):
+        result = super(BlockLeading, self).getStyleProps()
+
+        attrs = self._cachedAttributeValues
+        result['paraProps']['linespacing'] = pt(attrs['length'])
+        return result
 
 
 class BlockTextColor(TableStyleCommand):
     signature = rml_stylesheet.IBlockTextColor
-    name = 'TEXTCOLOR'
+    collectorKey = 'blockTextColor'
 
-    def process(self):
-        attrs = dict(self.getAttributeValues())
-        hexcolor = '#%s' % attrs['colorName'].hexval()[2:]
-        # Yes, magically, if you set the background color to
-        # ['#color', 'text'] it sets the foreground text color!
-        self.parent.tableProps.setAttribute(
-            'backgroundcolor', [hexcolor] + ['text'])
+    def getStyleProps(self):
+        result = super(BlockTextColor, self).getStyleProps()
+        
+        attrs = self._cachedAttributeValues
+        result['textProps']['color'] = hexColor(attrs['colorName'])
+        return result
+
+
+def convertAlignment(value):
+    value = value.lower()
+    if value == 'decimal':
+        # ODT has no decimal alignment, our best chance is right
+        value = 'right'
+    if value == 'centre':
+        value == 'center'
+    return value
 
 
 class BlockAlignment(TableStyleCommand):
     signature = rml_stylesheet.IBlockAlignment
-    name = 'ALIGNMENT'
+    collectorKey = 'blockAlignment'
 
-    def process(self):
-        attrs = dict(self.getAttributeValues())
-        self.parent.tableProps.setAttribute(
-            'align', attrs['value'].lower())
+    def getStyleProps(self):
+        result = super(BlockAlignment, self).getStyleProps()
+
+        attrs = self._cachedAttributeValues
+        result['paraProps']['textalign'] = convertAlignment(attrs['value'])
+
+        return result
 
 
 class BlockLeftPadding(TableStyleCommand):
     signature = rml_stylesheet.IBlockLeftPadding
-    name = 'LEFTPADDING'
+    collectorKey = 'blockLeftPadding'
 
-    def process(self):
-        attrs = dict(self.getAttributeValues())
-        self.parent.cellProps.setAttribute(
-            'paddingleft', '%spt' % attrs['length'])
+    def getStyleProps(self):
+        result = super(BlockLeftPadding, self).getStyleProps()
+
+        attrs = self._cachedAttributeValues
+        result['cellProps']['paddingleft'] = pt(attrs['length'])
+        return result
 
 
 class BlockRightPadding(TableStyleCommand):
     signature = rml_stylesheet.IBlockRightPadding
-    name = 'RIGHTPADDING'
+    collectorKey = 'blockRightPadding'
 
-    def process(self):
-        attrs = dict(self.getAttributeValues())
-        self.parent.cellProps.setAttribute(
-            'paddingright', '%spt' % attrs['length'])
+    def getStyleProps(self):
+        result = super(BlockRightPadding, self).getStyleProps()
+
+        attrs = self._cachedAttributeValues
+        result['cellProps']['paddingright'] = pt(attrs['length'])
+        return result
 
 
 class BlockBottomPadding(TableStyleCommand):
     signature = rml_stylesheet.IBlockBottomPadding
-    name = 'BOTTOMPADDING'
+    collectorKey = 'blockBottomPadding'
 
-    def process(self):
-        attrs = dict(self.getAttributeValues())
-        self.parent.cellProps.setAttribute(
-            'paddingbottom', '%spt' % attrs['length'])
+    def getStyleProps(self):
+        result = super(BlockBottomPadding, self).getStyleProps()
+
+        attrs = self._cachedAttributeValues
+        result['cellProps']['paddingbottom'] = pt(attrs['length'])
+        return result
 
 
 class BlockTopPadding(TableStyleCommand):
     signature = rml_stylesheet.IBlockTopPadding
-    name = 'TOPPADDING'
+    collectorKey = 'blockTopPadding'
 
-    def process(self):
-        attrs = dict(self.getAttributeValues())
-        self.parent.cellProps.setAttribute(
-            'paddingtop', '%spt' % attrs['length'])
+    def getStyleProps(self):
+        result = super(BlockTopPadding, self).getStyleProps()
+
+        attrs = self._cachedAttributeValues
+        result['cellProps']['paddingtop'] = pt(attrs['length'])
+        return result
 
 
 class BlockBackground(TableStyleCommand):
     signature = rml_stylesheet.IBlockBackground
-    name = 'BACKGROUND'
+    collectorKey = 'blockBackground'
+
+    def getStyleProps(self):
+        result = super(BlockBackground, self).getStyleProps()
+
+        attrs = self._cachedAttributeValues
+        if 'colorName' in attrs:
+            result['cellProps']['backgroundcolor'] = \
+                hexColor(attrs['colorName'])
+        if 'colorsByRow' in attrs:
+            result['cellProps']['backgroundcolors'] = \
+                [hexColor(cn) for cn in attrs['colorsByRow']]
+        if 'colorsByCol' in attrs:
+            result['cellProps']['backgroundcolors'] = \
+                [hexColor(cn) for cn in attrs['colorsByCol']]
+
+        return result
 
     def process(self):
-        attrs = dict(self.getAttributeValues())
-        hexcolor = '#%s' % attrs['colorName'].hexval()[2:]
-
-        self.parent.cellProps.setAttribute(
-            'backgroundcolor', [hexcolor] + ['back'])
+        attrs = self._cachedAttributeValues
+        # since colorsByRow and colorsByCol should act as
+        # blockRowBackground and blockColBackground, let's do a tag translation
+        # here, e.g.:
+        # <blockBackground colorsByRow="0xD0FFD0;None"
+        #   start="0,1" stop="-1,-1"/>
+        if 'colorsByRow' in attrs:
+            self.collectorKey = 'blockRowBackground'
+        if 'colorsByCol' in attrs:
+            self.collectorKey = 'blockColBackground'
+        return super(BlockBackground, self).process()
 
 
 class BlockRowBackground(TableStyleCommand):
     signature = rml_stylesheet.IBlockRowBackground
-    name = 'ROWBACKGROUNDS'
+    collectorKey = 'blockRowBackground'
 
-    def process(self):
-        attrs = dict(self.getAttributeValues())
-        colors = ['#%s' % col.hexval()[2:] for col in attrs['colorNames']]
-        self.parent.rowProps.setAttribute(
-            'backgroundcolor', colors + ['row'])
+    def getStyleProps(self):
+        result = super(BlockRowBackground, self).getStyleProps()
+
+        attrs = self._cachedAttributeValues
+        result['cellProps']['backgroundcolors'] = [
+            hexColor(cn) for cn in attrs['colorNames']]
+        return result
 
 
 class BlockColBackground(TableStyleCommand):
     signature = rml_stylesheet.IBlockColBackground
-    name = 'COLBACKGROUNDS'
+    collectorKey = 'blockColBackground'
 
-    def process(self):
-        attrs = dict(self.getAttributeValues())
-        colors = ['#%s' % col.hexval()[2:] for col in attrs['colorNames']]
-        self.parent.rowProps.setAttribute(
-            'backgroundcolor', colors + ['col'])
+    def getStyleProps(self):
+        result = super(BlockColBackground, self).getStyleProps()
+
+        attrs = self._cachedAttributeValues
+        result['cellProps']['backgroundcolors'] = [
+            hexColor(cn) for cn in attrs['colorNames']]
+        return result
 
 
 class BlockValign(TableStyleCommand):
     signature = rml_stylesheet.IBlockValign
-    name = 'VALIGN'
+    collectorKey = 'blockValign'
 
-    def process(self):
-        attrs = dict(self.getAttributeValues())
-        self.parent.cellProps.setAttribute(
-            'verticalalign', attrs['value'].lower())
+    def getStyleProps(self):
+        result = super(BlockValign, self).getStyleProps()
+
+        attrs = self._cachedAttributeValues
+        result['cellProps']['verticalalign'] = attrs['value'].lower()
+        return result
 
 
 class BlockSpan(TableStyleCommand):
     signature = rml_stylesheet.IBlockSpan
-    name = 'SPAN'
-
-    def process(self):
-        pass
+    collectorKey = 'blockSpan'
 
 
 class LineStyle(TableStyleCommand):
     signature = rml_stylesheet.ILineStyle
 
     def process(self):
-        name = self.getAttributeValues(select=('kind',), valuesOnly=True)[0]
-        args = [name]
-        args += self.getAttributeValues(ignore=('kind',), valuesOnly=True,
-                                        includeMissing=True)
-        self.parent.style.add(*args)
+        pass
+        # name = self.getAttributeValues(select=('kind',), valuesOnly=True)[0]
+        # args = [name]
+        # args += self.getAttributeValues(ignore=('kind',), valuesOnly=True,
+        #                                 includeMissing=True)
+        # self.parent.style.add(*args)
 
 
 class BlockTableStyle(directive.RMLDirective):
@@ -411,46 +471,34 @@ class BlockTableStyle(directive.RMLDirective):
 
     factories = {
         'blockFont': BlockFont,
-        # 'blockLeading': BlockLeading,
         'blockTextColor': BlockTextColor,
+        'blockLeading': BlockLeading,
         'blockAlignment': BlockAlignment,
+        'blockValign': BlockValign,
         'blockLeftPadding': BlockLeftPadding,
         'blockRightPadding': BlockRightPadding,
         'blockBottomPadding': BlockBottomPadding,
         'blockTopPadding': BlockTopPadding,
         'blockBackground': BlockBackground,
+        'lineStyle': LineStyle,
+        'blockSpan': BlockSpan,
+
+        # z3c.rml only features, alternating row/col colors,
+        # no start/stop attributes
         'blockRowBackground': BlockRowBackground,
         'blockColBackground': BlockColBackground,
-        'blockValign': BlockValign,
-        'blockSpan': BlockSpan,
-        # lineStyle': LineStyle,
     }
 
     def process(self):
-        kw = dict(self.getAttributeValues())
-        self.styleID = kw.pop('id')
+        self.collector = defaultdict(list)
+
         # Create Style
-        self.style = odf.style.Style(name=self.styleID, family='table')
-        # Create style properties
-        self.colProps = odf.style.TableColumnProperties()
-        self.cellProps = odf.style.TableCellProperties()
-        self.tableProps = odf.style.TableProperties()
-        self.rowProps = odf.style.TableRowProperties()
-        self.textProps = odf.style.TextProperties()
-        self.paraProps = odf.style.ParagraphProperties()
-        # Fill style
-        self.style.addElement(self.colProps)
-        self.style.addElement(self.cellProps)
-        self.style.addElement(self.tableProps)
-        self.style.addElement(self.rowProps)
-        self.style.addElement(self.textProps)
-        self.style.addElement(self.paraProps)
-        self.processSubDirectives()
-        # Add style to the manager
         manager = attr.getManager(self)
-        manager.document.automaticstyles.addElement(self.style)
-        manager.odtStyles[self.styleID] = self.style
+        attrs = dict(self.getAttributeValues())
+        self.styleID = attrs.pop('id')
         manager.styles[self.styleID] = self
+
+        self.processSubDirectives()
 
 
 BULLETS = {

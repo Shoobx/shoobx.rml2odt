@@ -17,7 +17,6 @@ from __future__ import absolute_import
 
 import glob
 import os
-import re
 import subprocess
 import sys
 import unittest
@@ -169,9 +168,6 @@ if os.path.exists(ENV_PATH):
     with open(ENV_PATH) as env_file:
         PYTHON_OFFICE_BIN = env_file.read().strip()
 
-NORMALIZE_CONTENT_RES = [re.compile(attrib+'\=\".*?\"')
-                         for attrib in ('xml:id', 'text:continue-list')]
-
 
 def gs_command(path):
     cmd = (
@@ -218,7 +214,6 @@ class Rml2OdtConverterTest(unittest.TestCase):
         self.assertEqual(result.getvalue()[:2], b'PK')
 
 
-
 class Rml2OdtConverterFileTest(unittest.TestCase):
 
     def __init__(self, inputPath, outputPath, expectPath):
@@ -238,11 +233,6 @@ class Rml2OdtConverterFileTest(unittest.TestCase):
             raise ValueError("ODT namelist doesn't match expectations for "
                              "RML file %s.\nIs %s, should be %s." % (
                                  self.inputPath, output_names, expected_names))
-
-    def _normalize(self, text):
-        for regexp in NORMALIZE_CONTENT_RES:
-            text = regexp.sub('', text)
-        return text
 
 
 class CompareODTTestCase(unittest.TestCase):
@@ -299,7 +289,7 @@ class CompareODTTestCase(unittest.TestCase):
                     'Base ODT -> PDF conversion failed: %i\n'
                     'Command line %s' % (status, ' '.join(command)))
             # nuke all PNGs to recreate
-            pngstar= self._basePath.rsplit('.', 1)[0] + '*.png'
+            pngstar = self._basePath.rsplit('.', 1)[0] + '*.png'
             for fname in glob.glob(pngstar):
                 os.remove(fname)
 

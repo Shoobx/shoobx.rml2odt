@@ -300,7 +300,7 @@ class BlockTextColor(TableStyleCommand):
 
     def getStyleProps(self):
         result = super(BlockTextColor, self).getStyleProps()
-        
+
         attrs = self._cachedAttributeValues
         result['textProps']['color'] = hexColor(attrs['colorName'])
         return result
@@ -637,7 +637,8 @@ def registerListStyle(doc, name, rmlStyle, attributes=None, ulol=None):
 
         # Make the number (ol) style:
         if ulol == 'ol':
-            # if numType is just one character (or None) means some sort of number
+            # if numType is just one character (or None)
+            # means some sort of number
             if bulletFormat is not None:
                 pre, post = bulletFormat.split('%s')
             else:
@@ -667,7 +668,8 @@ def registerListStyle(doc, name, rmlStyle, attributes=None, ulol=None):
                 lvl_style = odf.text.ListLevelStyleNumber(
                     level=level,
                     # A bug in the DOCX conversion removes the first character.
-                    # A space first in the prefix and a space as suffix fixes that.
+                    # A space first in the prefix and a space as suffix
+                    # fixes that.
                     numprefix=' ' + bulletType,
                     numsuffix=' ',
                     numformat='')

@@ -18,6 +18,7 @@ import lxml.etree
 import odf.table
 import six
 import zope.interface
+from collections import defaultdict
 
 from z3c.rml import attr, directive
 from z3c.rml import flowable as rml_flowable
@@ -74,16 +75,24 @@ class TableCell(flowable.Flow):
         'background': ('cellProps', 'backgroundcolor', stylesheet.hexColor),
         'align': ('paraProps', 'textalign', stylesheet.convertAlignment),
         'vAlign': ('cellProps', 'verticalalign', lambda v: v.lower()),
-        # ('LINEBELOW', ('lineBelowThickness', 'lineBelowColor',
-        #                'lineBelowCap', 'lineBelowCount', 'lineBelowSpace')),
-        # ('LINEABOVE', ('lineAboveThickness', 'lineAboveColor',
-        #                'lineAboveCap', 'lineAboveCount', 'lineAboveSpace')),
-        # ('LINEBEFORE', ('lineLeftThickness', 'lineLeftColor',
-        #                 'lineLeftCap', 'lineLeftCount', 'lineLeftSpace')),
-        # ('LINEAFTER', ('lineRightThickness', 'lineRightColor',
-        #                'lineRightCap', 'lineRightCount', 'lineRightSpace')),
         # ('HREF', ('href': ('', ''),
         # ('DESTINATION', ('destination': ('', ''),
+        }
+
+    linePosMapping = {
+        'Below': 'borderbottom',
+        'Above': 'bordertop',
+        'Left': 'borderleft',
+        'Right': 'borderright'
+        }
+
+    lineAttributesMapping = {
+        'Thickness': 'thickness',
+        'Color': 'colorName',
+        'Cap': 'cap',
+        'Count': 'count',
+        'Dash': 'dash',
+        'Space': 'space',
         }
 
     def _convertSimpleContent(self, contentStyle):
@@ -132,6 +141,7 @@ class TableCell(flowable.Flow):
             # the cell has local formatting, need to patch that into the style
             cellStyle = self._copyCellStyle(cellStyle)
 
+            borders = defaultdict(dict)
             for aname, avalue in attrs.items():
                 if aname in self.styleAttributesMapping:
                     targetProp, targetAttr, converter = \
@@ -139,29 +149,46 @@ class TableCell(flowable.Flow):
                     if converter is not None:
                         avalue = converter(avalue)
                     cellStyle[targetProp].setAttribute(targetAttr, avalue)
+                elif aname.startswith('line'):
+                    aname = aname[4:]
+                    for where, targetAttr in self.linePosMapping.items():
+                        if aname.startswith(where):
+                            aname = aname[len(where):]
+                            odtname = self.lineAttributesMapping[aname]
+                            borders[targetAttr][odtname] = avalue
+
+            if borders:
+                for aname in borders:
+                    linestyle = stylesheet.convertLineStyle(borders[aname])
+                    cellStyle['cellProps'].setAttribute(aname, linestyle)
 
             manager = attr.getManager(self)
             _prepCellStyle(manager, cellStyle)
 
         spanMap = self.parent.parent.spanMap
-        cellspan = spanMap[col][row]
-        if cellspan:
-            if isinstance(cellspan, dict):
-                kw = cellspan
-            else:
-                kw = {}
-            self.cell = odf.table.TableCell(
-                stylename=cellStyle['cellStyleName'],
-                valuetype='string', **kw)
-            self._convertSimpleContent(cellStyle['cellContentStyleName'])
-            process = True
-        elif cellspan is False:
-            self.cell = odf.table.CoveredTableCell()
+        spaninfo = spanMap[col][row]
+        process = True
+        if spaninfo is None:
+            # regular cell
+            kw = {}
+        elif spaninfo['type'] == 'S':
+            # spanned 'origin' cell
+            kw = spaninfo['attrs']
+        elif spaninfo['type'] == 'H':
+            # hidden cell
+            cell = odf.table.CoveredTableCell()
             # do NOT add any content to a CoveredTableCell
             process = False
 
-        self.parent.row.addElement(self.cell)
-        self.contents = self.cell
+        if process:
+            # add a regular cell
+            cell = odf.table.TableCell(
+                stylename=cellStyle['cellStyleName'],
+                valuetype='string', **kw)
+            self._convertSimpleContent(cellStyle['cellContentStyleName'])
+
+        self.parent.row.addElement(cell)
+        self.contents = cell
         if process:
             super(TableCell, self).process()
 
@@ -223,16 +250,26 @@ class TableBulkData(directive.RMLDirective):
         self.parent.process()
 
 
+class UnsupportedCoordinate(Exception):
+    pass
+
+
 class BlockTable(flowable.Flowable):
     signature = rml_flowable.IBlockTable
     factories = {
         'tr': TableRow,
         'bulkData': TableBulkData,
-        # processed in self.haveBlockTableStyle
+        # processed in self.haveBlockTableStyle because we need the styles
+        # in place before getting to the child tag processing
         # 'blockTableStyle': stylesheet.BlockTableStyle
     }
 
     def _getStartEndPos(self, attrs):
+        # any non int coordinate is not supported (like splitlast)
+        for coord in attrs['start'] + attrs['stop']:
+            if not isinstance(coord, int):
+                raise UnsupportedCoordinate(coord)
+
         start_col, start_row = attrs['start']
         end_col, end_row = attrs['stop']
 
@@ -240,14 +277,43 @@ class BlockTable(flowable.Flowable):
         # also sort on the index
         cols = sorted([col if col >= 0 else self.columns+col
                        for col in [start_col, end_col]])
-        start_col = cols[0]
-        end_col = cols[1]
         rows = sorted([row if row >= 0 else self.rows+row
                        for row in [start_row, end_row]])
-        start_row = rows[0]
-        end_row = rows[1]
 
-        return start_col, start_row, end_col, end_row
+        # return start_col, start_row, end_col, end_row
+        return cols[0], rows[0], cols[1], rows[1]
+
+    def _getOriginCellPos(self, col, row):
+        # the problem is with spanned cells, to draw a bottom/right border
+        # on a spanned region we need to find the origin cell
+        spaninfo = self.spanMap[col][row]
+        if spaninfo is None:
+            # regular cell
+            return col, row
+        elif spaninfo['type'] == 'S':
+            # spanned 'origin' cell
+            return col, row
+        elif spaninfo['type'] == 'H':
+            # this is a 'hidden' cell, need to find the cell which caused this
+            originCol, originRow = spaninfo['origin']
+            return originCol, originRow
+        return col, row
+
+    def _getBottomRightCellPos(self, col, row):
+        # the problem is with spanned cells,
+        # to NOT to draw a bottom/right border
+        # on a spanned region we need to find that info
+        spaninfo = self.spanMap[col][row]
+        if spaninfo is None:
+            # regular cell
+            return col, row
+        elif spaninfo['type'] == 'S':
+            # spanned 'origin' cell, return the bottomright coordinates
+            return spaninfo['bottomright']
+        elif spaninfo['type'] == 'H':
+            # this is a 'hidden' cell
+            return col, row
+        return col, row
 
     def _doZebraRows(self, stylemap, attrs):
         start_col, start_row, end_col, end_row = self._getStartEndPos(attrs)
@@ -277,8 +343,9 @@ class BlockTable(flowable.Flowable):
             if idx >= len(colors):
                 idx = 0
 
-    def _doStyleMap(self, stylemap, attrs):
+    def _applyAttributes(self, stylemap, attrs):
         start_col, start_row, end_col, end_row = self._getStartEndPos(attrs)
+
         for col in range(start_col, end_col+1):
             for row in range(start_row, end_row+1):
                 cell = stylemap[col][row]
@@ -286,6 +353,72 @@ class BlockTable(flowable.Flowable):
                 for attrKey in ('cellProps', 'paraProps', 'textProps'):
                     for aname, avalue in attrs[attrKey].items():
                         cell[attrKey].setAttribute(aname, avalue)
+
+    def _doInnerGrid(self, stylemap, attrs):
+        start_col, start_row, end_col, end_row = self._getStartEndPos(attrs)
+
+        if start_row == end_row and start_col == end_col:
+            return
+
+        border = attrs['border']
+
+        for col in range(start_col, end_col+1):
+            for row in range(start_row, end_row+1):
+                brcol, brrow = self._getBottomRightCellPos(col, row)
+                # we still need to set props in the current cell
+                cell = stylemap[col][row]
+                # but check the (spanned) bottom right coordinates
+                if brcol != end_col:
+                    cell['cellProps'].setAttribute('borderright', border)
+                if brrow != end_row:
+                    cell['cellProps'].setAttribute('borderbottom', border)
+
+    def _doOutline(self, stylemap, attrs):
+        start_col, start_row, end_col, end_row = self._getStartEndPos(attrs)
+
+        border = attrs['border']
+
+        for col, attrKey in [(start_col, 'borderleft'), (end_col, 'borderright')]:
+            for row in range(start_row, end_row+1):
+                # to get the outline right, we need to set border props
+                # on the 'origin' cell
+                mcol, mrow = self._getOriginCellPos(col, row)
+                cell = stylemap[mcol][mrow]
+                cell['cellProps'].setAttribute(attrKey, border)
+
+        for row, attrKey in [(start_row, 'bordertop'), (end_row, 'borderbottom')]:
+            for col in range(start_col, end_col+1):
+                mcol, mrow = self._getOriginCellPos(col, row)
+                cell = stylemap[mcol][mrow]
+                cell['cellProps'].setAttribute(attrKey, border)
+
+    def _executeCommand(self, stylemap, tagname, styleCommand):
+        attrs = styleCommand.getStyleProps()
+
+        try:
+            # let's first see tags which need special handling
+            if tagname == 'blockRowBackground':
+                self._doZebraRows(stylemap, attrs)
+            elif tagname == 'blockColBackground':
+                self._doZebraCols(stylemap, attrs)
+            elif tagname == 'lineStyle':
+                if attrs['kind'] == 'GRID':
+                    self._doOutline(stylemap, attrs)
+                    self._doInnerGrid(stylemap, attrs)
+                elif attrs['kind'] == 'INNERGRID':
+                    self._doInnerGrid(stylemap, attrs)
+                elif attrs['kind'] == 'BOX':
+                    self._doOutline(stylemap, attrs)
+                elif attrs['kind'] == 'OUTLINE':
+                    self._doOutline(stylemap, attrs)
+                else:
+                    # LINEBELOW, LINEABOVE, LINEBEFORE, LINEAFTER
+                    self._applyAttributes(stylemap, attrs)
+            else:
+                # otherwise just apply the attributes
+                self._applyAttributes(stylemap, attrs)
+        except UnsupportedCoordinate:
+            pass
 
     def getStyleMap(self):
         # prepare a map of styles for each cell in the table
@@ -296,16 +429,9 @@ class BlockTable(flowable.Flowable):
         if table_style:
             table_style = table_style[0][1]
 
-            for name, styleCommands in table_style.collector.items():
+            for tagname, styleCommands in table_style.collector.items():
                 for styleCommand in styleCommands:
-                    attrs = styleCommand.getStyleProps()
-
-                    if name == 'blockRowBackground':
-                        self._doZebraRows(stylemap, attrs)
-                    elif name == 'blockColBackground':
-                        self._doZebraCols(stylemap, attrs)
-                    else:
-                        self._doStyleMap(stylemap, attrs)
+                    self._executeCommand(stylemap, tagname, styleCommand)
 
         manager = attr.getManager(self)
         for row in stylemap:
@@ -320,15 +446,30 @@ class BlockTable(flowable.Flowable):
         # the cell that spans more columns/rows
         # ODF also expects `table:covered-table-cell`
         # instead of a table:table-cell when a cell should not be 'displayed'
+        #
+        # None in a spanMap cell means it's a 'regular' cell
+        # spaninfo structure:
+        # - type:
+        #   - S : spanned 'origin' cell
+        #   - H : hidden cell
+        # - origin: only with H type spaninfo, has (start_col, start_row)
+        #           to point to the cell which caused the spanning
+        #           to be used by getStyleMap
+        # - bottomright: only with S type spaninfo
+        #                has (end_col, end_row) of the span
+        #                to be used by getStyleMap
+        # - attrs: only with S type spaninfo
+        #          attributes to be set on the cell
         spanmap = [
-            [True for r in range(self.rows)] for c in range(self.columns)]
+            [None for r in range(self.rows)] for c in range(self.columns)]
         table_style = self.getAttributeValues(select=['style'])
         if table_style:
             table_style = table_style[0][1]
 
             for blockspan in table_style.collector['blockSpan']:
                 attrs = dict(blockspan.getAttributeValues())
-                start_col, start_row, end_col, end_row = self._getStartEndPos(attrs)
+                start_col, start_row, end_col, end_row = \
+                    self._getStartEndPos(attrs)
 
                 columnsspanned = end_col - start_col + 1
                 rowsspanned = end_row - start_row + 1
@@ -339,14 +480,21 @@ class BlockTable(flowable.Flowable):
                 # mark all spanned cells
                 for col in range(start_col, end_col+1):
                     for row in range(start_row, end_row+1):
-                        spanmap[col][row] = False
-                # only the top left cell needs the span info
-                spaninfo = {}
-                # and only spans > 1 need to be added to the ODF
+                        spaninfo = {
+                            'type': 'H',
+                            'origin': (start_col, start_row)}
+                        spanmap[col][row] = spaninfo
+
+                spaninfo = {
+                    'type': 'S',
+                    'bottomright': (end_col, end_row),
+                    'attrs': {}}
+                # only the top left cell needs the span attributes
+                # only spans > 1 need to be added to the ODF
                 if columnsspanned > 1:
-                    spaninfo['numbercolumnsspanned'] = columnsspanned
+                    spaninfo['attrs']['numbercolumnsspanned'] = columnsspanned
                 if rowsspanned > 1:
-                    spaninfo['numberrowsspanned'] = rowsspanned
+                    spaninfo['attrs']['numberrowsspanned'] = rowsspanned
                 spanmap[start_col][start_row] = spaninfo
         return spanmap
 
@@ -403,6 +551,7 @@ class BlockTable(flowable.Flowable):
         #      and we'd just drop the bulkData child tag
         if not self.haveBulkData():
             self.haveBlockTableStyle()
+            # it's important to first figure spanMap, getStyleMap will use it!
             self.spanMap = self.getSpanMap()
             self.styleMap = self.getStyleMap()
             self.rowCount = 0

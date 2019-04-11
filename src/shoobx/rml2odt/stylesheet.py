@@ -36,7 +36,7 @@ RML2ODT_ALIGNMENTS = {
 
 
 def pt(pt):
-    return '%ipt' % pt
+    return '%spt' % pt
 
 
 def hexColor(color):
@@ -454,16 +454,69 @@ class BlockSpan(TableStyleCommand):
     collectorKey = 'blockSpan'
 
 
+def convertLineStyle(attrs):
+    # ODT line styles discovered by trying:
+    # solid, dotted, dashed, fine-dashed, dash-dot, dash-dot-dot,
+    # double, double-thin
+    # there are plenty left
+    if attrs.get('count') == 2:
+        style = 'double'
+    else:
+        style = 'solid'  # by default
+        dash = attrs.get('dash')
+        if dash:
+            # ohwell do some magic, there's no such custom border in ODT
+            if len(dash) == 2:
+                if dash[0] == dash[1]:
+                    if dash[0] in (1, 2):
+                        style = 'dotted'
+                    elif dash[0] in (3, 4):
+                        style = 'fine-dashed'
+                    else:
+                        style = 'dashed'
+                else:
+                    style = 'dash-dot'
+            else:
+                # what? dash-dot-dot?
+                pass
+
+    parts = []
+    if attrs.get('thickness'):
+        parts.append(pt(attrs.get('thickness')))
+    else:
+        parts.append('1pt')
+    parts.append(style)
+    if attrs.get('colorName'):
+        parts.append(hexColor(attrs['colorName']))
+
+    return ' '.join(parts)
+
+
 class LineStyle(TableStyleCommand):
     signature = rml_stylesheet.ILineStyle
+    collectorKey = 'lineStyle'
 
-    def process(self):
-        pass
-        # name = self.getAttributeValues(select=('kind',), valuesOnly=True)[0]
-        # args = [name]
-        # args += self.getAttributeValues(ignore=('kind',), valuesOnly=True,
-        #                                 includeMissing=True)
-        # self.parent.style.add(*args)
+    kindMap = {
+        'LINEBELOW': 'borderbottom',
+        'LINEABOVE': 'bordertop',
+        'LINEBEFORE': 'borderleft',
+        'LINEAFTER': 'borderright',
+    }
+
+    def getStyleProps(self):
+        result = super(LineStyle, self).getStyleProps()
+
+        attrs = self._cachedAttributeValues
+        result['kind'] = attrs['kind']
+        stylestr = convertLineStyle(attrs)
+        if attrs['kind'] in self.kindMap:
+            # catering a simple ODT setAttribute loop
+            result['cellProps'][self.kindMap[attrs['kind']]] = stylestr
+        else:
+            # otherwise there will be special processing in
+            # BlockTable.getStyleMap
+            result['border'] = stylestr
+        return result
 
 
 class BlockTableStyle(directive.RMLDirective):

@@ -136,15 +136,19 @@ class BlockTableTests(unittest.TestCase):
         for row in range(rows):
             out += '|'
             for col in range(cols):
-                val = res[col][row]
-                if val:
-                    if isinstance(val, dict):
-                        val = (val.get('numbercolumnsspanned', 1),
-                               val.get('numberrowsspanned', 1))
-                        out += str(val) #  '(1, 0)'
-                    else:
-                        out += ' cell '
-                elif val is False:
+                spaninfo = res[col][row]
+
+                if spaninfo is None:
+                    # regular cell
+                    out += ' cell '
+                elif spaninfo['type'] == 'S':
+                    # spanned 'origin' cell
+                    kw = spaninfo['attrs']
+                    val = (kw.get('numbercolumnsspanned', 1),
+                           kw.get('numberrowsspanned', 1))
+                    out += str(val) #  '(1, 0)'
+                elif spaninfo['type'] == 'H':
+                    # hidden cell
                     out += '      '
                 else:
                     out += ' ???? '

@@ -1,0 +1,540 @@
+<!DOCTYPE document SYSTEM "rml.dtd">
+<document
+    filename="tag-blockTableStyle.pdf"
+    xmlns:doc="http://namespaces.zope.org/rml/doc">
+
+  <template pagesize="letter" showBoundary="0" leftMargin="2.0cm"
+            topMargin="2.0cm" rightMargin="2.0cm" bottomMargin="2.0cm">
+    <pageTemplate id="main">
+      <frame id="first" x1="72" y1="72" width="451" height="698"/>
+    </pageTemplate>
+  </template>
+
+  <stylesheet>
+
+    <blockTableStyle id="simple-border">
+        <lineStyle
+            start="0,0" stop="-1,0"
+            kind="LINEBELOW"
+            colorName="black"
+            thickness="1"/>
+        <lineStyle
+            start="1,2" stop="3,2"
+            kind="LINEABOVE"
+            colorName="purple"
+            thickness="2"/>
+        <lineStyle
+            start="1,2" stop="3,2"
+            kind="LINEBEFORE"
+            colorName="green"
+            thickness="4"/>
+        <lineStyle
+            start="3,1" stop="3,4"
+            kind="LINEAFTER"
+            colorName="yellow"
+            thickness="6"/>
+        <lineStyle
+            start="-1,0" stop="-1,-1"
+            kind="LINEAFTER"
+            colorName="black"
+            thickness="1"/>
+        <lineStyle
+            start="0,-1" stop="-1,-1"
+            kind="LINEBELOW"
+            colorName="blue"
+            thickness="1"/>
+
+        <lineStyle
+            start="1,3" stop="2,3"
+            kind="LINEBELOW"
+            colorName="black"
+            dash="1 1"
+            thickness="2"/>
+
+        <lineStyle
+            start="3,3" stop="4,3"
+            kind="LINEBELOW"
+            colorName="black"
+            dash="3 3"
+            thickness="2"/>
+
+        <lineStyle
+            start="1,4" stop="2,4"
+            kind="LINEBELOW"
+            colorName="black"
+            dash="10 10"
+            thickness="2"/>
+
+        <lineStyle
+            start="3,4" stop="4,4"
+            kind="LINEBELOW"
+            colorName="black"
+            dash="10 20"
+            thickness="2"/>
+    </blockTableStyle>
+
+    <blockTableStyle id="grid-border">
+        <lineStyle kind="OUTLINE" colorName="blue" thickness="2"/>
+        <lineStyle kind="GRID" colorName="black" start="0,1" stop="-2,-1"/>
+        <lineStyle kind="GRID" colorName="purple" start="3,0" stop="3,0" thickness="2"/>
+    </blockTableStyle>
+
+    <blockTableStyle id="grid-border-2">
+        <lineStyle kind="OUTLINE" colorName="blue" start="1,1" stop="-2,-2" thickness="2"/>
+        <lineStyle kind="INNERGRID" colorName="purple" start="1,1" stop="-2,-2" thickness="2"/>
+    </blockTableStyle>
+
+    <blockTableStyle id="grid-spanned1">
+        <lineStyle kind="OUTLINE" colorName="blue" thickness="2"/>
+        <lineStyle kind="GRID" colorName="black" start="0,1" stop="-2,-1"/>
+		<blockSpan start="-1,0" stop="-1,-1"/>
+    </blockTableStyle>
+
+    <blockTableStyle id="outline-spanned2">
+        <lineStyle kind="OUTLINE" colorName="blue" thickness="2"/>
+		<blockSpan start="-2,1" stop="-1,-1"/>
+    </blockTableStyle>
+
+    <blockTableStyle id="grid-spanned2">
+        <lineStyle kind="GRID" colorName="blue" thickness="2"/>
+		<blockSpan start="-2,1" stop="-1,-1"/>
+    </blockTableStyle>
+
+    <blockTableStyle id="innergrid-spanned2">
+        <lineStyle kind="INNERGRID" colorName="blue" thickness="2"/>
+		<blockSpan start="-2,1" stop="-1,-1"/>
+    </blockTableStyle>
+
+    <blockTableStyle id="span001">
+        <blockSpan start="0,0" stop="2,0"/>
+        <blockSpan start="-1,0" stop="-1,-1"/>
+        <lineStyle kind="GRID" colorName="purple" start="0,1" stop="-2,-1"/>
+        <lineStyle kind="GRID" colorName="black" start="3,0" stop="3,0"  thickness="2"/>
+        <lineStyle kind="OUTLINE" colorName="blue" thickness="2"/>
+    </blockTableStyle>
+
+  </stylesheet>
+
+  <story>
+    <title><font face="Courier">&lt;blockTableStyle&gt;</font> Tag Demo</title>
+
+    <spacer length="1cm" />
+
+    <blockTable style="simple-border">
+      <tr>
+        <td>00</td>
+        <td>01</td>
+        <td>02</td>
+        <td>03</td>
+        <td>04<br/>04</td>
+      </tr>
+      <tr>
+        <td>10</td>
+        <td>11</td>
+        <td>12</td>
+        <td>13</td>
+        <td>14<br/>14</td>
+      </tr>
+      <tr>
+        <td>20</td>
+        <td>21</td>
+        <td>22</td>
+        <td>23</td>
+        <td>24<br/>24<br/>24<br/>24</td>
+      </tr>
+      <tr>
+        <td>30</td>
+        <td>31</td>
+        <td>32</td>
+        <td>33</td>
+        <td>34<br/>34</td>
+      </tr>
+      <tr>
+        <td>40</td>
+        <td>41</td>
+        <td>42</td>
+        <td>44</td>
+        <td>44<br/>44</td>
+      </tr>
+      <tr>
+        <td>50</td>
+        <td>51</td>
+        <td>52</td>
+        <td>55</td>
+        <td>55<br/>55</td>
+      </tr>
+    </blockTable>
+
+    <spacer length="1cm" />
+
+    <blockTable style="grid-border">
+      <tr>
+        <td>00</td>
+        <td>01</td>
+        <td>02</td>
+        <td>03</td>
+        <td>04<br/>04</td>
+      </tr>
+      <tr>
+        <td>10</td>
+        <td>11</td>
+        <td>12</td>
+        <td>13</td>
+        <td>14<br/>14</td>
+      </tr>
+      <tr>
+        <td>20</td>
+        <td>21</td>
+        <td>22</td>
+        <td>23</td>
+        <td>24<br/>24<br/>24<br/>24</td>
+      </tr>
+      <tr>
+        <td>30</td>
+        <td>31</td>
+        <td>32</td>
+        <td>33</td>
+        <td>34<br/>34</td>
+      </tr>
+      <tr>
+        <td>40</td>
+        <td>41</td>
+        <td>42</td>
+        <td>44</td>
+        <td>44<br/>44</td>
+      </tr>
+      <tr>
+        <td>50</td>
+        <td>51</td>
+        <td>52</td>
+        <td>55</td>
+        <td>55<br/>55</td>
+      </tr>
+    </blockTable>
+
+    <spacer length="1cm" />
+
+    <blockTable style="grid-border-2">
+      <tr>
+        <td>00</td>
+        <td>01</td>
+        <td>02</td>
+        <td>03</td>
+        <td>04<br/>04</td>
+      </tr>
+      <tr>
+        <td>10</td>
+        <td>11</td>
+        <td>12</td>
+        <td>13</td>
+        <td>14<br/>14</td>
+      </tr>
+      <tr>
+        <td>20</td>
+        <td>21</td>
+        <td>22</td>
+        <td>23</td>
+        <td>24<br/>24<br/>24<br/>24</td>
+      </tr>
+      <tr>
+        <td>30</td>
+        <td>31</td>
+        <td>32</td>
+        <td>33</td>
+        <td>34<br/>34</td>
+      </tr>
+      <tr>
+        <td>40</td>
+        <td>41</td>
+        <td>42</td>
+        <td>44</td>
+        <td>44<br/>44</td>
+      </tr>
+      <tr>
+        <td>50</td>
+        <td>51</td>
+        <td>52</td>
+        <td>55</td>
+        <td>55<br/>55</td>
+      </tr>
+    </blockTable>
+
+    <spacer length="1cm" />
+
+    <para>
+        Spanned cells just cause headaches
+    </para>
+
+    <blockTable style="grid-spanned1">
+      <tr>
+        <td>00</td>
+        <td>01</td>
+        <td>02</td>
+        <td>03</td>
+        <td>04<br/>04</td>
+      </tr>
+      <tr>
+        <td>10</td>
+        <td>11</td>
+        <td>12</td>
+        <td>13</td>
+        <td>14<br/>14</td>
+      </tr>
+      <tr>
+        <td>20</td>
+        <td>21</td>
+        <td>22</td>
+        <td>23</td>
+        <td>24<br/>24<br/>24<br/>24</td>
+      </tr>
+      <tr>
+        <td>30</td>
+        <td>31</td>
+        <td>32</td>
+        <td>33</td>
+        <td>34<br/>34</td>
+      </tr>
+    </blockTable>
+
+    <spacer length="1cm" />
+
+    <blockTable style="outline-spanned2">
+      <tr>
+        <td>00</td>
+        <td>01</td>
+        <td>02</td>
+        <td>03</td>
+        <td>04<br/>04</td>
+      </tr>
+      <tr>
+        <td>10</td>
+        <td>11</td>
+        <td>12</td>
+        <td>13</td>
+        <td>14<br/>14</td>
+      </tr>
+      <tr>
+        <td>20</td>
+        <td>21</td>
+        <td>22</td>
+        <td>23</td>
+        <td>24<br/>24<br/>24<br/>24</td>
+      </tr>
+      <tr>
+        <td>30</td>
+        <td>31</td>
+        <td>32</td>
+        <td>33</td>
+        <td>34<br/>34</td>
+      </tr>
+    </blockTable>
+
+    <spacer length="1cm" />
+
+    <blockTable style="grid-spanned2">
+      <tr>
+        <td>00</td>
+        <td>01</td>
+        <td>02</td>
+        <td>03</td>
+        <td>04<br/>04</td>
+      </tr>
+      <tr>
+        <td>10</td>
+        <td>11</td>
+        <td>12</td>
+        <td>13</td>
+        <td>14<br/>14</td>
+      </tr>
+      <tr>
+        <td>20</td>
+        <td>21</td>
+        <td>22</td>
+        <td>23</td>
+        <td>24<br/>24<br/>24<br/>24</td>
+      </tr>
+      <tr>
+        <td>30</td>
+        <td>31</td>
+        <td>32</td>
+        <td>33</td>
+        <td>34<br/>34</td>
+      </tr>
+    </blockTable>
+
+    <spacer length="1cm" />
+
+    <blockTable style="innergrid-spanned2">
+      <tr>
+        <td>00</td>
+        <td>01</td>
+        <td>02</td>
+        <td>03</td>
+        <td>04<br/>04</td>
+      </tr>
+      <tr>
+        <td>10</td>
+        <td>11</td>
+        <td>12</td>
+        <td>13</td>
+        <td>14<br/>14</td>
+      </tr>
+      <tr>
+        <td>20</td>
+        <td>21</td>
+        <td>22</td>
+        <td>23</td>
+        <td>24<br/>24<br/>24<br/>24</td>
+      </tr>
+      <tr>
+        <td>30</td>
+        <td>31</td>
+        <td>32</td>
+        <td>33</td>
+        <td>34<br/>34</td>
+      </tr>
+    </blockTable>
+
+    <spacer length="1cm" />
+
+    <blockTable style="span001">
+      <tr>
+        <td>00</td>
+        <td>01</td>
+        <td>02</td>
+        <td>03</td>
+        <td>04<br/>04</td>
+      </tr>
+      <tr>
+        <td>10</td>
+        <td>11</td>
+        <td>12</td>
+        <td>13</td>
+        <td>14<br/>14</td>
+      </tr>
+      <tr>
+        <td>20</td>
+        <td>21</td>
+        <td>22</td>
+        <td>23</td>
+        <td>24<br/>24<br/>24<br/>24</td>
+      </tr>
+      <tr>
+        <td>30</td>
+        <td>31</td>
+        <td>32</td>
+        <td>33</td>
+        <td>34<br/>34</td>
+      </tr>
+      <tr>
+        <td>50</td>
+        <td>51</td>
+        <td>52</td>
+        <td>53</td>
+        <td>54</td>
+      </tr>
+    </blockTable>
+
+    <spacer length="1cm" />
+
+    <blockTable>
+      <tr>
+        <td lineBelowColor="black">00</td>
+        <td lineBelowColor="blue" lineBelowThickness="2" lineBelowDash="3 3">01</td>
+        <td>02</td>
+        <td>03</td>
+        <td>04<br/>04</td>
+      </tr>
+      <tr>
+        <td>10</td>
+        <td>11</td>
+        <td lineAboveColor="green" lineAboveThickness="4">12</td>
+        <td>13</td>
+        <td>14<br/>14</td>
+      </tr>
+      <tr>
+        <td>20</td>
+        <td>21</td>
+        <td>22</td>
+        <td lineLeftColor="purple" lineLeftDash="10 10">23</td>
+        <td>24<br/>24<br/>24<br/>24</td>
+      </tr>
+      <tr>
+        <td>30</td>
+        <td>31</td>
+        <td>32</td>
+        <td>33</td>
+        <td lineRightColor="yellow" lineRightCount="2">34</td>
+      </tr>
+      <tr>
+        <td>40</td>
+        <td lineBelowColor="blue" lineBelowThickness="2" lineBelowDash="3 3"
+            lineAboveColor="green" lineAboveThickness="4"
+            lineLeftColor="purple" lineLeftDash="10 10"
+            lineRightColor="black" lineRightCount="2">41</td>
+        <td>42</td>
+        <td>44</td>
+        <td>44<br/>44</td>
+      </tr>
+      <tr>
+        <td>50</td>
+        <td>51</td>
+        <td>52</td>
+        <td>55</td>
+        <td>55<br/>55</td>
+      </tr>
+    </blockTable>
+
+    <spacer length="1cm" />
+
+    <blockTable style="grid-border">
+      <tr>
+        <td lineBelowColor="black">00</td>
+        <td lineBelowColor="blue" lineBelowThickness="2" lineBelowDash="3 3">01</td>
+        <td>02</td>
+        <td>03</td>
+        <td>04<br/>04</td>
+      </tr>
+      <tr>
+        <td>10</td>
+        <td>11</td>
+        <td lineAboveColor="green" lineAboveThickness="4">12</td>
+        <td>13</td>
+        <td>14<br/>14</td>
+      </tr>
+      <tr>
+        <td>20</td>
+        <td>21</td>
+        <td>22</td>
+        <td lineLeftColor="purple" lineLeftDash="10 10">23</td>
+        <td>24<br/>24<br/>24<br/>24</td>
+      </tr>
+      <tr>
+        <td>30</td>
+        <td>31</td>
+        <td>32</td>
+        <td>33</td>
+        <td lineRightColor="yellow" lineRightCount="2">34</td>
+      </tr>
+      <tr>
+        <td>40</td>
+        <td lineBelowColor="blue" lineBelowThickness="2" lineBelowDash="3 3"
+            lineAboveColor="green" lineAboveThickness="4"
+            lineLeftColor="purple" lineLeftDash="10 10"
+            lineRightColor="black" lineRightCount="2">41</td>
+        <td>42</td>
+        <td>44</td>
+        <td>44<br/>44</td>
+      </tr>
+      <tr>
+        <td>50</td>
+        <td>51</td>
+        <td>52</td>
+        <td>55</td>
+        <td>55<br/>55</td>
+      </tr>
+    </blockTable>
+
+  </story>
+
+</document>

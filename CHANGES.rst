@@ -1,7 +1,7 @@
 CHANGES
 =======
 
-0.5.1 (unreleased)
+0.6.0 (2019-04-12)
 ------------------
 
 - Complete overhaul of blockTable styling.

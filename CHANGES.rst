@@ -4,7 +4,9 @@ CHANGES
 0.5.1 (unreleased)
 ------------------
 
-- Complete overhaul of blockTableStyle processing
+- Complete overhaul of blockTable styling.
+  This enables the use blockTableStyle and `td` styling tags.
+  Most text, background and border styling is supported.
 
 
 0.5.0 (2019-04-05)

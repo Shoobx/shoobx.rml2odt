@@ -537,8 +537,8 @@ class Paragraph(Flowable):
             text = ''
         # squash lots of whitespace to a single space
         text = text.replace('\t', ' ')
-        text = re.sub('\n\s+', ' ', text)
-        text = re.sub('\s\s+', ' ', text)
+        text = re.sub(r'\n\s+', ' ', text)
+        text = re.sub(r'\s\s+', ' ', text)
         return text
 
     def _addSpaceHolders(self, text):
@@ -777,7 +777,7 @@ class NextPage(Flowable):
         prop.setAttribute('breakafter', 'page')
         pageBreakStyle.addElement(prop)
         manager.document.automaticstyles.addElement(pageBreakStyle)
-        self.para = odf.text.P(stylename = pageBreakStyleName)
+        self.para = odf.text.P(stylename=pageBreakStyleName)
         self.contents.addElement(self.para)
 
 

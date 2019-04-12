@@ -110,7 +110,7 @@ class Template(directive.RMLDirective):
                     styleArgs[argName] = "0pt"
             else:
                 styleArgs[argName] = '%spt' % argValue
-        
+
         self.styleArgs = styleArgs
         self.pageTemplateNames = []
 

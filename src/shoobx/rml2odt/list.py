@@ -31,7 +31,8 @@ from z3c.rml import attr, directive
 @zope.interface.implementer(IContentContainer)
 class ListItem(flowable.Flow):
     signature = rml_flowable.IParagraph
-    styleAttributes = zope.schema.getFieldNames(rml_stylesheet.IMinimalListStyle)
+    styleAttributes = zope.schema.getFieldNames(
+        rml_stylesheet.IMinimalListStyle)
     ListIDTracker = []
     attrMapping = {}
 
@@ -117,7 +118,8 @@ class ListItem(flowable.Flow):
             else:
                 # for fancy_numbering we need to keep track of the index
                 # ourselves, including the starting index
-                startvalue = self._getStartValue(self.parent.item.childNodes[0])
+                startvalue = self._getStartValue(
+                    self.parent.item.childNodes[0])
                 index = count + int(startvalue)
 
         if fancy_numbering:
@@ -139,7 +141,8 @@ class ListItem(flowable.Flow):
                     newSpan = lxml.etree.Element('span')
                     newSpan.text = child.text.lstrip()
                     child.insert(2, newSpan)
-                    # nuke the child text, otherwise it would get added as first
+                    # nuke the child text, otherwise it would get added
+                    # as first
                     child.text = ''
                     break
 
@@ -179,7 +182,8 @@ class BlockTableInList(directive.RMLDirective):
 
         # Find the current level and get the indent
         for levelstyle in levels:
-            if int(levelstyle.getAttribute('level')) != self.parent.parent.level:
+            if (int(levelstyle.getAttribute('level')) !=
+                    self.parent.parent.level):
                 continue
 
             # This is the level
@@ -187,7 +191,8 @@ class BlockTableInList(directive.RMLDirective):
             if not props:
                 indent = 0
                 break  # No properties in this level!?
-            align = props[0].getElementsByType(odf.style.ListLevelLabelAlignment)
+            align = props[0].getElementsByType(
+                odf.style.ListLevelLabelAlignment)
             if not align:
                 indent = 0
                 break  # No indent in this level!?
@@ -244,7 +249,8 @@ class UnorderedListItem(ListItem):
 class ListBase(flowable.Flowable):
     factories = {'li': ListItem}
     attrMapping = {}
-    styleAttributes = zope.schema.getFieldNames(rml_stylesheet.IMinimalListStyle)
+    styleAttributes = zope.schema.getFieldNames(
+        rml_stylesheet.IMinimalListStyle)
 
     def __init__(self, *args, **kw):
         super(ListBase, self).__init__(*args, **kw)
@@ -270,7 +276,7 @@ class ListBase(flowable.Flowable):
         # Keeps track of the root list (in the case of nested lists)
         # Keeps track of the level of each list
         if (isinstance(self.parent, ListItem) and
-            isinstance(self.parent.parent, type(self))):
+                isinstance(self.parent.parent, type(self))):
             parent_list = self.parent.parent
             self.level = parent_list.level + 1
             self.rootList = parent_list.rootList
@@ -375,7 +381,7 @@ class ListBase(flowable.Flowable):
             # appear
             newPara = odf.text.P()
             self.parent.contents.addElement(newPara)
-        
+
         self.parent.contents.addElement(self.item)
         # Add all list items.
         self.processSubDirectives()

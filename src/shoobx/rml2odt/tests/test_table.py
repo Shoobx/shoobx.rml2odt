@@ -87,6 +87,7 @@ EXPECTED3 = """
 | cell | cell | cell | cell |      |
 """
 
+
 class BlockTableTests(unittest.TestCase):
 
     def test_getSpanMap_1(self):
@@ -130,7 +131,7 @@ class BlockTableTests(unittest.TestCase):
         element.sourceline = 123
         tbl = table.BlockTable(element, doc)
         return tbl
-    
+
     def _processResult(self, res, cols, rows):
         out = ''
         for row in range(rows):
@@ -146,7 +147,7 @@ class BlockTableTests(unittest.TestCase):
                     kw = spaninfo['attrs']
                     val = (kw.get('numbercolumnsspanned', 1),
                            kw.get('numberrowsspanned', 1))
-                    out += str(val) #  '(1, 0)'
+                    out += str(val)  # '(1, 0)'
                 elif spaninfo['type'] == 'H':
                     # hidden cell
                     out += '      '
@@ -154,11 +155,11 @@ class BlockTableTests(unittest.TestCase):
                     out += ' ???? '
                 out += '|'
             out += '\n'
-        
+
         if False:
             print
             print(out)
-            
+
         return out.strip()
 
 

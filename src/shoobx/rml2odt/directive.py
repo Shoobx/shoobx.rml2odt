@@ -39,7 +39,8 @@ class BaseDirective(directive.RMLDirective):
             # Raise an error/log any unknown directive.
             if tag not in self.factories:
                 msg = "Directive %r could not be processed and was " \
-                      "ignored. %s" %(tag, directive.getFileInfo(self, element))
+                      "ignored. %s" % (
+                        tag, directive.getFileInfo(self, element))
                 # Record any tags/elements that could not be processed.
                 directive.logger.warning(msg)
                 if directive.ABORT_ON_INVALID_DIRECTIVE:

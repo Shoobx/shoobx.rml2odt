@@ -128,7 +128,7 @@ class TableCell(flowable.Flow):
         for prop in ('cellProps', 'paraProps', 'textProps'):
             newCellStyle[prop].attributes = dict(frm[prop].attributes)
         return newCellStyle
-    
+
     def process(self):
         col = len(self.parent.row.childNodes)
         row = self.parent.parent.rowCount - 1
@@ -191,6 +191,7 @@ class TableCell(flowable.Flow):
         self.contents = cell
         if process:
             super(TableCell, self).process()
+
 
 class TableRow(directive.RMLDirective):
     signature = rml_flowable.ITableRow
@@ -378,7 +379,8 @@ class BlockTable(flowable.Flowable):
 
         border = attrs['border']
 
-        for col, attrKey in [(start_col, 'borderleft'), (end_col, 'borderright')]:
+        for col, attrKey in [
+                (start_col, 'borderleft'), (end_col, 'borderright')]:
             for row in range(start_row, end_row+1):
                 # to get the outline right, we need to set border props
                 # on the 'origin' cell
@@ -386,7 +388,8 @@ class BlockTable(flowable.Flowable):
                 cell = stylemap[mcol][mrow]
                 cell['cellProps'].setAttribute(attrKey, border)
 
-        for row, attrKey in [(start_row, 'bordertop'), (end_row, 'borderbottom')]:
+        for row, attrKey in [
+                (start_row, 'bordertop'), (end_row, 'borderbottom')]:
             for col in range(start_col, end_col+1):
                 mcol, mrow = self._getOriginCellPos(col, row)
                 cell = stylemap[mcol][mrow]
@@ -587,7 +590,7 @@ class BlockTable(flowable.Flowable):
     @lazy.lazy
     def columns(self):
         return max([len([e for e in row.getchildren() if e.tag == 'td'])
-                     for row in self.element.getchildren()])
+                    for row in self.element.getchildren()])
 
 
 flowable.Flow.factories['blockTable'] = BlockTable

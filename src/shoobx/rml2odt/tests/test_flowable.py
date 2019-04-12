@@ -65,7 +65,6 @@ class ParagraphTests(unittest.TestCase):
         return ''.join(val)
 
 
-
 class ElementMock(dict):
     pass
 

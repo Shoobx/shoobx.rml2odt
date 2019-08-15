@@ -69,7 +69,7 @@ If your RML data isn't in a file, but is held in a string, you can import
 shoobx.rml2odt as a library and convert text data from Python::
 
     >>> from shoobx.rml2odt import rml2odt
-    >>> odt_data = rml2odt.convertFile(infilepath, outfilepath)
+    >>> odt_data = rml2odt.convertString(inputstring).read()
     >>> with open(outputfile, 'wb') as output:
     ...     output.write(odt_data)
 

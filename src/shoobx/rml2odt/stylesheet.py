@@ -240,6 +240,21 @@ class ParagraphStyle(directive.RMLDirective):
         attr.getManager(self).styles[name] = style
 
 
+class SpanStyle(ParagraphStyle):
+    signature = rml_stylesheet.ISpanStyle
+
+    def process(self):
+        kwargs = dict(self.getAttributeValues())
+        name = kwargs.get('name')
+        super(SpanStyle, self).process()
+        self.parent.parent.document.getStyleByName(
+            six.text_type(name)
+        ).setAttribute('family', 'text')
+
+
+
+
+
 class TableStyleCommand(directive.RMLDirective):
     collectorKey = None
 
@@ -729,6 +744,7 @@ class Stylesheet(directive.RMLDirective):
     factories = {
         'initialize': Initialize,
         'paraStyle': ParagraphStyle,
+        'spanStyle': SpanStyle,
         'blockTableStyle': BlockTableStyle,
         'listStyle': ListStyle,
     }

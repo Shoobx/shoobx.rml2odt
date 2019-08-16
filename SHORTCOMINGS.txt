@@ -29,7 +29,6 @@ Unsupported tags and/or attributes:
 - place tag
 - pageInfo tag
 - blockTable repeatRows attribute
-- stylesheet spanStyle tag
 - para border attributes
 - plugInFlowable tag
 - plugInGraphic tag

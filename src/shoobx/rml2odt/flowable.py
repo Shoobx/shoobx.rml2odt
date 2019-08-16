@@ -261,7 +261,7 @@ class ComplexSubParagraphDirective(SubParagraphDirective):
     def process(self):
         self.preProcess()
         if self.element.text:
-            self.paragraph.addSpan(self.element.text)
+            self.paragraph.addSpan(self.element.text, self.element.attrib.get('style'))
         self.processSubDirectives()
         self.postProcess()
 
@@ -593,7 +593,7 @@ class Paragraph(Flowable):
 
         return span
 
-    def addSpan(self, text=None):
+    def addSpan(self, text=None, styleName=None):
         if text is not None:
             if self.cleanText:
                 text = self._cleanText(text)
@@ -602,6 +602,10 @@ class Paragraph(Flowable):
                 span = self._addSpaceHolders(text)
 
         self.odtParagraph.addElement(span)
+
+        if styleName is not None:
+                span.setAttribute('stylename', styleName)
+                return span
 
         manager = attr.getManager(self)
         styleName = manager.getNextStyleName('T')

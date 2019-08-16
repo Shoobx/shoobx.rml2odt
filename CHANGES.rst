@@ -1,7 +1,7 @@
 CHANGES
 =======
 
-0.6.1 (unreleased)
+0.6.1 (2019-08-16)
 ------------------
 
 - Add support for `spanStyle` tags.

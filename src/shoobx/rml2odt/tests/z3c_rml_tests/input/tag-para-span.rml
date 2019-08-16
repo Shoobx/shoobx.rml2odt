@@ -5,7 +5,7 @@
     filename="tag-paraWordWrap.pdf"
     xmlns:doc="http://namespaces.zope.org/rml/doc">
 
-  <template>
+  <template pagesize="A4">
     <pageTemplate id="main">
       <frame id="first" x1="5cm" y1="1cm" width="10cm" height="26cm"/>
     </pageTemplate>

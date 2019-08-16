@@ -1,7 +1,7 @@
 <!DOCTYPE document SYSTEM "rml.dtd">
 <document>
 
-  <template pagesize="letter" showBoundary="0" leftMargin="2.0cm"
+  <template pagesize="A4" showBoundary="0" leftMargin="2.0cm"
             topMargin="2.0cm" rightMargin="2.0cm" bottomMargin="2.0cm">
     <pageTemplate id="main">
       <frame id="first" x1="72" y1="72" width="451" height="698"/>

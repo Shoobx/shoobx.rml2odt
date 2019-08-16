@@ -154,6 +154,8 @@ def registerParagraphStyle(doc, name, rmlStyle):
     textProps.setAttribute('fontsize', rmlStyle.fontSize)
     textProps.setAttribute('texttransform', rmlStyle.textTransform)
 
+    if getattr(rmlStyle, 'underline', False):
+        textProps.setAttribute('textunderlinetype', 'single')
     if rmlStyle.textColor is not None:
         textProps.setAttribute('color', '#' + rmlStyle.textColor.hexval()[2:])
     if rmlStyle.backColor is not None:

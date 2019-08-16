@@ -6,6 +6,8 @@ CHANGES
 
 - Add support for `spanStyle` tags.
 
+- Add support for `underline` attribute is `paraStyle` and `spanStyle` tags.
+
 
 0.6.0 (2019-04-12)
 ------------------

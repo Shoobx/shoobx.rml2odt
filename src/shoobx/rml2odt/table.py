@@ -570,6 +570,9 @@ class BlockTable(flowable.Flowable):
                 tableProps = odf.style.TableProperties(relwidth='100%')
                 style.addElement(tableProps)
 
+                if isinstance(self.parent, flowable.KeepTogether):
+                    tableProps.setAttribute('maybreakbetweenrows', False)
+
             self.table = odf.table.Table(stylename=styleName)
             if isinstance(self.parent, TableCell):
                 # a table in a table

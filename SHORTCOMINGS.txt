@@ -21,7 +21,7 @@ Unsupported tags and/or attributes:
 - hr tag styling
 - indent tag
 - index tag
-- keepTogether tag
+- keepTogether tag (other than blockTables)
 - lineMode tag
 - logging
 - mergePage tag

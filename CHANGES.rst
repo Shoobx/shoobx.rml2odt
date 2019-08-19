@@ -1,10 +1,11 @@
 CHANGES
 =======
 
-0.6.2 (unreleased)
+0.7.0 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Add minor support for `keepTogether` tags, always displaying contents and
+  keeping direct child `blockTable` elements on the same page
 
 
 0.6.1 (2019-08-16)

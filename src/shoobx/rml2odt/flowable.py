@@ -801,6 +801,10 @@ class HorizontalRow(Flowable):
         self.parent.contents.addElement(hr)
 
 
+class KeepTogether(Flowable):
+    signature = rml_flowable.IKeepTogether
+
+
 class Flow(directive.BaseDirective):
     factories = {
         # Generic Flowables
@@ -819,6 +823,7 @@ class Flow(directive.BaseDirective):
         'link': Link,
         'pre': Preformatted,
         'xpre': XPreformatted,
+        'keepTogether': KeepTogether,
 
         # Page-Level Flowables
         'nextPage': NextPage,
@@ -838,3 +843,6 @@ class Flow(directive.BaseDirective):
             self.parent.document.body.childNodes[0].setAttribute(
                 'usesoftpagebreaks', 'true')
         self.processSubDirectives()
+
+
+KeepTogether.factories = Flow.factories

@@ -1,7 +1,7 @@
 CHANGES
 =======
 
-0.7.0 (unreleased)
+0.7.0 (2019-08-19)
 ------------------
 
 - Add minor support for `keepTogether` tags, always displaying contents and

@@ -253,6 +253,18 @@
       <li><para>Welcome to RML 3</para></li>
     </ol>
 
+    <ol style="Ordered" bulletType="O">
+      <li>
+        <para>Using the number caps</para>
+        <ul style="Resolutions">
+          <li><para>Nested resolution #1</para></li>
+          <li><para>Nested resolution #2</para></li>
+        </ul>
+      </li>
+      <li><para>Top level all caps list again</para></li>
+    </ol>
+
+
     <h1>Ordered List Bullet Types</h1>
 
     <spacer length="0.5in" />

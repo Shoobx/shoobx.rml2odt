@@ -4,7 +4,7 @@ CHANGES
 0.7.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Add support for nested lists with different styling than parent
 
 
 0.7.0 (2019-08-19)

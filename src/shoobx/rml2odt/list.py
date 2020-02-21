@@ -260,6 +260,8 @@ class ListBase(flowable.Flowable):
         root = self
         while True:
             parent = parent.parent
+            if hasattr(root, 'stylename'):
+                break
             if isinstance(parent, ListItem):
                 continue
             if isinstance(parent, ListBase):

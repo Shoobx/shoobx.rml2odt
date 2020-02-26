@@ -1,7 +1,7 @@
 CHANGES
 =======
 
-0.7.1 (unreleased)
+0.7.1 (2020-02-26)
 ------------------
 
 - Add support for nested lists with different styling than parent

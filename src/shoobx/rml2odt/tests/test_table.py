@@ -13,15 +13,13 @@
 ##############################################################################
 """RML to DOCX Converter Tests
 """
-from __future__ import absolute_import
+
+import unittest
 
 import lxml
-import unittest
 from odf.opendocument import OpenDocumentText
 
-from shoobx.rml2odt import document
-from shoobx.rml2odt import table
-from shoobx.rml2odt import stylesheet
+from shoobx.rml2odt import document, stylesheet, table
 
 STYLE1 = """
     <blockTableStyle id="table">
@@ -163,7 +161,7 @@ class BlockTableTests(unittest.TestCase):
         return out.strip()
 
 
-class Mock(object):
+class Mock:
     pass
 
 

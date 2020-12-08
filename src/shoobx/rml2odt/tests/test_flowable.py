@@ -13,12 +13,10 @@
 ##############################################################################
 """RML to DOCX Converter Tests
 """
-from __future__ import absolute_import
 
 import unittest
 
-from shoobx.rml2odt import document
-from shoobx.rml2odt import flowable
+from shoobx.rml2odt import document, flowable
 
 
 class ParagraphTests(unittest.TestCase):

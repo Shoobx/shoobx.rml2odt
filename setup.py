@@ -46,7 +46,7 @@ TESTS_REQUIRE = [
 
 setup(
     name="shoobx.rml2odt",
-    version='0.7.2.dev0',
+    version='0.8.0',
     author="Shoobx, Inc.",
     author_email="dev@shoobx.com",
     description="A converter from RML to ODT.",
@@ -56,17 +56,16 @@ setup(
         read('CHANGES.rst')
         ),
     license="ZPL 2.1",
+    requires_python=">=3.7",
     keywords="rml odf odt libreoffice pagetemplate",
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Zope Public License',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: Implementation :: CPython',
         'Natural Language :: English',
         'Operating System :: OS Independent'],
@@ -83,7 +82,6 @@ setup(
         'pypng',
         'PyQRCode',
         'setuptools',
-        'six',
         'z3c.rml',
         'zope.interface',
         ],

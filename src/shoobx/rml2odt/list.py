@@ -14,18 +14,19 @@
 """``ul``, ``ol``, and ``li`` directives.
 """
 import copy
+
 import lxml
 import odf.text
 import zope.interface
 import zope.schema
-
 from reportlab.lib import sequencer
-from shoobx.rml2odt import flowable, stylesheet
-from shoobx.rml2odt.interfaces import IContentContainer
+from z3c.rml import attr, directive
+from z3c.rml import flowable as rml_flowable
 from z3c.rml import list as rml_list
 from z3c.rml import stylesheet as rml_stylesheet
-from z3c.rml import flowable as rml_flowable
-from z3c.rml import attr, directive
+
+from shoobx.rml2odt import flowable, stylesheet
+from shoobx.rml2odt.interfaces import IContentContainer
 
 
 @zope.interface.implementer(IContentContainer)
@@ -253,7 +254,7 @@ class ListBase(flowable.Flowable):
         rml_stylesheet.IMinimalListStyle)
 
     def __init__(self, *args, **kw):
-        super(ListBase, self).__init__(*args, **kw)
+        super().__init__(*args, **kw)
 
     def getRootStyle(self):
         parent = self

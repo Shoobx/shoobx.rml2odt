@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 ##############################################################################
 #
 # Copyright (c) 2017 Shoobx, Inc.
@@ -15,23 +14,23 @@
 """Flowable Element Processing
 """
 import base64
+import os
+import re
+
 import lazy
 import lxml
-import reportlab.platypus.flowables
+import odf.draw
 import odf.style
 import odf.text
-import odf.draw
 import pyqrcode
-import os
 import reportlab.lib.styles
-import re
+import reportlab.platypus.flowables
 import zope.interface
-
-from z3c.rml import attr, interfaces
-from z3c.rml import occurence
+from z3c.rml import attr
 from z3c.rml import flowable as rml_flowable
-from shoobx.rml2odt import directive
-from shoobx.rml2odt import stylesheet
+from z3c.rml import interfaces, occurence
+
+from shoobx.rml2odt import directive, stylesheet
 from shoobx.rml2odt.interfaces import IContentContainer
 
 
@@ -324,19 +323,19 @@ class Comment(ComplexSubParagraphDirective):
 class IFont(IComplexSubParagraphDirective):
     """Set font attributes."""
 
-    face = attr.String(
-        title=u'Font face',
-        description=u'The name of the font for the cell.',
+    face = attr.Text(
+        title='Font face',
+        description='The name of the font for the cell.',
         required=False)
 
     size = attr.Measurement(
-        title=u'Font Size',
-        description=u'The font size for the text of the cell.',
+        title='Font Size',
+        description='The font size for the text of the cell.',
         required=False)
 
     color = attr.Color(
-        title=u'Font Color',
-        description=u'The color in which the text will appear.',
+        title='Font Color',
+        description='The color in which the text will appear.',
         required=False)
 
 
@@ -394,33 +393,33 @@ class IAnchor(IComplexSubParagraphDirective):
     """Adds an anchor link into the paragraph."""
 
     href = attr.Text(
-        title=u'URL',
-        description=u'The URL to link to.',
+        title='URL',
+        description='The URL to link to.',
         required=True)
 
     backcolor = attr.Color(
-        title=u'Background Color',
-        description=u'The background color of the link area.',
+        title='Background Color',
+        description='The background color of the link area.',
         required=False)
 
     color = attr.Color(
-        title=u'Font Color',
-        description=u'The color in which the text will appear.',
+        title='Font Color',
+        description='The color in which the text will appear.',
         required=False)
 
-    fontName = attr.String(
-        title=u'Font face',
-        description=u'The name of the font for the cell.',
+    fontName = attr.Text(
+        title='Font face',
+        description='The name of the font for the cell.',
         required=False)
 
     fontSize = attr.Measurement(
-        title=u'Font Size',
-        description=u'The font size for the text of the cell.',
+        title='Font Size',
+        description='The font size for the text of the cell.',
         required=False)
 
     name = attr.Text(
-        title=u'Name',
-        description=u'The name of the link.',
+        title='Name',
+        description='The name of the link.',
         required=False)
 
 
@@ -684,7 +683,7 @@ class Preformatted(Paragraph):
             for ch in children:
                 self.element.remove(ch)
 
-        super(Preformatted, self).process()
+        super().process()
 
 
 class XPreformatted(Paragraph):
@@ -836,7 +835,7 @@ class Flow(directive.BaseDirective):
     }
 
     def __init__(self, *args, **kw):
-        super(Flow, self).__init__(*args, **kw)
+        super().__init__(*args, **kw)
 
     def process(self):
         if self.element.tag == 'story':

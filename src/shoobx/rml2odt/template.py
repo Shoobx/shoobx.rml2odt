@@ -14,12 +14,13 @@
 """Style Related Element Processing
 """
 import copy
+
 import odf
 import zope.interface
 from odf.namespaces import STYLENS
-
-from z3c.rml import directive, attr
+from z3c.rml import attr, directive
 from z3c.rml import template as rml_template
+
 from shoobx.rml2odt import flowable
 from shoobx.rml2odt.interfaces import IContentContainer
 

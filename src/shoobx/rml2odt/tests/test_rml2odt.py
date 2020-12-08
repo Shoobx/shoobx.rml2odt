@@ -13,7 +13,6 @@
 ##############################################################################
 """RML to DOCX Converter Tests
 """
-from __future__ import absolute_import
 
 import glob
 import os
@@ -21,6 +20,7 @@ import subprocess
 import sys
 import unittest
 import zipfile
+
 from PIL import Image
 from zope.interface import verify
 
@@ -220,7 +220,7 @@ class Rml2OdtConverterFileTest(unittest.TestCase):
         self.inputPath = inputPath
         self.outputPath = outputPath
         self.expectPath = expectPath
-        super(Rml2OdtConverterFileTest, self).__init__()
+        super().__init__()
 
     def runTest(self):
         rml2odt.convertFile(self.inputPath, self.outputPath)

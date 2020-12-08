@@ -14,16 +14,15 @@
 """RML ``document`` element
 """
 
-from reportlab.lib import styles
 import zope.interface
-
 from odf.opendocument import OpenDocumentText
+from reportlab.lib import styles
 from z3c.rml import attr, directive
-from z3c.rml import document as rml_document, interfaces as rml_interfaces
+from z3c.rml import document as rml_document
+from z3c.rml import interfaces as rml_interfaces
 
 # Import modules, so their directives get registered.
 from shoobx.rml2odt import list, stylesheet, table, template
-
 
 RMLSTYLE_HANDLERS = {
     styles.ParagraphStyle: stylesheet.registerParagraphStyle,
@@ -76,7 +75,7 @@ class DocInit(directive.RMLDirective):
         self.parent.pageLayout = kwargs.get('pageLayout')
         for name in self.viewerOptions:
             setattr(self.parent, name, kwargs.get(name))
-        super(DocInit, self).process()
+        super().process()
 
 
 @zope.interface.implementer(rml_interfaces.IManager)
@@ -93,7 +92,7 @@ class Document(directive.RMLDirective):
         }
 
     def __init__(self, element):
-        super(Document, self).__init__(element, None)
+        super().__init__(element, None)
         self.names = {}
         self.styles = {}
         self.odtStyles = {}

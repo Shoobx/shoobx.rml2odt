@@ -14,17 +14,16 @@
 """Style Related Element Processing
 """
 import copy
+from collections import defaultdict
+
 import lazy
 import odf.style
 import odf.text
-import reportlab.lib.styles
 import reportlab.lib.enums
+import reportlab.lib.styles
 import reportlab.platypus
-import six
-from collections import defaultdict
-
-from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT, TA_JUSTIFY
-from z3c.rml import attr, directive, SampleStyleSheet, special
+from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT, TA_RIGHT
+from z3c.rml import SampleStyleSheet, attr, directive, special
 from z3c.rml import stylesheet as rml_stylesheet
 
 RML2ODT_ALIGNMENTS = {
@@ -122,7 +121,7 @@ def registerParagraphStyle(doc, name, rmlStyle):
             # Default to black if no color is specified. I can't find any
             # docs on how attributes like this are supposed to work, so...
             color = "000000"
-        paraProps.setAttribute('border', "%spt solid #%s" % (
+        paraProps.setAttribute('border', "{}pt solid #{}".format(
             rmlStyle.borderWidth, color))
 
     # reportlab styles doesn't have guaranteed attributes, so we need hasattr
@@ -171,7 +170,7 @@ class ParagraphStyle(directive.RMLDirective):
     def adjustAttributeValues(self, style, parentName):
         try:
             parentElem = self.parent.parent.document.getStyleByName(
-                six.text_type(parentName))
+                str(parentName))
         except AssertionError:
             # The style doesn't exist in the document
             return style
@@ -230,7 +229,7 @@ class ParagraphStyle(directive.RMLDirective):
         document = self.parent.parent.document
         if name == 'Normal':
             defaultNormalStyle = self.parent.parent.document.getStyleByName(
-                u'Normal')
+                'Normal')
             self.parent.parent.document.automaticstyles.removeChild(
                 defaultNormalStyle)
 
@@ -248,9 +247,9 @@ class SpanStyle(ParagraphStyle):
     def process(self):
         kwargs = dict(self.getAttributeValues())
         name = kwargs.get('name')
-        super(SpanStyle, self).process()
+        super().process()
         self.parent.parent.document.getStyleByName(
-            six.text_type(name)
+            str(name)
         ).setAttribute('family', 'text')
 
 
@@ -285,7 +284,7 @@ class BlockFont(TableStyleCommand):
     collectorKey = 'blockFont'
 
     def getStyleProps(self):
-        result = super(BlockFont, self).getStyleProps()
+        result = super().getStyleProps()
 
         attrs = self._cachedAttributeValues
         for key, val in attrs.items():
@@ -304,7 +303,7 @@ class BlockLeading(TableStyleCommand):
     collectorKey = 'blockLeading'
 
     def getStyleProps(self):
-        result = super(BlockLeading, self).getStyleProps()
+        result = super().getStyleProps()
 
         attrs = self._cachedAttributeValues
         result['paraProps']['linespacing'] = pt(attrs['length'])
@@ -316,7 +315,7 @@ class BlockTextColor(TableStyleCommand):
     collectorKey = 'blockTextColor'
 
     def getStyleProps(self):
-        result = super(BlockTextColor, self).getStyleProps()
+        result = super().getStyleProps()
 
         attrs = self._cachedAttributeValues
         result['textProps']['color'] = hexColor(attrs['colorName'])
@@ -338,7 +337,7 @@ class BlockAlignment(TableStyleCommand):
     collectorKey = 'blockAlignment'
 
     def getStyleProps(self):
-        result = super(BlockAlignment, self).getStyleProps()
+        result = super().getStyleProps()
 
         attrs = self._cachedAttributeValues
         result['paraProps']['textalign'] = convertAlignment(attrs['value'])
@@ -351,7 +350,7 @@ class BlockLeftPadding(TableStyleCommand):
     collectorKey = 'blockLeftPadding'
 
     def getStyleProps(self):
-        result = super(BlockLeftPadding, self).getStyleProps()
+        result = super().getStyleProps()
 
         attrs = self._cachedAttributeValues
         result['cellProps']['paddingleft'] = pt(attrs['length'])
@@ -363,7 +362,7 @@ class BlockRightPadding(TableStyleCommand):
     collectorKey = 'blockRightPadding'
 
     def getStyleProps(self):
-        result = super(BlockRightPadding, self).getStyleProps()
+        result = super().getStyleProps()
 
         attrs = self._cachedAttributeValues
         result['cellProps']['paddingright'] = pt(attrs['length'])
@@ -375,7 +374,7 @@ class BlockBottomPadding(TableStyleCommand):
     collectorKey = 'blockBottomPadding'
 
     def getStyleProps(self):
-        result = super(BlockBottomPadding, self).getStyleProps()
+        result = super().getStyleProps()
 
         attrs = self._cachedAttributeValues
         result['cellProps']['paddingbottom'] = pt(attrs['length'])
@@ -387,7 +386,7 @@ class BlockTopPadding(TableStyleCommand):
     collectorKey = 'blockTopPadding'
 
     def getStyleProps(self):
-        result = super(BlockTopPadding, self).getStyleProps()
+        result = super().getStyleProps()
 
         attrs = self._cachedAttributeValues
         result['cellProps']['paddingtop'] = pt(attrs['length'])
@@ -399,7 +398,7 @@ class BlockBackground(TableStyleCommand):
     collectorKey = 'blockBackground'
 
     def getStyleProps(self):
-        result = super(BlockBackground, self).getStyleProps()
+        result = super().getStyleProps()
 
         attrs = self._cachedAttributeValues
         if 'colorName' in attrs:
@@ -425,7 +424,7 @@ class BlockBackground(TableStyleCommand):
             self.collectorKey = 'blockRowBackground'
         if 'colorsByCol' in attrs:
             self.collectorKey = 'blockColBackground'
-        return super(BlockBackground, self).process()
+        return super().process()
 
 
 class BlockRowBackground(TableStyleCommand):
@@ -433,7 +432,7 @@ class BlockRowBackground(TableStyleCommand):
     collectorKey = 'blockRowBackground'
 
     def getStyleProps(self):
-        result = super(BlockRowBackground, self).getStyleProps()
+        result = super().getStyleProps()
 
         attrs = self._cachedAttributeValues
         result['cellProps']['backgroundcolors'] = [
@@ -446,7 +445,7 @@ class BlockColBackground(TableStyleCommand):
     collectorKey = 'blockColBackground'
 
     def getStyleProps(self):
-        result = super(BlockColBackground, self).getStyleProps()
+        result = super().getStyleProps()
 
         attrs = self._cachedAttributeValues
         result['cellProps']['backgroundcolors'] = [
@@ -459,7 +458,7 @@ class BlockValign(TableStyleCommand):
     collectorKey = 'blockValign'
 
     def getStyleProps(self):
-        result = super(BlockValign, self).getStyleProps()
+        result = super().getStyleProps()
 
         attrs = self._cachedAttributeValues
         result['cellProps']['verticalalign'] = attrs['value'].lower()
@@ -521,7 +520,7 @@ class LineStyle(TableStyleCommand):
     }
 
     def getStyleProps(self):
-        result = super(LineStyle, self).getStyleProps()
+        result = super().getStyleProps()
 
         attrs = self._cachedAttributeValues
         result['kind'] = attrs['kind']
@@ -572,12 +571,12 @@ class BlockTableStyle(directive.RMLDirective):
 
 
 BULLETS = {
-    'bulletchar': u'\u2022',
-    'circle': u'\u25cf',
-    'square': u'\u25AA',
-    'diamond': u'\u2B29',
-    'darrowhead': u'\u2304',
-    'rarrowhead': u'\u27a4'
+    'bulletchar': '\u2022',
+    'circle': '\u25cf',
+    'square': '\u25AA',
+    'diamond': '\u2B29',
+    'darrowhead': '\u2304',
+    'rarrowhead': '\u27a4'
 }
 
 
@@ -596,7 +595,7 @@ def registerListStyle(doc, name, rmlStyle, attributes=None, ulol=None):
                           ulol='ol')
         return
 
-    name = '%s-%s' % (name, ulol)
+    name = f'{name}-{ulol}'
 
     if attributes is None:
         attributes = {}
@@ -616,7 +615,7 @@ def registerListStyle(doc, name, rmlStyle, attributes=None, ulol=None):
     if bulletDedent is None or bulletDedent == 'auto':
         bulletDedent = 18
 
-    if isinstance(bulletDedent, six.string_types):
+    if isinstance(bulletDedent, str):
         units = {'in': reportlab.lib.units.inch,
                  'cm': reportlab.lib.units.cm,
                  'mm': reportlab.lib.units.mm,

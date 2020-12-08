@@ -13,18 +13,16 @@
 ##############################################################################
 """``blockTableStyle``, ``blockTable``, ``row``, ``tr``, and ``td`` directives.
 """
+from collections import defaultdict
+
 import lazy
 import lxml.etree
 import odf.table
-import six
 import zope.interface
-from collections import defaultdict
-
 from z3c.rml import attr, directive
 from z3c.rml import flowable as rml_flowable
 
-from shoobx.rml2odt import flowable
-from shoobx.rml2odt import stylesheet
+from shoobx.rml2odt import flowable, stylesheet
 from shoobx.rml2odt.interfaces import IContentContainer
 
 
@@ -190,7 +188,7 @@ class TableCell(flowable.Flow):
         self.parent.row.addElement(cell)
         self.contents = cell
         if process:
-            super(TableCell, self).process()
+            super().process()
 
 
 class TableRow(directive.RMLDirective):
@@ -519,7 +517,7 @@ class BlockTable(flowable.Flowable):
                 except IndexError:
                     pass
                 else:
-                    if (isinstance(colWidth, six.string_types) and
+                    if (isinstance(colWidth, str) and
                             colWidth.endswith('%')):
                         colProps.setAttribute('relcolumnwidth',
                                               colWidth[:-1] + '*')

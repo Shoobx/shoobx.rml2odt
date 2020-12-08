@@ -324,7 +324,7 @@ class Comment(ComplexSubParagraphDirective):
 class IFont(IComplexSubParagraphDirective):
     """Set font attributes."""
 
-    face = attr.String(
+    face = attr.Text(
         title=u'Font face',
         description=u'The name of the font for the cell.',
         required=False)
@@ -408,7 +408,7 @@ class IAnchor(IComplexSubParagraphDirective):
         description=u'The color in which the text will appear.',
         required=False)
 
-    fontName = attr.String(
+    fontName = attr.Text(
         title=u'Font face',
         description=u'The name of the font for the cell.',
         required=False)

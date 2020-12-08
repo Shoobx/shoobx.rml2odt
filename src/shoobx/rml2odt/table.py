@@ -189,7 +189,7 @@ class TableCell(flowable.Flow):
         self.parent.row.addElement(cell)
         self.contents = cell
         if process:
-            super(TableCell, self).process()
+            super().process()
 
 
 class TableRow(directive.RMLDirective):
@@ -518,7 +518,7 @@ class BlockTable(flowable.Flowable):
                 except IndexError:
                     pass
                 else:
-                    if (isinstance(colWidth, six.string_types) and
+                    if (isinstance(colWidth, str) and
                             colWidth.endswith('%')):
                         colProps.setAttribute('relcolumnwidth',
                                               colWidth[:-1] + '*')

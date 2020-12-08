@@ -254,7 +254,7 @@ class ListBase(flowable.Flowable):
         rml_stylesheet.IMinimalListStyle)
 
     def __init__(self, *args, **kw):
-        super(ListBase, self).__init__(*args, **kw)
+        super().__init__(*args, **kw)
 
     def getRootStyle(self):
         parent = self

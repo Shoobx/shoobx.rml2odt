@@ -24,7 +24,7 @@ zope.interface.moduleProvides(interfaces.IRML2ODT)
 
 
 def convertString(rml, remove_encoding=True, filename=None):
-    if isinstance(rml, six.string_types) and remove_encoding:
+    if isinstance(rml, str) and remove_encoding:
         # RML is a unicode string, but oftentimes documents declare their
         # encoding using <?xml ...>. Unfortuantely, I cannot tell lxml to
         # ignore that directive. Thus we remove it.

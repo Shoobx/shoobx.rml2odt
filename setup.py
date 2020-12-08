@@ -56,7 +56,7 @@ setup(
         read('CHANGES.rst')
         ),
     license="ZPL 2.1",
-    requires_python=">=3.7"
+    requires_python=">=3.7",
     keywords="rml odf odt libreoffice pagetemplate",
     classifiers=[
         'Development Status :: 4 - Beta',

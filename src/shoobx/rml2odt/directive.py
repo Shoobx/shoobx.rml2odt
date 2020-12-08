@@ -21,7 +21,7 @@ class NotImplementedDirective(directive.RMLDirective):
 
     def process(self):
         raise NotImplementedError(
-            u'Directive not implemented: %s' % self.element.tag)
+            'Directive not implemented: %s' % self.element.tag)
 
 
 class BaseDirective(directive.RMLDirective):

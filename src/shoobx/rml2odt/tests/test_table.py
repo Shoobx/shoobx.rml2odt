@@ -13,7 +13,6 @@
 ##############################################################################
 """RML to DOCX Converter Tests
 """
-from __future__ import absolute_import
 
 import unittest
 
@@ -162,7 +161,7 @@ class BlockTableTests(unittest.TestCase):
         return out.strip()
 
 
-class Mock(object):
+class Mock:
     pass
 
 

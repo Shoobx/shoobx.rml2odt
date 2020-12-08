@@ -75,7 +75,7 @@ class DocInit(directive.RMLDirective):
         self.parent.pageLayout = kwargs.get('pageLayout')
         for name in self.viewerOptions:
             setattr(self.parent, name, kwargs.get(name))
-        super(DocInit, self).process()
+        super().process()
 
 
 @zope.interface.implementer(rml_interfaces.IManager)
@@ -92,7 +92,7 @@ class Document(directive.RMLDirective):
         }
 
     def __init__(self, element):
-        super(Document, self).__init__(element, None)
+        super().__init__(element, None)
         self.names = {}
         self.styles = {}
         self.odtStyles = {}

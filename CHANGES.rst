@@ -1,10 +1,12 @@
 CHANGES
 =======
 
-0.7.2 (unreleased)
+0.8.0 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Upgrade to py3.7+
+
+- Changes for z3c.rml 4+ dependency
 
 
 0.7.1 (2020-02-26)

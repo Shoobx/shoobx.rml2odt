@@ -46,7 +46,7 @@ TESTS_REQUIRE = [
 
 setup(
     name="shoobx.rml2odt",
-    version='0.8.0',
+    version='0.8.1.dev0',
     author="Shoobx, Inc.",
     author_email="dev@shoobx.com",
     description="A converter from RML to ODT.",

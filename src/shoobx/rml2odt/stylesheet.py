@@ -22,7 +22,6 @@ import odf.text
 import reportlab.lib.enums
 import reportlab.lib.styles
 import reportlab.platypus
-import six
 from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT, TA_RIGHT
 from z3c.rml import SampleStyleSheet, attr, directive, special
 from z3c.rml import stylesheet as rml_stylesheet

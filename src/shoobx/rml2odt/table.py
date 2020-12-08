@@ -18,7 +18,6 @@ from collections import defaultdict
 import lazy
 import lxml.etree
 import odf.table
-import six
 import zope.interface
 from z3c.rml import attr, directive
 from z3c.rml import flowable as rml_flowable

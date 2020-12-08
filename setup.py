@@ -82,7 +82,6 @@ setup(
         'pypng',
         'PyQRCode',
         'setuptools',
-        'six',
         'z3c.rml',
         'zope.interface',
         ],

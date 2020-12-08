@@ -13,9 +13,9 @@
 ##############################################################################
 """RML to ODT Converter"""
 import argparse
+import io
 
 import lxml.etree
-import six
 import zope.interface
 
 from shoobx.rml2odt import document, interfaces
@@ -34,7 +34,7 @@ def convertString(rml, remove_encoding=True, filename=None):
     doc = document.Document(root)
     if filename:
         doc.filename = filename
-    output = six.BytesIO()
+    output = io.BytesIO()
     doc.process(output)
     output.seek(0)
     return output

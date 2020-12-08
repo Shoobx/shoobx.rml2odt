@@ -14,16 +14,15 @@
 """RML ``document`` element
 """
 
-from reportlab.lib import styles
 import zope.interface
-
 from odf.opendocument import OpenDocumentText
+from reportlab.lib import styles
 from z3c.rml import attr, directive
-from z3c.rml import document as rml_document, interfaces as rml_interfaces
+from z3c.rml import document as rml_document
+from z3c.rml import interfaces as rml_interfaces
 
 # Import modules, so their directives get registered.
 from shoobx.rml2odt import list, stylesheet, table, template
-
 
 RMLSTYLE_HANDLERS = {
     styles.ParagraphStyle: stylesheet.registerParagraphStyle,

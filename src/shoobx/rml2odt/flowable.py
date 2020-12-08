@@ -15,23 +15,23 @@
 """Flowable Element Processing
 """
 import base64
+import os
+import re
+
 import lazy
 import lxml
-import reportlab.platypus.flowables
+import odf.draw
 import odf.style
 import odf.text
-import odf.draw
 import pyqrcode
-import os
 import reportlab.lib.styles
-import re
+import reportlab.platypus.flowables
 import zope.interface
-
-from z3c.rml import attr, interfaces
-from z3c.rml import occurence
+from z3c.rml import attr
 from z3c.rml import flowable as rml_flowable
-from shoobx.rml2odt import directive
-from shoobx.rml2odt import stylesheet
+from z3c.rml import interfaces, occurence
+
+from shoobx.rml2odt import directive, stylesheet
 from shoobx.rml2odt.interfaces import IContentContainer
 
 

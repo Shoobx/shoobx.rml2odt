@@ -21,6 +21,7 @@ import subprocess
 import sys
 import unittest
 import zipfile
+
 from PIL import Image
 from zope.interface import verify
 

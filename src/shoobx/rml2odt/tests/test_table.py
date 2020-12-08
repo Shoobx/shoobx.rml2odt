@@ -15,13 +15,12 @@
 """
 from __future__ import absolute_import
 
-import lxml
 import unittest
+
+import lxml
 from odf.opendocument import OpenDocumentText
 
-from shoobx.rml2odt import document
-from shoobx.rml2odt import table
-from shoobx.rml2odt import stylesheet
+from shoobx.rml2odt import document, stylesheet, table
 
 STYLE1 = """
     <blockTableStyle id="table">

@@ -14,17 +14,17 @@
 """Style Related Element Processing
 """
 import copy
+from collections import defaultdict
+
 import lazy
 import odf.style
 import odf.text
-import reportlab.lib.styles
 import reportlab.lib.enums
+import reportlab.lib.styles
 import reportlab.platypus
 import six
-from collections import defaultdict
-
-from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT, TA_JUSTIFY
-from z3c.rml import attr, directive, SampleStyleSheet, special
+from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT, TA_RIGHT
+from z3c.rml import SampleStyleSheet, attr, directive, special
 from z3c.rml import stylesheet as rml_stylesheet
 
 RML2ODT_ALIGNMENTS = {

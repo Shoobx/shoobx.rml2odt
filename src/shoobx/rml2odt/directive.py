@@ -14,7 +14,6 @@
 """RML Directive Implementations
 """
 import lxml
-
 from z3c.rml import directive
 
 

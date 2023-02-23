@@ -2,8 +2,8 @@
 ``shoobx.rml2odt`` -- Conversion of RML to ODT
 ================================================
 
-.. image:: https://travis-ci.org/Shoobx/shoobx.rml2odt.png?branch=master
-   :target: https://travis-ci.org/Shoobx/shoobx.rml2odt
+.. image:: https://github.com/Shoobx/shoobx.rml2odt/actions/workflows/test.yml/badge.svg
+   :target: https://github.com/Shoobx/shoobx.rml2odt/actions
 
 .. image:: https://coveralls.io/repos/github/Shoobx/shoobx.rml2odt/badge.svg?branch=master
    :target: https://coveralls.io/github/Shoobx/shoobx.rml2odt?branch=master

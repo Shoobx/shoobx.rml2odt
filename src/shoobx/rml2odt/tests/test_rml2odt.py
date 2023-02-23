@@ -243,66 +243,93 @@ class CompareODTTestCase(unittest.TestCase):
 
     # NOTE: this test relies on the output of Rml2OdtConverterFileTest
     #       if those are NOT RUN, expect outdated results!
+    #
+    # We want to compare here the ODT "content", but can NOT do that directly
+    # by comparing the files byte-by-byte
+    # Therefore we convert the expected and current output to PDF then to PNG
+    # and compare the PNG images.
+    # Therefore expected PDFs and PNGs are transient, no need to store them in VCS,
+    # in fact need to clean those on OS/font/LibreOffice version changes.
+
     level = 2
 
-    def __init__(self, basePath, testPath):
-        self._basePath = basePath
+    def __init__(self, expectedPath, testPath):
+        self._expectedPath = expectedPath
         self._testPath = testPath
         unittest.TestCase.__init__(self)
 
-    def assertSameImage(self, baseImage, testImage):
-        with open(baseImage, 'rb') as base_file, open(testImage, 'rb') as test_file:
-            base = Image.open(base_file).getdata()
+    def assertSameImage(self, expectedImage, testImage):
+        with open(expectedImage, 'rb') as expected_file, open(testImage, 'rb') as test_file:
+            expected = Image.open(expected_file).getdata()
             test = Image.open(test_file).getdata()
-            for i in range(len(base)):
-                if (base[i] - test[i]) != 0:
+            for i in range(len(expected)):
+                if (expected[i] - test[i]) != 0:
+                    basename = os.path.basename(expectedImage)
+                    diffname = '/tmp/difference-%s.png' % basename
+                    cmd = ['compare', expectedImage, testImage, '-compose', 'src', diffname]
                     msg = (
                         'Image is not the same: %s\n\n'
-                        'If you have Imagemagick installed, you can compare with:'
-                        '\n\n'
-                        '  compare "%s" "%s" -compose src /tmp/difference.png'
-                        % (os.path.basename(baseImage), baseImage, testImage)
+                        % (basename, )
                         )
+                    # set the environment var COMPARE to run Imagemagick compare!
+                    if os.environ.get("COMPARE"):
+                        subprocess.Popen(cmd).wait()
+                        msg += (
+                            '\n'
+                            'Difference is at:'
+                            '\n'
+                            '  %s'
+                            % (diffname,)
+                            )
+                    else:
+                        msg += (
+                            '\n'
+                            'If you have Imagemagick installed, you can compare with:'
+                            '\n'
+                            '  %s'
+                            % (' '.join(cmd),)
+                            )
+
                     self.fail(msg)
 
     def runTest(self):
-        # If the base ODT file does not exist, throw an error.
-        if not os.path.exists(self._basePath):
+        # If the expected ODT file does not exist, throw an error.
+        if not os.path.exists(self._expectedPath):
             raise RuntimeError(
-                'The expected ODT file is missing: ' + self._basePath)
+                'The expected ODT file is missing: ' + self._expectedPath)
 
-        # If the base ODT has not been converted to PDF yet, then
+        # If the expected ODT has not been converted to PDF yet, then
         # let's do that now.
-        basePdfPath = self._basePath.rsplit('.', 1)[0] + '.pdf'
+        expectedPdfPath = self._expectedPath.rsplit('.', 1)[0] + '.pdf'
 
-        if os.path.exists(basePdfPath):
-            odtModTime = os.path.getmtime(self._basePath)
-            pdfModTime = os.path.getmtime(basePdfPath)
+        if os.path.exists(expectedPdfPath):
+            odtModTime = os.path.getmtime(self._expectedPath)
+            pdfModTime = os.path.getmtime(expectedPdfPath)
             if odtModTime > pdfModTime:
                 # nuke PDF if ODT is newer to recreate PDF
-                os.remove(basePdfPath)
+                os.remove(expectedPdfPath)
 
-        if not os.path.exists(basePdfPath):
-            command = unoconv_command(self._basePath)
+        if not os.path.exists(expectedPdfPath):
+            command = unoconv_command(self._expectedPath)
             status = subprocess.Popen(command).wait()
             if status:
                 raise ValueError(
-                    'Base ODT -> PDF conversion failed: %i\n'
+                    'Expected ODT -> PDF conversion failed: %i\n'
                     'Command line %s' % (status, ' '.join(command)))
             # nuke all PNGs to recreate
-            pngstar = self._basePath.rsplit('.', 1)[0] + '*.png'
+            pngstar = self._expectedPath.rsplit('.', 1)[0] + '*.png'
             for fname in glob.glob(pngstar):
                 os.remove(fname)
 
-        # If the base PDF isn't converted into images, do that now:
-        basePNGPath = self._basePath.rsplit('.', 1)[0] + '.[Page-1].png'
+        # If the expected PDF isn't converted into images, do that now:
+        expectedPNGPath = self._expectedPath.rsplit('.', 1)[0] + '.[Page-1].png'
         # We only check the first image, because we don't know how
         # many pages there are.
-        if not os.path.exists(basePNGPath):
-            status = subprocess.Popen(gs_command(basePdfPath)).wait()
+        if not os.path.exists(expectedPNGPath):
+            status = subprocess.Popen(gs_command(expectedPdfPath)).wait()
             if status:
                 raise ValueError(
-                    'Base PDF -> PNG conversion failed: %i' % status)
+                    'Expected PDF -> PNG conversion failed: %i' % status)
 
         # Convert the test ODT file to PDF.
         testPdfPath = self._testPath.rsplit('.', 1)[0] + '.pdf'
@@ -322,14 +349,14 @@ class CompareODTTestCase(unittest.TestCase):
         # Go through all images and ensure their equality
         n = 1
         while True:
-            baseImage = self._basePath[:-4] + '.[Page-%i].png' % n
+            expectedImage = self._expectedPath[:-4] + '.[Page-%i].png' % n
             testImage = self._testPath[:-4] + '.[Page-%i].png' % n
-            if os.path.exists(baseImage):
+            if os.path.exists(expectedImage):
                 if not os.path.exists(testImage):
                     raise RuntimeError(
                         'The expected PNG file is missing: %s' % testImage)
 
-                self.assertSameImage(baseImage, testImage)
+                self.assertSameImage(expectedImage, testImage)
             else:
                 if os.path.exists(testImage):
                     raise AssertionError('Unexpected PNG file: %s' % testImage)

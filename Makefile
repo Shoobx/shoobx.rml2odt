@@ -24,3 +24,9 @@ coverage: ve env
 
 clean:
 	rm -rf ve .tox .coverage coverage.xml
+
+clean-expected:
+	rm -f ./src/shoobx/rml2odt/tests/z3c_rml_tests/expected/*.png
+	rm -f ./src/shoobx/rml2odt/tests/z3c_rml_tests/expected/*.pdf
+	rm -f ./src/shoobx/rml2odt/tests/test_data/expected/*.png
+	rm -f ./src/shoobx/rml2odt/tests/test_data/expected/*.pdf

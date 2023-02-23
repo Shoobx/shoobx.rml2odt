@@ -171,15 +171,19 @@ if os.path.exists(ENV_PATH):
 
 def gs_command(path):
     cmd = (
-        'gs', '-q', '-sDEVICE=png256',
-        '-o', '%s[Page-%%d].png' % path[:-3],
-        path)
+        'gs',
+        '-q', '-sDEVICE=png256', '-r300x300',
+        '-o', '%s[Page-%%d].png' % path[:-3], path)
     return cmd
 
 
 def unoconv_command(path, opath=None):
     if opath is None:
         opath = path[:-4] + '.pdf'
+    if PYTHON_OFFICE_BIN is None:
+        raise ValueError(
+            "No LibreOffice python set. "
+            f"Please set PYTHON_OFFICE_BIN or create {ENV_PATH}")
     cmd = (
         PYTHON_OFFICE_BIN, UNOCONV_BIN, '-vvv', '-T', '15', '-f',
         'pdf', '-o', opath, path)
@@ -247,22 +251,19 @@ class CompareODTTestCase(unittest.TestCase):
         unittest.TestCase.__init__(self)
 
     def assertSameImage(self, baseImage, testImage):
-        base_file = open(baseImage, 'rb')
-        test_file = open(testImage, 'rb')
-        base = Image.open(base_file).getdata()
-        test = Image.open(test_file).getdata()
-        for i in range(len(base)):
-            if (base[i] - test[i]) != 0:
-                msg = (
-                    'Image is not the same: %s\n\n'
-                    'If you have Imagemagick installed, you can compare with:'
-                    '\n\n'
-                    '  compare "%s" "%s" -compose src /tmp/difference.png'
-                    % (os.path.basename(baseImage), baseImage, testImage)
-                    )
-                self.fail(msg)
-        base_file.close()
-        test_file.close()
+        with open(baseImage, 'rb') as base_file, open(testImage, 'rb') as test_file:
+            base = Image.open(base_file).getdata()
+            test = Image.open(test_file).getdata()
+            for i in range(len(base)):
+                if (base[i] - test[i]) != 0:
+                    msg = (
+                        'Image is not the same: %s\n\n'
+                        'If you have Imagemagick installed, you can compare with:'
+                        '\n\n'
+                        '  compare "%s" "%s" -compose src /tmp/difference.png'
+                        % (os.path.basename(baseImage), baseImage, testImage)
+                        )
+                    self.fail(msg)
 
     def runTest(self):
         # If the base ODT file does not exist, throw an error.
@@ -278,7 +279,7 @@ class CompareODTTestCase(unittest.TestCase):
             odtModTime = os.path.getmtime(self._basePath)
             pdfModTime = os.path.getmtime(basePdfPath)
             if odtModTime > pdfModTime:
-                # nuke PDF is ODT is newer to recreate PDF
+                # nuke PDF if ODT is newer to recreate PDF
                 os.remove(basePdfPath)
 
         if not os.path.exists(basePdfPath):

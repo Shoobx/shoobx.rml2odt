@@ -4,7 +4,9 @@ CHANGES
 0.8.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Moving CI to github actions
+
+- Python 3.9, 3.10, 3.11 compatibility
 
 
 0.8.0 (2020-12-08)

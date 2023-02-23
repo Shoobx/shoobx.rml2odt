@@ -19,11 +19,19 @@ Development requirements
 
 * Ghostscript
 
+You can create a development environment with ``make``.
+
 
 Running tests
 -------------
 
-``$ tox -e py27``
+Simply run the tests with
+
+``$ make test``
+
+You can also run coverage with
+
+``$ make coverage``
 
 
 macOS

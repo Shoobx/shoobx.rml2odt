@@ -75,7 +75,6 @@ setup(
     url='http://pypi.python.org/pypi/shoobx.rml2odt',
     packages=find_packages('src'),
     package_dir={'':'src'},
-    namespace_packages=['shoobx'],
     extras_require=dict(
         test=TESTS_REQUIRE,
         ),

@@ -82,6 +82,7 @@ setup(
     install_requires=[
         'lazy',
         'odfpy',
+        'importlib-metadata',
         'pypng',
         'PyQRCode',
         'setuptools',

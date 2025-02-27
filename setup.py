@@ -56,7 +56,6 @@ setup(
         read('CHANGES.rst')
         ),
     license="ZPL 2.1",
-    requires_python=">=3.7",
     keywords="rml odf odt libreoffice pagetemplate",
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -75,13 +74,13 @@ setup(
     url='http://pypi.python.org/pypi/shoobx.rml2odt',
     packages=find_packages('src'),
     package_dir={'':'src'},
-    namespace_packages=['shoobx'],
     extras_require=dict(
         test=TESTS_REQUIRE,
         ),
     install_requires=[
         'lazy',
         'odfpy',
+        'importlib-metadata',
         'pypng',
         'PyQRCode',
         'setuptools',

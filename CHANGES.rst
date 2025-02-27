@@ -1,7 +1,7 @@
 CHANGES
 =======
 
-0.8.1 (unreleased)
+0.9.0 (2025-02-27)
 ------------------
 
 - Moving CI to github actions
